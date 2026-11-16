@@ -3,13 +3,15 @@ import {AbsoluteFill, interpolate, useCurrentFrame} from 'remotion';
 import {FACTS, SCALE_MAX} from '../data';
 import {C, CONTENT_W, FONT, SAFE, W, bgNum} from '../theme';
 import {ease, lin, pop, slam} from '../anim';
+import {Flag} from '../Flag';
 
 export const MESSAGE_AT = 66;
 export const NOT_AT = 131;
 export const VERDICT_AT = 222;
 
-const Stat: React.FC<{label: string; value: number; start: number; frame: number; red?: boolean}> = ({
+const Stat: React.FC<{label: string; code: string; value: number; start: number; frame: number; red?: boolean}> = ({
   label,
+  code,
   value,
   start,
   frame,
@@ -20,7 +22,10 @@ const Stat: React.FC<{label: string; value: number; start: number; frame: number
   const v = value * fill;
   return (
     <div style={{opacity: Math.min(1, enter * 1.5), transform: `translateY(${(1 - enter) * 40}px)`, marginBottom: 70}}>
-      <div style={{fontWeight: 800, fontSize: 40, letterSpacing: 4, color: C.gD9}}>{label}:</div>
+      <div style={{fontWeight: 800, fontSize: 40, letterSpacing: 4, color: C.gD9, display: 'flex', alignItems: 'center'}}>
+        <Flag code={code} height={44} style={{marginRight: 18}} />
+        {label}:
+      </div>
       <div
         style={{
           fontWeight: 900,
@@ -56,8 +61,8 @@ export const Finale: React.FC = () => {
               РЪСТЪТ Е РЕАЛЕН
             </span>
           </div>
-          <Stat label="БЪЛГАРИЯ" value={FACTS.bulgariaGrowth} start={4} frame={frame} red />
-          <Stat label="СРЕДНО ЗА ЕС" value={FACTS.euAverageGrowth} start={13} frame={frame} />
+          <Stat label="БЪЛГАРИЯ" code="bg" value={FACTS.bulgariaGrowth} start={4} frame={frame} red />
+          <Stat label="СРЕДНО ЗА ЕС" code="eu" value={FACTS.euAverageGrowth} start={13} frame={frame} />
           <div style={{fontWeight: 700, fontSize: 28, letterSpacing: 1.5, color: C.gD9, opacity: ease(frame, 26, 36)}}>
             ГОДИШЕН РАСТЕЖ НА БВП · III ТРИМЕСЕЧИЕ НА 2026 Г.
           </div>

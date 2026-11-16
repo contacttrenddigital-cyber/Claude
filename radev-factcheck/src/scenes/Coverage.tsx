@@ -4,6 +4,7 @@ import {FACTS} from '../data';
 import {C, CONTENT_W, FONT, SAFE} from '../theme';
 import {SCENES} from '../timing';
 import {ease, lin, pop} from '../anim';
+import {Flag} from '../Flag';
 
 const COLS = 9;
 const ROWS = 3;
@@ -48,7 +49,10 @@ export const Coverage: React.FC = () => {
             <span style={{background: C.red, padding: '0 18px'}}>ЦЕЛИЯ</span>
           </div>
           <div style={{...big, opacity: Math.min(1, l2 * 1.5), transform: `translateX(${(1 - l2) * -40}px)`}}>ЕВРОПЕЙСКИ</div>
-          <div style={{...big, opacity: Math.min(1, l3 * 1.5), transform: `translateX(${(1 - l3) * -40}px)`}}>СЪЮЗ“</div>
+          <div style={{...big, opacity: Math.min(1, l3 * 1.5), transform: `translateX(${(1 - l3) * -40}px)`}}>
+            СЪЮЗ“
+            <Flag code="eu" height={92} style={{marginLeft: 30, verticalAlign: -8}} />
+          </div>
         </div>
       </AbsoluteFill>
     );
@@ -69,7 +73,8 @@ export const Coverage: React.FC = () => {
             {total}
           </span>
         </div>
-        <div style={{marginTop: 14, fontWeight: 800, fontSize: 30, letterSpacing: 4, color: C.gD9}}>
+        <div style={{marginTop: 14, fontWeight: 800, fontSize: 30, letterSpacing: 4, color: C.gD9, display: 'flex', alignItems: 'center'}}>
+          <Flag code="eu" height={36} style={{marginRight: 16}} />
           ДЪРЖАВИ В ЕВРОПЕЙСКИЯ СЪЮЗ
         </div>
 

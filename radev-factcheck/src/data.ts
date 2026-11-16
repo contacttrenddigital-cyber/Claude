@@ -3,6 +3,8 @@
 export type CountryGrowth = {
   /** Място в класацията сред държавите с публикувани данни. */
   rank: number;
+  /** Код на държавата — име на файла със знамето в public/flags. */
+  code: string;
   /** Име на държавата на български. */
   name: string;
   /** Годишен растеж на БВП, III тримесечие на 2026 г., в проценти. */
@@ -12,12 +14,12 @@ export type CountryGrowth = {
 };
 
 export const RANKING: readonly CountryGrowth[] = [
-  {rank: 1, name: 'Ирландия', growth: 3.6, highlight: false},
-  {rank: 2, name: 'Полша', growth: 3.6, highlight: false},
-  {rank: 3, name: 'Кипър', growth: 3.1, highlight: false},
-  {rank: 4, name: 'Швеция', growth: 2.8, highlight: false},
-  {rank: 5, name: 'Испания', growth: 2.7, highlight: false},
-  {rank: 6, name: 'България', growth: 2.5, highlight: true},
+  {rank: 1, code: 'ie', name: 'Ирландия', growth: 3.6, highlight: false},
+  {rank: 2, code: 'pl', name: 'Полша', growth: 3.6, highlight: false},
+  {rank: 3, code: 'cy', name: 'Кипър', growth: 3.1, highlight: false},
+  {rank: 4, code: 'se', name: 'Швеция', growth: 2.8, highlight: false},
+  {rank: 5, code: 'es', name: 'Испания', growth: 2.7, highlight: false},
+  {rank: 6, code: 'bg', name: 'България', growth: 2.5, highlight: true},
 ];
 
 /** Обща скала за всички ленти: от 0 до 4%. */

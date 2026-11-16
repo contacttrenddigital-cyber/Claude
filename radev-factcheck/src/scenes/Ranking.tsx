@@ -4,6 +4,7 @@ import {CountryGrowth, RANKING, SCALE_MAX} from '../data';
 import {C, CONTENT_W, FONT, SAFE, bgNum} from '../theme';
 import {SCENES} from '../timing';
 import {ease, lin, pop} from '../anim';
+import {Flag} from '../Flag';
 
 /** Кадър, в който се появява всеки ред (следва темпото на текста). */
 export const ROW_STARTS = [142, 166, 238, 300, 370, 477] as const;
@@ -60,8 +61,11 @@ const Row: React.FC<{item: CountryGrowth; start: number; frame: number}> = ({ite
               fontSize: 46,
               letterSpacing: 0.5,
               color: C.white,
+              display: 'flex',
+              alignItems: 'center',
             }}
           >
+            <Flag code={item.code} height={40} style={{marginRight: 18}} />
             {item.name.toUpperCase()}
           </span>
           <span
@@ -126,6 +130,7 @@ export const Ranking: React.FC = () => {
           ИКОНОМИЧЕСКИ
           <br />
           РЪСТ В ЕС
+          <Flag code="eu" height={70} style={{marginLeft: 26, verticalAlign: -4}} />
         </div>
         <div
           style={{
