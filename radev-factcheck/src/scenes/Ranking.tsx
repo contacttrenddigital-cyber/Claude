@@ -6,8 +6,8 @@ import {SCENES} from '../timing';
 import {ease, lin, pop} from '../anim';
 
 /** Кадър, в който се появява всеки ред (следва темпото на текста). */
-export const ROW_STARTS = [56, 98, 150, 204, 258, 322] as const;
-export const CALLOUT_AT = 366;
+export const ROW_STARTS = [142, 166, 238, 300, 370, 477] as const;
+export const CALLOUT_AT = 74;
 
 const RANK_W = 96;
 const BAR_W = CONTENT_W - RANK_W;

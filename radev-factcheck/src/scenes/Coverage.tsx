@@ -11,9 +11,12 @@ const GAP = 16;
 const SQ = (CONTENT_W - GAP * (COLS - 1)) / COLS;
 const GRID_H = ROWS * SQ + (ROWS - 1) * GAP;
 
-export const GRID_FROM = 8; // появяване на 27-те квадратчета
-export const FILL_FROM = 66; // запълване на 20-те с данни
-export const MISSING_AT = 112; // открояване на 7-те без данни
+export const GRID_FROM = 95; // появяване на 27-те квадратчета
+export const FILL_FROM = 258; // запълване на 20-те с данни
+export const MISSING_AT = 304; // открояване на 7-те без данни
+export const HEAD_AT = 298;
+/** Край на встъпителния цитат „в целия Европейски съюз“. */
+export const QUOTE_END = 92;
 const STEP = 2;
 
 export const Coverage: React.FC = () => {
@@ -23,20 +26,46 @@ export const Coverage: React.FC = () => {
   const withData = Math.round(lin(frame, FILL_FROM, FILL_FROM + FACTS.withData * STEP) * FACTS.withData);
   const missing = ease(frame, MISSING_AT, MISSING_AT + 10);
   const legend = ease(frame, MISSING_AT + 6, MISSING_AT + 18);
-  const head = pop(frame, 134);
-  const sub = ease(frame, 152, 166);
-  const warn = ease(frame, 172, 186);
+  const head = pop(frame, HEAD_AT);
+  const sub = ease(frame, 310, 322);
+  const warn = ease(frame, 318, 330);
+
+  if (frame < QUOTE_END) {
+    const who = ease(frame, 2, 12);
+    const l1 = pop(frame, 30);
+    const l2 = pop(frame, 44);
+    const l3 = pop(frame, 62);
+    const big: React.CSSProperties = {fontWeight: 900, fontSize: 124, lineHeight: 1.08, letterSpacing: -3, color: C.white};
+    return (
+      <AbsoluteFill style={{background: C.black, fontFamily: FONT}}>
+        <div style={{position: 'absolute', left: SAFE.side, width: CONTENT_W, top: 520}}>
+          <div style={{display: 'flex', alignItems: 'center', opacity: who, marginBottom: 40}}>
+            <div style={{width: 64 * who, height: 8, background: C.red, marginRight: 18}} />
+            <span style={{fontWeight: 900, fontSize: 46, letterSpacing: 3, color: C.gD9}}>А РАДЕВ КАЗА:</span>
+          </div>
+          <div style={{...big, opacity: Math.min(1, l1 * 1.5), transform: `translateX(${(1 - l1) * -40}px)`}}>
+            „В{' '}
+            <span style={{background: C.red, padding: '0 18px'}}>ЦЕЛИЯ</span>
+          </div>
+          <div style={{...big, opacity: Math.min(1, l2 * 1.5), transform: `translateX(${(1 - l2) * -40}px)`}}>ЕВРОПЕЙСКИ</div>
+          <div style={{...big, opacity: Math.min(1, l3 * 1.5), transform: `translateX(${(1 - l3) * -40}px)`}}>СЪЮЗ“</div>
+        </div>
+      </AbsoluteFill>
+    );
+  }
+
+  const counting = frame >= FILL_FROM;
 
   return (
     <AbsoluteFill style={{background: C.black, fontFamily: FONT, opacity: out}}>
       <div style={{position: 'absolute', left: SAFE.side, top: SAFE.top, width: CONTENT_W}}>
         {/* броячи */}
         <div style={{display: 'flex', alignItems: 'baseline', fontVariantNumeric: 'tabular-nums'}}>
-          <span style={{fontWeight: 900, fontSize: 250, lineHeight: 0.9, letterSpacing: -8, color: C.white}}>
+          <span style={{fontWeight: 900, fontSize: 250, lineHeight: 0.9, letterSpacing: -8, color: C.white, opacity: counting ? 1 : 0}}>
             {withData}
           </span>
-          <span style={{fontWeight: 900, fontSize: 90, color: C.g77, margin: '0 26px'}}>ОТ</span>
-          <span style={{fontWeight: 900, fontSize: 250, lineHeight: 0.9, letterSpacing: -8, color: C.g77}}>
+          <span style={{fontWeight: 900, fontSize: 90, color: C.g77, margin: '0 26px', opacity: counting ? 1 : 0}}>ОТ</span>
+          <span style={{fontWeight: 900, fontSize: 250, lineHeight: 0.9, letterSpacing: -8, color: counting ? C.g77 : C.white}}>
             {total}
           </span>
         </div>

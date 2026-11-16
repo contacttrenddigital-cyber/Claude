@@ -2,11 +2,15 @@
 export const SCENES = {
   statement: 224, // цялата дължина на оригиналния клип (7,47 сек.)
   lie: 66,
-  ranking: 420,
-  fiveVsSix: 156,
-  coverage: 216,
-  finale: 246,
+  // Следващите сцени следват дикторския запис (public/voiceover.wav).
+  ranking: 558,
+  fiveVsSix: 166,
+  coverage: 370,
+  finale: 327,
 } as const;
+
+/** Дикторът започва толкова кадъра след началото на класацията. */
+export const VOICEOVER_OFFSET = 9;
 
 export const TOTAL_FRAMES = Object.values(SCENES).reduce((a, b) => a + b, 0);
 

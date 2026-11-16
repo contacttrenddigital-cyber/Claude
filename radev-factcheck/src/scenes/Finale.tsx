@@ -4,9 +4,9 @@ import {FACTS, SCALE_MAX} from '../data';
 import {C, CONTENT_W, FONT, SAFE, W, bgNum} from '../theme';
 import {ease, lin, pop, slam} from '../anim';
 
-export const MESSAGE_AT = 84;
-export const NOT_AT = MESSAGE_AT + 12;
-export const VERDICT_AT = MESSAGE_AT + 52;
+export const MESSAGE_AT = 66;
+export const NOT_AT = 131;
+export const VERDICT_AT = 222;
 
 const Stat: React.FC<{label: string; value: number; start: number; frame: number; red?: boolean}> = ({
   label,
@@ -16,7 +16,7 @@ const Stat: React.FC<{label: string; value: number; start: number; frame: number
   red,
 }) => {
   const enter = pop(frame, start);
-  const fill = ease(frame, start + 3, start + 30);
+  const fill = ease(frame, start + 2, start + 22);
   const v = value * fill;
   return (
     <div style={{opacity: Math.min(1, enter * 1.5), transform: `translateY(${(1 - enter) * 40}px)`, marginBottom: 70}}>
@@ -56,9 +56,9 @@ export const Finale: React.FC = () => {
               РЪСТЪТ Е РЕАЛЕН
             </span>
           </div>
-          <Stat label="БЪЛГАРИЯ" value={FACTS.bulgariaGrowth} start={8} frame={frame} red />
-          <Stat label="СРЕДНО ЗА ЕС" value={FACTS.euAverageGrowth} start={24} frame={frame} />
-          <div style={{fontWeight: 700, fontSize: 28, letterSpacing: 1.5, color: C.gD9, opacity: ease(frame, 40, 52)}}>
+          <Stat label="БЪЛГАРИЯ" value={FACTS.bulgariaGrowth} start={4} frame={frame} red />
+          <Stat label="СРЕДНО ЗА ЕС" value={FACTS.euAverageGrowth} start={13} frame={frame} />
+          <div style={{fontWeight: 700, fontSize: 28, letterSpacing: 1.5, color: C.gD9, opacity: ease(frame, 26, 36)}}>
             ГОДИШЕН РАСТЕЖ НА БВП · III ТРИМЕСЕЧИЕ НА 2026 Г.
           </div>
         </div>
@@ -68,7 +68,7 @@ export const Finale: React.FC = () => {
 
   const l1 = pop(frame, MESSAGE_AT);
   const not = slam(frame, NOT_AT);
-  const l3 = pop(frame, NOT_AT + 12);
+  const l3 = pop(frame, NOT_AT + 15);
   const verdict = slam(frame, VERDICT_AT);
   const source = ease(frame, VERDICT_AT + 16, VERDICT_AT + 30);
   const lineStyle: React.CSSProperties = {
@@ -101,7 +101,9 @@ export const Finale: React.FC = () => {
           НЕ Е
         </div>
         <div style={{...lineStyle, opacity: Math.min(1, l3 * 1.5), transform: `translateY(${(1 - l3) * -40}px)`}}>
-          {FACTS.claimedRank}-О МЯСТО ОТ {FACTS.euMembers}
+          {FACTS.claimedRank}-О МЯСТО
+          <br />
+          <span style={{fontSize: 96}}>В ЦЕЛИЯ ЕС ({FACTS.euMembers})</span>
         </div>
       </div>
 
@@ -111,10 +113,10 @@ export const Finale: React.FC = () => {
           position: 'absolute',
           left: SAFE.side,
           width: CONTENT_W,
-          top: 1010,
+          top: 1090,
           boxSizing: 'border-box',
           border: `8px solid ${C.white}`,
-          padding: '34px 20px 40px',
+          padding: '22px 20px 28px',
           textAlign: 'center',
           opacity: frame >= VERDICT_AT ? 1 : 0,
           transform: `scale(${interpolate(verdict, [0, 1], [1.35, 1])})`,
@@ -131,7 +133,7 @@ export const Finale: React.FC = () => {
           position: 'absolute',
           left: 0,
           width: W,
-          top: 1440,
+          top: 1462,
           textAlign: 'center',
           fontWeight: 500,
           fontSize: 27,

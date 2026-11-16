@@ -1,13 +1,13 @@
 import React from 'react';
 import {AbsoluteFill, Audio, Sequence, staticFile} from 'remotion';
 import {C, FPS} from './theme';
-import {SCENES, TOTAL_FRAMES, sceneStart} from './timing';
+import {SCENES, TOTAL_FRAMES, VOICEOVER_OFFSET, sceneStart} from './timing';
 import {loadFonts} from './fonts';
 import {Statement} from './scenes/Statement';
 import {Lie} from './scenes/Lie';
 import {CALLOUT_AT, ROW_STARTS, Ranking} from './scenes/Ranking';
-import {FiveVsSix, STRIKE_AT, SWAP_AT} from './scenes/FiveVsSix';
-import {Coverage, MISSING_AT} from './scenes/Coverage';
+import {FiveVsSix, NOTE_AT, STRIKE_AT, SWAP_AT} from './scenes/FiveVsSix';
+import {Coverage, HEAD_AT, MISSING_AT, QUOTE_END} from './scenes/Coverage';
 import {Finale, MESSAGE_AT, NOT_AT, VERDICT_AT} from './scenes/Finale';
 
 loadFonts();
@@ -32,7 +32,9 @@ const CUES: Cue[] = [
   {at: five + SWAP_AT, file: 'hit.wav', volume: 1},
   {at: coverage, file: 'whoosh.wav', volume: 0.45},
   {at: coverage + MISSING_AT, file: 'tick.wav', volume: 0.8},
-  {at: coverage + 134, file: 'tick.wav', volume: 0.6},
+  {at: coverage + QUOTE_END, file: 'tick.wav', volume: 0.7},
+  {at: coverage + HEAD_AT, file: 'tick.wav', volume: 0.6},
+  {at: five + NOTE_AT, file: 'tick.wav', volume: 0.6},
   {at: finale, file: 'whoosh.wav', volume: 0.45},
   {at: finale + MESSAGE_AT, file: 'tick.wav', volume: 0.8},
   {at: finale + NOT_AT, file: 'hit.wav', volume: 0.9},
@@ -63,11 +65,15 @@ export const FactcheckVideo: React.FC = () => {
 
       {/* тих фонов тон под графиките — никога върху оригиналното изказване */}
       <Sequence from={ranking} durationInFrames={TOTAL_FRAMES - ranking}>
-        <Audio src={staticFile('sfx/bed.wav')} volume={0.55} />
+        <Audio src={staticFile('sfx/bed.wav')} volume={0.3} />
+      </Sequence>
+      {/* диктор — започва след оригиналното изказване и надписа „ЛЪЖА“ */}
+      <Sequence from={ranking + VOICEOVER_OFFSET}>
+        <Audio src={staticFile('voiceover.wav')} />
       </Sequence>
       {CUES.map((cue, i) => (
         <Sequence key={i} from={cue.at} durationInFrames={2 * FPS}>
-          <Audio src={staticFile('sfx/' + cue.file)} volume={cue.volume} />
+          <Audio src={staticFile('sfx/' + cue.file)} volume={cue.at > ranking ? cue.volume * 0.5 : cue.volume} />
         </Sequence>
       ))}
     </AbsoluteFill>

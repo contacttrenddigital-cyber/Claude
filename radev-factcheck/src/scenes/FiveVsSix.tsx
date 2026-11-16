@@ -5,8 +5,9 @@ import {C, FONT, W} from '../theme';
 import {SCENES} from '../timing';
 import {ease, lin, pop, slam} from '../anim';
 
-export const STRIKE_AT = 34;
-export const SWAP_AT = 62;
+export const STRIKE_AT = 20;
+export const SWAP_AT = 70;
+export const NOTE_AT = 122;
 
 const DIGIT_TOP = 420;
 const DIGIT_H = 860;
@@ -39,7 +40,7 @@ export const FiveVsSix: React.FC = () => {
   const flash = frame === SWAP_AT;
   const claim = ease(frame, 6, 18);
   const truth = pop(frame, SWAP_AT + 6);
-  const note = ease(frame, SWAP_AT + 26, SWAP_AT + 40);
+  const note = pop(frame, NOTE_AT);
   const out = 1 - lin(frame, SCENES.fiveVsSix - 5, SCENES.fiveVsSix);
 
   // диагонална линия на зачеркване
@@ -149,19 +150,18 @@ export const FiveVsSix: React.FC = () => {
             position: 'absolute',
             left: 0,
             width: W,
-            top: 1400,
+            top: 1392,
             textAlign: 'center',
-            fontWeight: 700,
-            fontSize: 30,
-            letterSpacing: 2,
-            lineHeight: 1.4,
-            color: C.gD9,
-            opacity: note,
+            opacity: Math.min(1, note * 1.5),
+            transform: `translateY(${(1 - note) * 24}px)`,
           }}
         >
-          БЪЛГАРИЯ Е ШЕСТА, А НЕ ПЕТА
-          <br />
-          СРЕД ДЪРЖАВИТЕ С ПУБЛИКУВАНИ ДАННИ
+          <div style={{fontWeight: 900, fontSize: 50, letterSpacing: 1, color: C.white}}>
+            И ТО ОТ {FACTS.withData} ДЪРЖАВИ
+          </div>
+          <div style={{fontWeight: 700, fontSize: 28, letterSpacing: 3, color: C.gD9, marginTop: 8}}>
+            С ПУБЛИКУВАНИ ДАННИ
+          </div>
         </div>
       </AbsoluteFill>
     </AbsoluteFill>

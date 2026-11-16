@@ -15,5 +15,5 @@ ffmpeg -v error -y -f lavfi -i "anoisesrc=d=0.45:c=pink:a=0.9:r=48000" \
 ffmpeg -v error -y -f lavfi -i "anoisesrc=d=0.3:c=white:a=0.8:r=48000" \
   -af "highpass=f=2500,afade=t=in:st=0:d=0.03,afade=t=out:st=0.08:d=0.22" -ac 2 slash.wav
 # тих фонов тон под графиките
-ffmpeg -v error -y -f lavfi -i "aevalsrc='0.22*sin(2*PI*55*t)*(0.6+0.4*sin(2*PI*2*t))+0.08*sin(2*PI*110*t)*(0.5+0.5*sin(2*PI*0.25*t))':d=38:s=48000" \
-  -af "lowpass=f=300,afade=t=in:st=0:d=1,afade=t=out:st=35:d=3" -ac 2 bed.wav
+ffmpeg -v error -y -f lavfi -i "aevalsrc='0.22*sin(2*PI*55*t)*(0.6+0.4*sin(2*PI*2*t))+0.08*sin(2*PI*110*t)*(0.5+0.5*sin(2*PI*0.25*t))':d=48:s=48000" \
+  -af "lowpass=f=300,afade=t=in:st=0:d=1,afade=t=out:st=44:d=3.5" -ac 2 bed.wav
