@@ -6,6 +6,7 @@
 
 - `output/factcheck-radev-eurostat-2026.mp4` — крайното видео
 - `output/factcheck-radev-poster.png` — корица
+- `output/factcheck-radev-eurostat-2026-navy.mp4` и `output/factcheck-radev-poster-navy.png` — същото видео в тъмносиня палитра (цветовете са в `src/theme.ts`, `NAVY`)
 
 ## Команди
 
@@ -14,6 +15,8 @@ npm install
 npm run studio     # преглед и редакция в Remotion Studio
 npm run render     # output/factcheck-radev-eurostat-2026.mp4
 npm run poster     # output/factcheck-radev-poster.png
+npm run render:navy  # тъмносин вариант: output/factcheck-radev-eurostat-2026-navy.mp4
+npm run poster:navy  # output/factcheck-radev-poster-navy.png
 npm run sfx        # пресъздава звуковите ефекти с FFmpeg
 npm run typecheck
 ```

@@ -1,6 +1,6 @@
 import React from 'react';
 import {AbsoluteFill, Img, staticFile} from 'remotion';
-import {C, FONT, W} from './theme';
+import {C, FONT, W, bg} from './theme';
 import {loadFonts} from './fonts';
 
 loadFonts();
@@ -23,8 +23,7 @@ export const Poster: React.FC = () => {
       />
       <AbsoluteFill
         style={{
-          background:
-            'linear-gradient(180deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.05) 22%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.96) 62%, #000 100%)',
+          background: `linear-gradient(180deg, ${bg(0.75)} 0%, ${bg(0.05)} 22%, ${bg(0.1)} 40%, ${bg(0.96)} 62%, ${C.black} 100%)`,
         }}
       />
       <div style={{position: 'absolute', top: 120, left: 80, display: 'flex', alignItems: 'center'}}>

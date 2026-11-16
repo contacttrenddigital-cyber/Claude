@@ -1,6 +1,6 @@
 import React from 'react';
 import {AbsoluteFill, OffthreadVideo, interpolate, staticFile, useCurrentFrame} from 'remotion';
-import {C, FONT, FPS, SAFE, W} from '../theme';
+import {C, FONT, FPS, SAFE, W, bg} from '../theme';
 import {SCENES} from '../timing';
 import {SUBTITLE_GROUPS, SubWord} from '../subtitles';
 import {ease, pop} from '../anim';
@@ -53,8 +53,7 @@ export const Statement: React.FC = () => {
       {/* затъмняване за четимост на надписите */}
       <AbsoluteFill
         style={{
-          background:
-            'linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 48%, rgba(0,0,0,0.82) 74%, rgba(0,0,0,0.9) 100%)',
+          background: `linear-gradient(180deg, ${bg(0.55)} 0%, ${bg(0)} 22%, ${bg(0)} 48%, ${bg(0.82)} 74%, ${bg(0.9)} 100%)`,
         }}
       />
 
