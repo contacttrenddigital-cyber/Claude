@@ -46,7 +46,7 @@ export const Coverage: React.FC = () => {
           </div>
           <div style={{...big, opacity: Math.min(1, l1 * 1.5), transform: `translateX(${(1 - l1) * -40}px)`}}>
             „В{' '}
-            <span style={{background: C.red, padding: '0 18px'}}>ЦЕЛИЯ</span>
+            <span style={{background: C.red, color: C.onAccent, padding: '0 18px'}}>ЦЕЛИЯ</span>
           </div>
           <div style={{...big, opacity: Math.min(1, l2 * 1.5), transform: `translateX(${(1 - l2) * -40}px)`}}>ЕВРОПЕЙСКИ</div>
           <div style={{...big, opacity: Math.min(1, l3 * 1.5), transform: `translateX(${(1 - l3) * -40}px)`}}>

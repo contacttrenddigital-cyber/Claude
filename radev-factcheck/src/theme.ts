@@ -9,6 +9,8 @@ type Palette = {
   g77: string;
   gD9: string;
   gF2: string;
+  /** Цвят на текст върху акцента. */
+  onAccent: string;
   /** Основният фон като "r,g,b" — за полупрозрачни преливания. */
   bgRgb: string;
 };
@@ -23,6 +25,7 @@ const MONO: Palette = {
   g77: '#777777',
   gD9: '#D9D9D9',
   gF2: '#F2F2F2',
+  onAccent: '#FFFFFF',
   bgRgb: '0,0,0',
 };
 
@@ -36,13 +39,30 @@ const NAVY: Palette = {
   g77: '#8298C0',
   gD9: '#D3DDF0',
   gF2: '#F1F5FC',
+  onAccent: '#FFFFFF',
   bgRgb: '7,26,61',
 };
 
-/** Избира се с REMOTION_THEME=navy при рендериране (npm run render:navy). */
-export const THEME: 'mono' | 'navy' = process.env.REMOTION_THEME === 'navy' ? 'navy' : 'mono';
+// Вариант с подадените пет цвята: #041690, #FFC300, #F3F3F3, #A0C8FF, #0014FF.
+const PP: Palette = {
+  black: '#041690', // фон
+  white: '#F3F3F3', // основен текст
+  red: '#FFC300', // акцент
+  g18: '#0014FF', // подложки на лентите и празни квадратчета
+  g33: '#0014FF',
+  g77: '#A0C8FF', // второстепенен текст
+  gD9: '#A0C8FF',
+  gF2: '#F3F3F3', // ленти на останалите държави
+  onAccent: '#041690',
+  bgRgb: '4,22,144',
+};
 
-export const C: Palette = THEME === 'navy' ? NAVY : MONO;
+/** Избира се с REMOTION_THEME=navy|pp при рендериране (npm run render:navy / render:pp). */
+const requested = process.env.REMOTION_THEME;
+export const THEME: 'mono' | 'navy' | 'pp' =
+  requested === 'navy' || requested === 'pp' ? requested : 'mono';
+
+export const C: Palette = THEME === 'pp' ? PP : THEME === 'navy' ? NAVY : MONO;
 
 /** Основният фон с прозрачност. */
 export const bg = (alpha: number): string => `rgba(${C.bgRgb},${alpha})`;

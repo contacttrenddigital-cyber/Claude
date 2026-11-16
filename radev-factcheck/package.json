@@ -9,7 +9,9 @@
     "sfx": "bash scripts/make-sfx.sh",
     "typecheck": "tsc --noEmit",
     "render:navy": "REMOTION_THEME=navy remotion render src/index.ts FactcheckRadev output/factcheck-radev-eurostat-2026-navy.mp4",
-    "poster:navy": "REMOTION_THEME=navy remotion still src/index.ts Poster output/factcheck-radev-poster-navy.png"
+    "poster:navy": "REMOTION_THEME=navy remotion still src/index.ts Poster output/factcheck-radev-poster-navy.png",
+    "render:pp": "REMOTION_THEME=pp remotion render src/index.ts FactcheckRadev output/factcheck-radev-eurostat-2026-pp.mp4",
+    "poster:pp": "REMOTION_THEME=pp remotion still src/index.ts Poster output/factcheck-radev-poster-pp.png"
   },
   "keywords": [],
   "author": "",

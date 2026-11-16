@@ -17,6 +17,8 @@ npm run render     # output/factcheck-radev-eurostat-2026.mp4
 npm run poster     # output/factcheck-radev-poster.png
 npm run render:navy  # тъмносин вариант: output/factcheck-radev-eurostat-2026-navy.mp4
 npm run poster:navy  # output/factcheck-radev-poster-navy.png
+npm run render:pp    # вариант в синьо и жълто: output/factcheck-radev-eurostat-2026-pp.mp4
+npm run poster:pp    # output/factcheck-radev-poster-pp.png
 npm run sfx        # пресъздава звуковите ефекти с FFmpeg
 npm run typecheck
 ```
@@ -46,6 +48,7 @@ npm run typecheck
 - **Видео и звук на изказването:** предоставеният файл (`.MOV`, HEVC, 7,47 сек.), прекодиран без промяна на съдържанието в `public/radev-original.mp4` (H.264), за да се чете от браузъра на Remotion. Използвана е цялата му дължина с оригиналния звук; върху него няма диктор, музика или ефекти. Цветовете на записа не са променяни (палитрата черно/бяло/червено важи за графиките).
 - **Субтитри:** времената са от автоматична транскрипция (Whisper) на самия запис, уточнени по паузите в звука. В записа се чува точно: „Ние сме пети в целия Европейски съюз за третото тримесечие по икономически ръст.“
 - **Знамена:** SVG файлове от пакета flag-icons (лиценз MIT) в `public/flags` — добавени по искане на възложителя; те са единственото отклонение от палитрата черно/бяло/червено в графиките.
+- **Muller Next (само за варианта `pp`):** шрифтът е търговски и не е включен. Поставете `MullerNext-Medium.otf`, `MullerNext-Bold.otf`, `MullerNext-ExtraBold.otf` и `MullerNext-Black.otf` в `public/fonts` и рендерирайте отново — зареждат се автоматично; без тях вариантът използва Inter.
 - **Шрифт:** Inter (SIL Open Font License), вграден в `public/fonts`.
 - **Звукови ефекти:** собствени, синтезирани с FFmpeg (`scripts/make-sfx.sh`). Няма музика.
 

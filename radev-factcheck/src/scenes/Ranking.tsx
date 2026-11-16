@@ -46,7 +46,7 @@ const Row: React.FC<{item: CountryGrowth; start: number; frame: number}> = ({ite
             justifyContent: 'center',
             fontWeight: 900,
             fontSize: 54,
-            color: hl ? C.white : isFifth && boxed > 0.5 ? C.black : C.g77,
+            color: hl ? C.onAccent : isFifth && boxed > 0.5 ? C.black : C.g77,
             background: hl ? C.red : isFifth ? `rgba(255,255,255,${boxed})` : 'transparent',
           }}
         >

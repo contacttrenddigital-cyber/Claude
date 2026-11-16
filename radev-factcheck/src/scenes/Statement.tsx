@@ -15,7 +15,7 @@ const Word: React.FC<{word: SubWord; t: number; frame: number}> = ({word, t, fra
       style={{
         display: 'inline-block',
         margin: '0 12px',
-        color: accentOn ? C.white : spoken ? C.white : C.g77,
+        color: accentOn ? C.onAccent : spoken ? C.white : C.g77,
         background: accentOn ? C.red : 'transparent',
         padding: word.accent ? '0 22px' : 0,
         transform: `scale(${word.accent ? 0.9 + 0.25 * p : 0.96 + 0.04 * p})`,
@@ -73,7 +73,7 @@ export const Statement: React.FC = () => {
           style={{
             display: 'inline-block',
             background: C.red,
-            color: C.white,
+            color: C.onAccent,
             fontSize: 104,
             letterSpacing: -2,
             lineHeight: 1,
