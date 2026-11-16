@@ -1,0 +1,26 @@
+{
+  "name": "radev-factcheck",
+  "version": "1.0.0",
+  "description": "Вертикално фактчек видео (Remotion)",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts FactcheckRadev output/factcheck-radev-eurostat-2026.mp4",
+    "poster": "remotion still src/index.ts Poster output/factcheck-radev-poster.png",
+    "sfx": "bash scripts/make-sfx.sh",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@remotion/bundler": "^4.0.544",
+    "@remotion/cli": "^4.0.544",
+    "@remotion/renderer": "^4.0.544",
+    "@types/react": "^19.3.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "remotion": "^4.0.544",
+    "typescript": "^7.0.2"
+  },
+  "private": true
+}
