@@ -3,10 +3,10 @@ parts=json.load(open(sys.argv[1])); strokes=json.load(open(sys.argv[2])); out=sy
 NAVY='#004689'
 def f(x): return f'{x:.3f}s'
 # ---- timeline ----
-T_MAKE=0.05; MAKE_STAG=0.045; MAKE_DUR=0.5
-T_EXC=0.45
-GAP_STROKE=0.01; GAP_LETTER=0.0
-def sdur(L): return 0.035+L/5500
+T_MAKE=0.08; MAKE_STAG=0.065; MAKE_DUR=0.7
+T_EXC=0.65
+GAP_STROKE=0.015; GAP_LETTER=0.03
+def sdur(L): return 0.05+L/4300
 t=T_EXC; prev=None
 letter_end={}
 for s in strokes:
@@ -15,10 +15,10 @@ for s in strokes:
     s['del']=t; s['dur']=sdur(s['len']); t+=s['dur']; prev=s['letter']
     letter_end[s['letter']]=t
 EXC_END=t
-T_RENEW=EXC_END-0.15; RENEW_STAG=0.02; RENEW_DUR=0.4
+T_RENEW=EXC_END-0.1; RENEW_STAG=0.03; RENEW_DUR=0.5
 renew_ids=list(range(14,26))
-T_DOT=T_RENEW+RENEW_STAG*11+0.08
-END=T_DOT+0.4
+T_DOT=T_RENEW+RENEW_STAG*11+0.1
+END=T_DOT+0.34
 print('exc_end',round(EXC_END,2),'end',round(END,2))
 # ---- svg ----
 o=[]
@@ -32,11 +32,9 @@ o.append(f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1322.19 578.97
 @keyframes draw{{0%{{stroke-dashoffset:1;opacity:0}}.01%{{opacity:1}}100%{{stroke-dashoffset:0;opacity:1}}}}
 .full{{animation:show .12s ease-out both}}
 @keyframes show{{from{{opacity:0}}to{{opacity:1}}}}
-.lt{{transform-box:fill-box;transform-origin:50% 60%;animation:pop .3s cubic-bezier(.3,1.6,.5,1) both}}
-@keyframes pop{{0%{{transform:none}}35%{{transform:scale(1.09) rotate(-2.5deg)}}100%{{transform:none}}}}
 .rn{{animation:rn {RENEW_DUR}s cubic-bezier(.2,.9,.3,1.2) both}}
 @keyframes rn{{from{{opacity:0;transform:translateY(26px)}}to{{opacity:1;transform:none}}}}
-.dot{{transform-box:fill-box;transform-origin:50% 50%;animation:dot .4s cubic-bezier(.3,1.8,.5,1) both}}
+.dot{{transform-box:fill-box;transform-origin:50% 50%;animation:dot .34s cubic-bezier(.3,1.8,.5,1) both}}
 @keyframes dot{{from{{transform:scale(0)}}to{{transform:none}}}}
 @media (prefers-reduced-motion:reduce){{*{{animation:none!important}}.ms{{stroke-dashoffset:0}}}}
 </style>
@@ -64,7 +62,7 @@ for li in range(9):
     for s in strokes:
         if s['letter']==li and s['part'] not in ps: ps.append(s['part'])
     end=letter_end[li]
-    o.append(f'<g class="lt" style="animation-delay:{f(end-0.05)}">')
+    o.append('<g>')
     for pi in ps:
         p=parts['paths'][pi]
         o.append(f'<path fill="{p["color"]}" mask="url(#m{pi})" d="{p["d"]}"/>')
