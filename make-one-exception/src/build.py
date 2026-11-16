@@ -3,10 +3,10 @@ parts=json.load(open(sys.argv[1])); strokes=json.load(open(sys.argv[2])); out=sy
 NAVY='#004689'
 def f(x): return f'{x:.3f}s'
 # ---- timeline ----
-T_MAKE=0.10; MAKE_STAG=0.075; MAKE_DUR=0.75
-T_EXC=0.95
-GAP_STROKE=0.03; GAP_LETTER=0.05
-def sdur(L): return 0.06+L/3000
+T_MAKE=0.05; MAKE_STAG=0.045; MAKE_DUR=0.5
+T_EXC=0.45
+GAP_STROKE=0.01; GAP_LETTER=0.0
+def sdur(L): return 0.035+L/5500
 t=T_EXC; prev=None
 letter_end={}
 for s in strokes:
@@ -15,10 +15,10 @@ for s in strokes:
     s['del']=t; s['dur']=sdur(s['len']); t+=s['dur']; prev=s['letter']
     letter_end[s['letter']]=t
 EXC_END=t
-T_RENEW=EXC_END+0.05; RENEW_STAG=0.035; RENEW_DUR=0.55
+T_RENEW=EXC_END-0.15; RENEW_STAG=0.02; RENEW_DUR=0.4
 renew_ids=list(range(14,26))
-T_DOT=T_RENEW+RENEW_STAG*11+0.15
-END=T_DOT+0.6
+T_DOT=T_RENEW+RENEW_STAG*11+0.08
+END=T_DOT+0.4
 print('exc_end',round(EXC_END,2),'end',round(END,2))
 # ---- svg ----
 o=[]
@@ -30,13 +30,13 @@ o.append(f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1322.19 578.97
 @keyframes mk{{from{{transform:translateY(150px)}}to{{transform:none}}}}
 .ms{{fill:none;stroke:#fff;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1 2;animation:draw linear both}}
 @keyframes draw{{0%{{stroke-dashoffset:1;opacity:0}}.01%{{opacity:1}}100%{{stroke-dashoffset:0;opacity:1}}}}
-.full{{animation:show .18s ease-out both}}
+.full{{animation:show .12s ease-out both}}
 @keyframes show{{from{{opacity:0}}to{{opacity:1}}}}
-.lt{{transform-box:fill-box;transform-origin:50% 60%;animation:pop .42s cubic-bezier(.3,1.6,.5,1) both}}
+.lt{{transform-box:fill-box;transform-origin:50% 60%;animation:pop .3s cubic-bezier(.3,1.6,.5,1) both}}
 @keyframes pop{{0%{{transform:none}}35%{{transform:scale(1.09) rotate(-2.5deg)}}100%{{transform:none}}}}
 .rn{{animation:rn {RENEW_DUR}s cubic-bezier(.2,.9,.3,1.2) both}}
 @keyframes rn{{from{{opacity:0;transform:translateY(26px)}}to{{opacity:1;transform:none}}}}
-.dot{{transform-box:fill-box;transform-origin:50% 50%;animation:dot .55s cubic-bezier(.3,1.8,.5,1) both}}
+.dot{{transform-box:fill-box;transform-origin:50% 50%;animation:dot .4s cubic-bezier(.3,1.8,.5,1) both}}
 @keyframes dot{{from{{transform:scale(0)}}to{{transform:none}}}}
 @media (prefers-reduced-motion:reduce){{*{{animation:none!important}}.ms{{stroke-dashoffset:0}}}}
 </style>
