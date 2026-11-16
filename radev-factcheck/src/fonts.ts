@@ -11,14 +11,13 @@ const FACES: Array<[number, string]> = [
 ];
 
 // Muller Next (Fontfabric) — предоставените от възложителя файлове.
-// Налични са само Regular и Bold, затова всички заглавия (700–900) са с Bold.
-// За по-тежки заглавия добавете ExtraBold/Black тук. Ако файл липсва,
+// Regular, ExtraBold и Heavy са пробни (Trial) версии. Ако файл липсва,
 // се зарежда Inter.
 const MULLER: Array<[number, string]> = [
   [500, 'MullerNextTrial-Regular.otf'],
   [700, 'MullerNext-Bold.ttf'],
-  [800, 'MullerNext-Bold.ttf'],
-  [900, 'MullerNext-Bold.ttf'],
+  [800, 'MullerNextTrial-ExtraBold.otf'],
+  [900, 'MullerNextTrial-ExtraBold.otf'],
 ];
 
 const loadSet = (set: Array<[number, string]>): Promise<FontFace[]> =>
