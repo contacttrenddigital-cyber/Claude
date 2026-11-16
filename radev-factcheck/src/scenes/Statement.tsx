@@ -14,12 +14,12 @@ const Word: React.FC<{word: SubWord; t: number; frame: number}> = ({word, t, fra
     <span
       style={{
         display: 'inline-block',
-        margin: '0 14px',
+        margin: '0 12px',
         color: accentOn ? C.white : spoken ? C.white : C.g77,
         background: accentOn ? C.red : 'transparent',
         padding: word.accent ? '0 22px' : 0,
         transform: `scale(${word.accent ? 0.9 + 0.25 * p : 0.96 + 0.04 * p})`,
-        fontSize: 88,
+        fontSize: 74,
       }}
     >
       {word.text.toUpperCase()}
@@ -58,11 +58,57 @@ export const Statement: React.FC = () => {
         }}
       />
 
-      {/* плочка с автора и датата */}
+      {/* заглавие в началото */}
       <div
         style={{
           position: 'absolute',
           top: SAFE.top,
+          left: SAFE.side - 30,
+          width: W - (SAFE.side - 30) * 2,
+          fontFamily: FONT,
+          fontWeight: 900,
+          textAlign: 'center',
+        }}
+      >
+        <div
+          style={{
+            display: 'inline-block',
+            background: C.red,
+            color: C.white,
+            fontSize: 104,
+            letterSpacing: -2,
+            lineHeight: 1,
+            padding: '16px 34px 20px',
+            transform: `scale(${1.5 - 0.5 * pop(frame, 2, 260, 16)})`,
+            opacity: Math.min(1, pop(frame, 2, 260, 16) * 2),
+          }}
+        >
+          РАДЕВ ИЗЛЪГА!
+        </div>
+        <div
+          style={{
+            marginTop: 14,
+            background: C.black,
+            color: C.white,
+            fontSize: 50,
+            lineHeight: 1.16,
+            letterSpacing: -0.5,
+            padding: '18px 16px 22px',
+            opacity: ease(frame, 10, 20),
+            transform: `translateY(${(1 - ease(frame, 10, 22)) * -20}px)`,
+          }}
+        >
+          БЪЛГАРИЯ Е НА <span style={{color: C.red}}>6-О МЯСТО</span>
+          <br />
+          ОТ 20 ДЪРЖАВИ В ЕС!
+        </div>
+      </div>
+
+      {/* плочка с автора и датата */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 1050,
           left: SAFE.side,
           display: 'flex',
           alignItems: 'stretch',
