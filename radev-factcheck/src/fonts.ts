@@ -10,20 +10,21 @@ const FACES: Array<[number, string]> = [
   [900, 'Inter-Black.otf'],
 ];
 
-// Muller Next е търговски шрифт и не е включен в проекта. Ако файловете
-// по-долу бъдат поставени в public/fonts, те се използват автоматично;
-// иначе се зарежда Inter.
+// Muller Next (Fontfabric) — предоставените от възложителя файлове.
+// Налични са само Regular и Bold, затова всички заглавия (700–900) са с Bold.
+// За по-тежки заглавия добавете ExtraBold/Black тук. Ако файл липсва,
+// се зарежда Inter.
 const MULLER: Array<[number, string]> = [
-  [500, 'MullerNext-Medium.otf'],
-  [700, 'MullerNext-Bold.otf'],
-  [800, 'MullerNext-ExtraBold.otf'],
-  [900, 'MullerNext-Black.otf'],
+  [500, 'MullerNextTrial-Regular.otf'],
+  [700, 'MullerNext-Bold.ttf'],
+  [800, 'MullerNext-Bold.ttf'],
+  [900, 'MullerNext-Bold.ttf'],
 ];
 
 const loadSet = (set: Array<[number, string]>): Promise<FontFace[]> =>
   Promise.all(
     set.map(([weight, file]) =>
-      new FontFace('InterFC', `url(${staticFile('fonts/' + file)}) format('opentype')`, {
+      new FontFace('InterFC', `url(${staticFile('fonts/' + file)})`, {
         weight: String(weight),
       }).load(),
     ),

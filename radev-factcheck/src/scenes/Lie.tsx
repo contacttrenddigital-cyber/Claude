@@ -1,6 +1,14 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, random, useCurrentFrame} from 'remotion';
-import {C, FONT} from '../theme';
+import {C, FONT, THEME} from '../theme';
+
+// Във варианта „pp“ сцената е на светъл фон.
+const LIGHT = THEME === 'pp';
+const BG = LIGHT ? C.white : C.black;
+const INK = LIGHT ? C.black : C.white;
+const WORD_COLOR = LIGHT ? C.black : C.red;
+const GHOST = LIGHT ? C.red : C.white;
+const RULE = LIGHT ? C.red : C.white;
 import {ease, slam} from '../anim';
 
 const WORD = 'ЛЪЖА';
@@ -31,7 +39,7 @@ export const Lie: React.FC = () => {
   const sub = ease(frame, 24, 34);
 
   return (
-    <AbsoluteFill style={{background: frame < 1 ? C.white : C.black}}>
+    <AbsoluteFill style={{background: frame < 1 ? INK : BG}}>
       <div
         style={{
           position: 'absolute',
@@ -47,8 +55,8 @@ export const Lie: React.FC = () => {
           <div
             style={{
               ...wordStyle,
-              color: C.white,
-              opacity: 0.55 * strength,
+              color: GHOST,
+              opacity: (LIGHT ? 0.9 : 0.55) * strength,
               transform: `translateX(${(random(`g${frame}`) - 0.5) * 60 * strength}px)`,
             }}
           >
@@ -64,7 +72,7 @@ export const Lie: React.FC = () => {
               key={i}
               style={{
                 ...wordStyle,
-                color: C.red,
+                color: WORD_COLOR,
                 clipPath: `inset(${top}% -20% ${bottom - 0.2}% -20%)`,
                 transform: `translateX(${dx}px)`,
               }}
@@ -81,8 +89,8 @@ export const Lie: React.FC = () => {
           left: 100,
           top: 1010,
           width: 880 * line,
-          height: 8,
-          background: C.white,
+          height: LIGHT ? 16 : 8,
+          background: RULE,
         }}
       />
       <div
@@ -96,7 +104,7 @@ export const Lie: React.FC = () => {
           fontWeight: 900,
           fontSize: 58,
           letterSpacing: 1,
-          color: C.white,
+          color: INK,
           opacity: sub,
           transform: `translateY(${(1 - sub) * 24}px)`,
         }}
