@@ -29,3 +29,29 @@ export function findingsData(p: Published): FindingsData {
     versionDiffs: p.versionDiffs,
   };
 }
+
+export interface MetricCard {
+  key: string;
+  label: string;
+  short: string;
+  unit: string;
+  changeIn: "percent" | "pp";
+  source: string;
+  points: { period: string; vintage: string; value: string | null }[];
+}
+
+/** Compact, serialisable list of all bill metrics for client workspaces (dashboard, card studio). */
+export function metricCards(p: Published): MetricCard[] {
+  return Object.values(p.series)
+    .filter((s) => s.versionId === "bill-2026-11-16")
+    .map((s) => ({
+      key: s.metric.key,
+      label: s.metric.label,
+      short: s.metric.short,
+      unit: s.metric.unit,
+      changeIn: s.metric.changeIn,
+      source: s.points[0]?.sources[0]?.locator.split(" (")[0] ?? "",
+      points: s.points.map((x) => ({ period: x.period, vintage: x.vintage, value: x.value })),
+    }))
+    .sort((a, b) => a.short.localeCompare(b.short, "bg"));
+}

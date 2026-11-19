@@ -166,7 +166,10 @@ export function TableView({ table, columns, sourceUrl, sourceTitle, searchable, 
             (таблица {table.tableIndex} в {table.file})
           </>
         )}
-        . Стойностите са отпечатаните в документа; празна клетка = „—“.
+        . Стойностите са отпечатаните в документа; празна клетка = „—“.{" "}
+        <a href={`/api/danni/tablitsi/${table.id}?format=csv`} className="underline underline-offset-2">
+          Изтегли CSV
+        </a>
       </figcaption>
     </figure>
   );

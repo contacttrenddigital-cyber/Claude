@@ -11,7 +11,10 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   // /dokumenti reads the extracted official texts at request time
-  outputFileTracingIncludes: { "/dokumenti": ["./data/extracted/*.json", "./data/extracted/*.txt"] },
+  outputFileTracingIncludes: {
+    "/dokumenti": ["./data/extracted/*.json", "./data/extracted/*.txt"],
+    "/prognozi": ["./data/extracted/*.tables.json"],
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

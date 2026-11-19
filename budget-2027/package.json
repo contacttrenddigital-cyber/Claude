@@ -27,7 +27,8 @@
     "db:publish": "tsx scripts/seed-snapshot.ts --publish --by",
     "db:migrate:deploy": "prisma migrate deploy",
     "docs:dictionary": "tsx scripts/gen-data-dictionary.ts",
-    "db:seed:claims": "tsx scripts/seed-claims.ts"
+    "db:seed:claims": "tsx scripts/seed-claims.ts",
+    "user:create": "tsx scripts/create-user.ts"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",

@@ -322,11 +322,15 @@ model ClaimEvidence {
 }
 
 model User {
-  id        String     @id @default(cuid())
-  email     String     @unique
-  role      Role       @default(viewer)
-  createdAt DateTime   @default(now())
-  audit     AuditLog[]
+  id             String     @id @default(cuid())
+  email          String     @unique
+  role           Role       @default(viewer)
+  /// scrypt$N$salt$hash — never a plain password
+  passwordHash   String?
+  failedAttempts Int        @default(0)
+  lockedUntil    DateTime?
+  createdAt      DateTime   @default(now())
+  audit          AuditLog[]
 }
 
 model AuditLog {
