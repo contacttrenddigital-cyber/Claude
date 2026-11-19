@@ -1,14 +1,23 @@
 import Link from "next/link";
 import { ThemeToggle } from "./ThemeToggle";
 
-const NAV = [
-  { href: "/#pokazateli", label: "Показатели" },
-  { href: "/#merki", label: "Мерки" },
+const PRIMARY = [
+  { href: "/prihodi", label: "Приходи" },
+  { href: "/razhodi", label: "Разходи" },
+  { href: "/defitsit", label: "Дефицит" },
+  { href: "/dalg", label: "Дълг" },
+  { href: "/danatsi", label: "Данъци" },
   { href: "/kalkulator", label: "Калкулатор" },
-  { href: "/analizi/asen-vasilev", label: "Проверка на твърдения" },
-  { href: "/#defitsit-i-dalg", label: "Дефицит и дълг" },
-  { href: "/#promeni", label: "Промени" },
-  { href: "/iztochnitsi", label: "Източници" },
+  { href: "/analizi/asen-vasilev", label: "Проверка" },
+];
+
+const MORE = [
+  { href: "/osigurovki", label: "Осигуровки и социални плащания" },
+  { href: "/investitsii", label: "Инвестиции и проекти" },
+  { href: "/institutsii", label: "Институции" },
+  { href: "/izpalnenie", label: "Изпълнение" },
+  { href: "/#merki", label: "Мерки" },
+  { href: "/iztochnitsi", label: "Източници и проверки" },
 ];
 
 export function SiteHeader({ status }: { status: string }) {
@@ -20,9 +29,9 @@ export function SiteHeader({ status }: { status: string }) {
           <span>БЮДЖЕТ 2027</span>
           <span className="hidden text-muted sm:inline">· под лупа</span>
         </Link>
-        <nav aria-label="Основна навигация" className="order-3 -mx-4 w-[calc(100%+2rem)] overflow-x-auto px-4 sm:order-none sm:mx-0 sm:w-auto sm:px-0">
-          <ul className="flex gap-1 text-sm whitespace-nowrap">
-            {NAV.map((n) => (
+        <nav aria-label="Основна навигация" className="order-3 -mx-4 w-[calc(100%+2rem)] overflow-x-auto px-4 lg:order-none lg:mx-0 lg:w-auto lg:overflow-visible lg:px-0">
+          <ul className="flex items-center gap-1 text-sm whitespace-nowrap">
+            {PRIMARY.map((n) => (
               <li key={n.href}>
                 <Link href={n.href} className="inline-flex min-h-11 items-center rounded-sm px-2 text-ink-2 hover:bg-surface-2 hover:text-ink">
                   {n.label}
@@ -32,7 +41,21 @@ export function SiteHeader({ status }: { status: string }) {
           </ul>
         </nav>
         <div className="ml-auto flex items-center gap-3">
-          <span className="hidden text-xs text-muted xl:inline">{status}</span>
+          <span className="hidden text-xs text-muted 2xl:inline">{status}</span>
+          <details className="group relative">
+            <summary className="inline-flex min-h-11 items-center gap-1 rounded-sm border border-rule-strong px-3 text-xs text-ink-2 hover:border-ink hover:text-ink">
+              Още <span aria-hidden className="transition-transform group-open:rotate-180">▾</span>
+            </summary>
+            <ul className="absolute right-0 z-50 mt-1 w-64 rounded-sm border border-rule-strong bg-surface py-1 text-sm shadow-lg">
+              {MORE.map((n) => (
+                <li key={n.href}>
+                  <Link href={n.href} className="flex min-h-11 items-center px-3 text-ink-2 hover:bg-surface-2 hover:text-ink">
+                    {n.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </details>
           <ThemeToggle />
         </div>
       </div>

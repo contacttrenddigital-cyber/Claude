@@ -7,6 +7,33 @@ const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const dec = z.string().regex(/^-?\d+(\.\d+)?$/);
 const vintage = z.enum(["actual", "expected", "plan", "draft", "forecast"]);
 
+const Cell = z.object({ value: dec.nullable(), text: z.string() });
+export const TableSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string(),
+  caption: z.string(),
+  scope: z.string(),
+  basis: z.string(),
+  documentId: z.string(),
+  file: z.string(),
+  tableIndex: z.number(),
+  columns: z.array(z.object({ key: z.string(), col: z.number(), label: z.string(), period: z.string(), vintage, unit: z.string() })),
+  textColumns: z.array(z.object({ key: z.string(), label: z.string() })),
+  rows: z.array(
+    z.object({
+      label: z.string(),
+      level: z.number(),
+      kind: z.enum(["data", "group", "total"]),
+      group: z.string().nullable(),
+      cells: z.record(z.string(), Cell),
+      texts: z.record(z.string(), z.string()).optional(),
+      rowIndex: z.number(),
+    }),
+  ),
+});
+export type TableData = z.infer<typeof TableSchema>;
+
 export const SnapshotSchema = z.object({
   schemaVersion: z.literal(SNAPSHOT_SCHEMA_VERSION),
   id: z.string().regex(/^snap-[a-f0-9]{16}$/),
@@ -90,6 +117,7 @@ export const SnapshotSchema = z.object({
       details: z.record(z.string(), z.string().nullable()).optional(),
     }),
   ),
+  tables: z.array(TableSchema),
   legislativeEvents: z.array(
     z.object({ id: z.string(), date, type: z.string(), title: z.string(), documentId: z.string(), note: z.string().nullable() }),
   ),

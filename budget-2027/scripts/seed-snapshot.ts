@@ -112,6 +112,9 @@ async function main() {
               details: c.details ?? undefined,
             })),
           });
+          for (const t of snap.tables) {
+            await tx.dataTable.create({ data: { snapshotId: snap.id, id: t.id, title: t.title, documentId: t.documentId, data: t } });
+          }
           await tx.versionDiff.createMany({
             data: snap.versionDiffs.map((d) => ({
               snapshotId: snap.id,

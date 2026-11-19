@@ -110,6 +110,7 @@ model DataSnapshot {
   checks       ValidationCheck[]
   versionDiffs VersionDiff[]
   importJobs   ImportJob[]
+  dataTables   DataTable[]
 }
 
 model Metric {
@@ -201,6 +202,18 @@ model VersionDiff {
   before     Decimal?     @db.Decimal(24, 6)
   after      Decimal?     @db.Decimal(24, 6)
   difference Decimal?     @db.Decimal(24, 6)
+}
+
+/// A whole cited table from an official document (rows/cells as JSON, decimals as strings).
+model DataTable {
+  snapshot   DataSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  snapshotId String
+  id         String
+  title      String
+  documentId String
+  data       Json
+
+  @@id([snapshotId, id])
 }
 
 model LegislativeEvent {

@@ -8,6 +8,7 @@
  * data/snapshots/<id>.json. Exits non-zero if any check FAILS; nothing is written then.
  */
 import { createHash } from "node:crypto";
+import Decimal from "decimal.js";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { DocxExtract, EmfTableExtract } from "../src/lib/ingest/documents";
@@ -21,6 +22,9 @@ import {
 import { METRICS } from "../src/lib/metrics/catalog";
 import { createSigmaClient } from "../src/lib/sigma/client";
 import { SNAPSHOT_SCHEMA_VERSION, type Snapshot } from "../src/lib/ingest/snapshot-schema";
+import { annex3AsTable, extractTable } from "../src/lib/tables/extract";
+import { TABLES } from "../src/lib/tables/catalog";
+import { childSumChecks, crossCheck, grandTotalChecks, sumTopLevel } from "../src/lib/tables/checks";
 
 const ROOT = join(__dirname, "..");
 const RAW = join(ROOT, "data/raw");
@@ -117,6 +121,43 @@ async function main() {
   const m = extractMeasures(inputs, { revenueTable: 19, expenditureTable: 20 });
   checks.push(...m.checks);
 
+  // ── Whole tables with reconciliation ──
+  const tables = TABLES.map((spec) => extractTable(docx, spec, documents[0]!.id));
+  tables.push(
+    annex3AsTable(annex3, 1, { id: "kfpRevenue", title: "Приходи по КФП, подробно", description: "Приложение № 3: приходи, помощи и дарения по видове, 2025–2029.", documentId: documents[0]!.id, file: docx.file }),
+    annex3AsTable(annex3, 2, { id: "kfpExpenditure", title: "Разходи по КФП по икономически вид", description: "Приложение № 3: разходи по икономически елементи, 2025–2029.", documentId: documents[0]!.id, file: docx.file }),
+  );
+  const T = (id: string) => tables.find((t) => t.id === id)!;
+  const yrs = ["2026", "2027", "2028", "2029"];
+  checks.push(...childSumChecks(T("functions"), yrs));
+  for (const y of yrs) {
+    checks.push(
+      crossCheck(
+        `xtbl:functions-vs-kfp:${y}`,
+        `Сбор на функциите (Табл. III-1) = разходи по КФП без вноската в ЕС (Приложение № 3), ${y}`,
+        sumTopLevel(T("functions"), y),
+        observations.find((o) => o.metricKey === "kfp.expenditure.excl" && o.period === y)?.value ?? null,
+        "0.5",
+      ),
+    );
+  }
+  checks.push(...grandTotalChecks(T("municipalities"), ["total", "delegated", "equalizing", "winter", "capital"]));
+  const muniTotal = T("municipalities").rows.find((r) => r.kind === "total")!.cells.total!.value;
+  const annex9 = T("municipalTotals").rows.find((r) => r.label.startsWith("Основни бюджетни взаимоотношения"))?.cells["2027"]?.value ?? null;
+  checks.push(crossCheck("xtbl:municipalities-vs-annex9", "Сбор на общините (чл. 52) = Приложение № 9, 2027", muniTotal, annex9, "0"));
+  const moCeiling = T("ceilings").rows.find((r) => r.label === "Министерство на отбраната")?.cells["2027"]?.value ?? null;
+  const moDefense = T("defense").rows.find((r) => r.label.startsWith("Общо разходи по бюджета на МО"))?.cells["2027"]?.value ?? null;
+  checks.push(
+    crossCheck(
+      "xtbl:mo-ceiling-vs-defense",
+      "Таван на МО (Приложение № 4) = разходи по бюджета на МО (Табл. III-2), 2027, млн. €",
+      moCeiling === null ? null : new Decimal(moCeiling).dividedBy(1000).toString(),
+      moDefense,
+      "0.1",
+    ),
+  );
+
+
   // ── SIGMA: the MoF draft published on 06.11.2026, as presented by SIGMA ──
   const sigma = createSigmaClient();
   const cat = await sigma.catalog();
@@ -191,7 +232,7 @@ async function main() {
   }
 
   const failed = checks.filter((c) => c.status === "fail");
-  const content = { observations: [...observations, ...draftObs], measures: m.measures, versionDiffs };
+  const content = { observations: [...observations, ...draftObs], measures: m.measures, versionDiffs, tables, checks };
   const id = `snap-${sha256(JSON.stringify(content)).slice(0, 16)}`;
   const snapshot: Snapshot = {
     schemaVersion: SNAPSHOT_SCHEMA_VERSION,
@@ -223,6 +264,7 @@ async function main() {
     observations: content.observations,
     measures: content.measures,
     versionDiffs,
+    tables,
     checks,
     legislativeEvents: [
       {

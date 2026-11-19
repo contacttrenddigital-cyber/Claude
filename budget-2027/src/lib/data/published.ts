@@ -8,6 +8,7 @@ import { db } from "@/lib/db";
 import { assertPublishable, type Status } from "@/lib/provenance/schema";
 import type { Vintage } from "@/lib/ingest/documents";
 import type { MeasureView, SeriesView } from "./types";
+import { TableSchema, type TableData } from "@/lib/ingest/snapshot-schema";
 
 const STATUS_OF: Record<Vintage, Status> = {
   actual: "report",
@@ -30,7 +31,7 @@ export const getPublished = cache(async () => {
   });
   if (!snapshot) throw new NoPublishedSnapshotError("Няма публикувана снимка на данните");
 
-  const [observations, measures, checks, diffs, events, versions, documents] = await Promise.all([
+  const [observations, measures, checks, diffs, events, versions, documents, tables] = await Promise.all([
     db.metricObservation.findMany({
       where: { snapshotId: snapshot.id },
       include: { metric: true, sources: { include: { document: true }, orderBy: { ordinal: "asc" } } },
@@ -42,6 +43,7 @@ export const getPublished = cache(async () => {
     db.legislativeEvent.findMany({ orderBy: { date: "asc" }, include: { document: true } }),
     db.budgetVersion.findMany({ orderBy: { date: "asc" } }),
     db.sourceDocument.findMany({ orderBy: [{ versionId: "desc" }, { id: "asc" }] }),
+    db.dataTable.findMany({ where: { snapshotId: snapshot.id } }),
   ]);
 
   const series: Record<string, SeriesView> = {};
@@ -114,6 +116,7 @@ export const getPublished = cache(async () => {
   }));
 
   return {
+    tables: Object.fromEntries(tables.map((t) => [t.id, TableSchema.parse(t.data)])) as Record<string, TableData>,
     snapshot: {
       id: snapshot.id,
       createdAt: snapshot.createdAt.toISOString(),
@@ -173,4 +176,14 @@ export function seriesOf(p: Published, key: string, versionId = "bill-2026-11-16
   const s = p.series[`${key}@${versionId}`];
   if (!s) throw new Error(`Series ${key}@${versionId} not in published snapshot`);
   return s;
+}
+
+export function tableOf(p: Published, id: string): TableData {
+  const t = p.tables[id];
+  if (!t) throw new Error(`Table ${id} not in published snapshot`);
+  return t;
+}
+
+export function documentOf(p: Published, id: string) {
+  return p.documents.find((d) => d.id === id);
 }
