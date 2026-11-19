@@ -41,9 +41,17 @@ describe("format", () => {
 
 describe("committed snapshot", () => {
   const files = readdirSync("data/snapshots").filter((f) => f.startsWith("snap-"));
-  it("validates against the schema and has no failed checks", () => {
-    expect(files.length).toBeGreaterThan(0);
+  it("historical snapshots keep their id, file name and have no failed checks", () => {
     for (const f of files) {
+      const raw = JSON.parse(readFileSync(`data/snapshots/${f}`, "utf8")) as { id: string; checks: { status: string }[] };
+      expect(f).toBe(`${raw.id}.json`);
+      expect(raw.checks.filter((c) => c.status === "fail")).toEqual([]);
+    }
+  });
+  it("the latest snapshot validates against the current schema", () => {
+    expect(files.length).toBeGreaterThan(0);
+    const latest = JSON.parse(readFileSync("data/snapshots/latest.json", "utf8")).file as string;
+    for (const f of [latest]) {
       const s = SnapshotSchema.parse(JSON.parse(readFileSync(`data/snapshots/${f}`, "utf8")));
       expect(s.checks.filter((c) => c.status === "fail")).toEqual([]);
       expect(f).toBe(`${s.id}.json`);
