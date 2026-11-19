@@ -48,6 +48,9 @@ export const Scope = z.enum([
   "general-government-esa", // сектор „Държавно управление“ (ЕСС 2010, Евростат)
   "ministry", // бюджет на ведомство (чл. 2–47 ЗДБ)
   "program", // програмен бюджет
+  "government-debt", // държавен дълг по Закона за държавния дълг
+  "economy", // макроикономически показатели (БВП, инфлация, заетост)
+  "parameter", // законови/бюджетни параметри (МРЗ, осигурителен доход, тавани)
 ]);
 export type Scope = z.infer<typeof Scope>;
 
@@ -61,6 +64,7 @@ export const Status = z.enum([
   "law",
   "report",
   "expected",
+  "plan",
   "forecast",
   "partial",
   "pending",

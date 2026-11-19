@@ -1,27 +1,48 @@
-# TASKS — Бюджет 2027
+# TASKS — Бюджет 2027: под лупа
 
-Статус: `[x]` готово и проверено · `[ ]` предстои · `[!]` блокирано (с причина)
+`[x]` готово и проверено · `[~]` частично · `[ ]` предстои · `[!]` блокирано (с причина)
+Последна актуализация: 19.11.2026, етап 1.
 
-## Фаза 0 — Настройка (този клон)
-- [x] Инвентаризация на skills, MCP и инструменти в облачната среда
-- [x] СИГМА Бюджет: MCP (7 инструмента) и отворени данни — проверени с реални заявки
-- [x] Context7 MCP и Playwright MCP — проверени с реални заявки
-- [x] Next.js 15 + TypeScript strict + Tailwind 4 scaffold (`budget-2027/`)
-- [x] PostgreSQL 16 + Prisma 6: схема с произход, първа миграция приложена
-- [x] Библиотеки `money.ts` (Decimal, евро/лев, reconcile) и `provenance/schema.ts` (gate за публикуване)
-- [x] СИГМА клиент със zod валидация и отхвърляне на mock
-- [x] Vitest (40 unit теста, coverage ≥ 90%), live договорни тестове (3), Playwright e2e (6, desktop+mobile, axe)
-- [x] 8 проектни skills + валидатор `npm run check:skills`; потвърдено, че Claude Code ги зарежда
-- [x] CLAUDE.md, docs/ARCHITECTURE.md, docs/DATA_SOURCES.md, docs/QUALITY_STANDARDS.md
-- [x] CI workflow (GitHub Actions)
-- [!] Достъп до първичните сайтове (minfin.bg, parliament.bg, dv.parliament.bg, nsi.bg, bnb.bg, ec.europa.eu) — не са в allowlist на средата
-- [ ] Одобрение на проектните MCP сървъри при интерактивна сесия (`/mcp`) — решение на собственика
+## Фаза 0 — Настройка ✅
+Skills (8), MCP (sigma-budget, context7, playwright), стек, правила, CI. Виж историята в git.
 
-## Фаза 1 — След MASTER PROMPT
-- [ ] Дизайн система: токени (светла/тъмна), типография, мрежа, компоненти; валидирана палитра (`dataviz`)
-- [ ] Импортер СИГМА → PostgreSQL (Release, SourceDocument, Figure) с `explain_number` за всяко число
-- [ ] Компонент `<SourcedFigure>` и `<SourceNote>`; графиките приемат само `FiscalFigure[]`
-- [ ] Страници (по MASTER PROMPT)
-- [ ] Модул „Проверка на твърдения“ (Claim/Verdict)
-- [ ] Карта на общините (GeoJSON + таблична алтернатива)
-- [ ] Security review преди първо публикуване; CSP
+## Етап 1 (P0) — Данни, интеграции, начално табло ✅
+- [x] Достъп до официалните хостове (НС, МС, МФ, НСИ, Евростат) в облачната среда
+- [x] Сваляне и SHA-256 на внесения законопроект 52-602-01-71 (DOCX + ZIP), ДОО, НЗОК, API на НС, страница на МС
+- [x] Извличане на 43 таблици и 1 940 абзаца с координати; Приложение № 3 от EMF вектори (без OCR)
+- [x] Каталог от 53 показателя с обхват, основа, единица и източници (`src/lib/metrics/catalog.ts`)
+- [x] Снимка `snap-aeff82bb419fbe33`: 272 наблюдения, 36 мерки, 111 успешни проверки, 2 предупреждения, 0 неуспешни
+- [x] Кръстосани проверки между две места в документа; намерен реален конфликт (БВП 2025)
+- [x] Счетоводни равенства 2025–2029; сборове на мерките
+- [x] Сравнение 06.11 (СИГМА) ↔ 16.11 (НС): 60 реда, 6 разлики (капиталови разходи 6 018,6 → 6 005,0)
+- [x] Prisma: BudgetVersion, SourceDocument, DataSnapshot, ImportJob, Metric, MetricObservation, ObservationSource, BudgetMeasure, ValidationCheck, VersionDiff, LegislativeEvent, AuditLog, User/Role, Claim (схема)
+- [x] Идемпотентен импорт; публикуване само изрично, с одит лог; отказ при неуспешни проверки
+- [x] Дизайн система (светла/тъмна, изчислен контраст, валидирана палитра за графики)
+- [x] Начално табло `/`: статус, 12 KPI с източник и сравнение, „Държавен бюджет ≠ КФП“, водопад, 4 графики 2025–2029, изследовател на 36 мерки (3 групи, търсене, сортиране), разлики между версиите, хронология, проверки
+- [x] `/iztochnitsi`: версии, документи с SHA-256, всички проверки
+- [x] Тестове: 105 unit (coverage 97% stmts / 99% lines), 3 live (СИГМА), 24 e2e (desktop + mobile, axe светла/тъмна)
+- [x] Снимки 375 / 768 / 1440 px → `docs/screenshots/`
+- [ ] Редакторско одобрение от човек (публикувано е като „Claude (автоматична проверка)“)
+
+## Следващо — P1
+- [ ] Програмни бюджети по ведомства (47 PDF от архива) → `/institutsii`
+- [ ] Бюджети на ДОО и НЗОК (RTF) → `/osigurovki`, `/zdraveopazvane`
+- [ ] Данъци и осигуровки: правила с дати, тавани, прагове → `/danatsi`, `/osigurovki`
+- [ ] Калкулатор „Колко ще ми струва Бюджет 2027?“ (служител, работодател, самоосигуряващ се, пенсионер)
+- [ ] Страници `/prihodi`, `/razhodi`, `/defitsit`, `/dalg`, `/investitsii` със същия модел
+- [ ] Каталог на мерките `/promeni` с детайлни страници
+- [!] Архив „Асен Василев“ и `/factcheck`: медийните сайтове (mediapool, offnews, bTV, NOVA, BTA, bgvoice) не са в allowlist. Трябва одобрение за достъп; само кратки цитати.
+- [ ] Търсене в сайта
+
+## P2 / P3 (не са започнати)
+Изпълнение и договори (`/izpalnenie`, `/dogovori`), пари срещу резултати, архив на прогнозите и водопад на ревизиите, карта на общините, `/moeto-tablo`, сценарии, визуално студио, експорт/API, админ панел с роли, SEO/OG изображения.
+
+## Документи по MASTER PROMPT
+- [x] README, .env.example, SOURCE_INVENTORY, SIGMA_INTEGRATION, BUDGET_VERSION_HISTORY, FISCAL_DATA_DICTIONARY (генериран), FISCAL_METHODOLOGY, DESIGN_SYSTEM, ARCHITECTURE, DATA_REFRESH_AND_REVIEW, DEPLOYMENT, KNOWN_LIMITATIONS
+- [ ] ASEN_VASILEV_SOURCE_ARCHIVE, CLAIMS_AND_VERIFICATIONS, BENCHMARK_AUDIT, EDITORIAL_STANDARDS, PERFORMANCE_INDICATOR_METHODS, PROCUREMENT_JOIN_LIMITATIONS, FORECAST_UNCERTAINTY_RUBRIC
+
+## Решения
+- 2026-11-19: основният източник е внесеният в НС DOCX, а не PDF-ите на МФ (Cloudflare). СИГМА служи само за версията от 06.11 и за сравнение.
+- 2026-11-19: Приложение № 3 се чете от векторния текст на EMF, а не с OCR.
+- 2026-11-19: Сравнението с 2026 г. е с очакваното изпълнение от същия документ, не с етикета `2026.law` на СИГМА.
+- 2026-11-19: Графиките са собствени SVG компоненти (D3 скали), не Recharts: щриховка за прогнози, клавиатурен фокус, реална ширина на мобилен.

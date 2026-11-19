@@ -1,23 +1,152 @@
 @import "tailwindcss";
 
-/* Design tokens are defined in Phase 1 (see docs/ARCHITECTURE.md §Design system). */
+/* ───────────────────────────────────────────────────────────────────────────
+   Design tokens — see docs/DESIGN_SYSTEM.md.
+   Contrast was computed, not eyeballed: brief colours are used as-is on the
+   dark navy surfaces; on light surfaces text uses darker steps (≥ 4.8:1).
+   Chart series 1/2 validated with the dataviz validator in both modes.
+   ─────────────────────────────────────────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #14171a;
+  color-scheme: light;
+  --bg: #f7f9fc;
+  --surface: #ffffff;
+  --surface-2: #eef2f8;
+  --ink: #08111f;
+  --ink-2: #33415a;
+  --muted: #5b6b82; /* 5.1:1 on --bg */
+  --rule: #d9e0ea;
+  --rule-strong: #b9c4d4;
+  --accent: #b84a00; /* text-safe orange */
+  --accent-fill: #ff6b00; /* fills/rules only */
+  --adverse: #c42b2b;
+  --beneficial: #0b7d68;
+  --warning: #8a5a00;
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --neutral-mark: #5b6b82;
+  --focus: #2a78d6;
 }
+
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0f1214;
-    --foreground: #eceff1;
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --bg: #08111f;
+    --surface: #101d30;
+    --surface-2: #09192f;
+    --ink: #f7f9fc;
+    --ink-2: #c9d3e1;
+    --muted: #8292a9;
+    --rule: #1f3049;
+    --rule-strong: #2c4261;
+    --accent: #ff6b00;
+    --accent-fill: #ff6b00;
+    --adverse: #f05252;
+    --beneficial: #16b89b;
+    --warning: #f4b942;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --neutral-mark: #8292a9;
+    --focus: #6da7ec;
   }
 }
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #08111f;
+  --surface: #101d30;
+  --surface-2: #09192f;
+  --ink: #f7f9fc;
+  --ink-2: #c9d3e1;
+  --muted: #8292a9;
+  --rule: #1f3049;
+  --rule-strong: #2c4261;
+  --accent: #ff6b00;
+  --accent-fill: #ff6b00;
+  --adverse: #f05252;
+  --beneficial: #16b89b;
+  --warning: #f4b942;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --neutral-mark: #8292a9;
+  --focus: #6da7ec;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-accent: var(--accent);
+  --color-accent-fill: var(--accent-fill);
+  --color-adverse: var(--adverse);
+  --color-beneficial: var(--beneficial);
+  --color-warning: var(--warning);
+  --color-series-1: var(--series-1);
+  --color-series-2: var(--series-2);
+  --font-sans: "Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+
+html {
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-text-size-adjust: 100%;
+}
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family:
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
+  text-rendering: optimizeLegibility;
+}
+
+/* Tabular figures everywhere numbers are compared */
+.num {
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum", "lnum";
+  letter-spacing: -0.01em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+}
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+  z-index: 100;
+  background: var(--surface);
+  padding: 0.5rem 0.75rem;
+}
+
+/* Forecast / draft texture for chart marks (secondary encoding, not colour alone) */
+.hatch-fill {
+  fill: url(#hatch);
+}
+
+details > summary {
+  cursor: pointer;
+  list-style: none;
+}
+details > summary::-webkit-details-marker {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

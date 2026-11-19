@@ -49,3 +49,5 @@ next-env.d.ts
 
 # local data downloads (raw originals are fetched, never committed)
 /data/raw/
+/data/extracted/emf/
+__pycache__/

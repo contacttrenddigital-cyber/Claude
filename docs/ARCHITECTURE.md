@@ -77,3 +77,18 @@ npm run verify
 
 ## Design system (Фаза 1)
 Оригинален дизайн, без копиране на чужди сайтове. Токени в CSS (`:root` + тъмна тема), 4/8 px мрежа, системни шрифтове с кирилица, палитра валидирана със skill `dataviz`. Определя се след MASTER PROMPT.
+
+## Етап 1: реализиран поток на данните
+```
+data/raw/ (оригинали, извън git, SHA-256)
+  └─ scripts/extract/docx_tables.py, emf_table.py  → data/extracted/*.json (в git)
+       └─ scripts/build-snapshot.ts
+            ├─ src/lib/ingest/documents.ts   (четене с локатор: таблица/ред/колона, EMF x/y, абзац)
+            ├─ src/lib/metrics/catalog.ts    (53 показателя, източници за кръстосана проверка)
+            ├─ src/lib/ingest/snapshot.ts    (наблюдения, проверки, равенства, мерки, diff)
+            └─ СИГМА (06.11)                 → data/snapshots/snap-<hash>.json (в git, неизменна)
+                 └─ scripts/seed-snapshot.ts → PostgreSQL (идемпотентно; --publish с одит лог)
+                      └─ src/lib/data/published.ts (само публикуваната снимка; assertPublishable за всяко число)
+                           └─ src/app/page.tsx, src/app/iztochnitsi/page.tsx (статично + ISR 1 ч.)
+```
+Графиките (`src/components/charts`) получават само стойности, минали през gate-а; производните числа са в `src/lib/data/derive.ts` с тестове.

@@ -32,7 +32,7 @@
 - `playwright` — `scripts/playwright-mcp.sh` (stdio). В облака сам добавя `--executable-path /opt/pw-browsers/chromium --no-sandbox`.
 
 ## Claude Code Cloud — особености
-- Мрежата е ограничена. Разрешени: npm, `sigma-budget.midt.bg`, `mcp.context7.com`. **Първичните сайтове (minfin.bg, parliament.bg, dv.parliament.bg, nsi.bg, bnb.bg, ec.europa.eu) не са разрешени** — поискай добавяне при нужда.
+- Мрежата е ограничена. Разрешени: npm, `sigma-budget.midt.bg`, `mcp.context7.com`, `www.parliament.bg`, `www.government.bg`, `www.minfin.bg` (но е зад Cloudflare — не го заобикаляй), `www.nsi.bg`, `ec.europa.eu`. Не са разрешени: dv.parliament.bg, bnb.bg, медийни сайтове — поискай при нужда.
 - Node `fetch` в облака изисква `NODE_USE_ENV_PROXY=1` (вече е в `npm run test:live`).
 - PostgreSQL не се стартира сам: `service postgresql start`, после (веднъж) създай роля/база — виж `docs/ARCHITECTURE.md#локална-среда`.
 - Playwright: Chromium е в `/opt/pw-browsers/chromium`; `@playwright/test` е закован на 1.63.0. Не пускай `playwright install`. E2E: `PW_CHROMIUM_PATH=/opt/pw-browsers/chromium npm run test:e2e`.
@@ -50,8 +50,11 @@ npm run db:validate && npm run db:migrate
 ## Стек
 Next.js 15 (App Router) · React 19 · TypeScript strict · Tailwind CSS 4 · PostgreSQL 16 + Prisma 6 · Recharts 3 / D3 7 · zod 4 · decimal.js · Vitest 5 · Playwright 1.63 + axe-core.
 
+## Данни — поток
+`sources:fetch` → `extract` → `snapshot:build` (проверки) → `db:seed` → `db:publish -- "Име"`. Сайтът чете само публикуваната снимка. Подробно: `docs/DATA_REFRESH_AND_REVIEW.md`.
+
 ## Документи
-`TASKS.md` · `docs/ARCHITECTURE.md` · `docs/DATA_SOURCES.md` · `docs/QUALITY_STANDARDS.md`
+`TASKS.md` · `budget-2027/README.md` · `docs/` (ARCHITECTURE, SOURCE_INVENTORY, SIGMA_INTEGRATION, BUDGET_VERSION_HISTORY, FISCAL_DATA_DICTIONARY, FISCAL_METHODOLOGY, DESIGN_SYSTEM, DATA_REFRESH_AND_REVIEW, KNOWN_LIMITATIONS, DEPLOYMENT, DATA_SOURCES, QUALITY_STANDARDS)
 
 ## Git
 Работен клон: `claude/budget-2027-setup-3y1lne`. Малки, смислени commits. Без PR, освен ако не е поискан.

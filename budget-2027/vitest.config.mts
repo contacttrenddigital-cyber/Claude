@@ -11,7 +11,8 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["src/lib/**"],
-      exclude: ["**/*.test.*"],
+      // db.ts and published.ts need PostgreSQL; they are exercised by the e2e suite
+      exclude: ["**/*.test.*", "src/lib/db.ts", "src/lib/data/published.ts", "src/lib/data/types.ts"],
       thresholds: { lines: 90, functions: 90, branches: 85, statements: 90 },
     },
   },

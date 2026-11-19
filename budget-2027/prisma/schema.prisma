@@ -1,5 +1,6 @@
 // Budget 2027 — data model.
-// Principle: a Figure cannot exist without a SourceDocument; values are exact decimals, never floats.
+// Principles: every observation cites a SourceDocument + locator; values are exact decimals
+// (null = no data, never 0); snapshots are immutable; publishing is an explicit, audited act.
 
 generator client {
   provider = "prisma-client-js"
@@ -10,135 +11,266 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Scope {
-  STATE_BUDGET
-  KFP
-  KFP_EXCL_EU_CONTRIBUTION
-  DCO
-  NHIF
-  MUNICIPAL
-  EU_FUNDS
-  GENERAL_GOVERNMENT_ESA
-  MINISTRY
-  PROGRAM
+enum VersionStage {
+  PUBLIC_DRAFT
+  SUBMITTED_BILL
+  COMMITTEE
+  FIRST_READING
+  SECOND_READING
+  ENACTED
+  PROMULGATED
 }
 
-enum FigureStatus {
-  DRAFT
-  LAW
-  REPORT
-  EXPECTED
-  FORECAST
-  PARTIAL
-  PENDING
+enum Vintage {
+  actual
+  expected
+  plan
+  draft
+  forecast
 }
 
-enum Verdict {
-  TRUE
-  MOSTLY_TRUE
-  MISLEADING
-  FALSE
-  UNVERIFIABLE
+enum ReviewStatus {
+  cross_checked
+  single_source
+  conflict
+  editor_approved
 }
 
-model Publisher {
-  id        String           @id @default(cuid())
-  name      String           @unique // e.g. "Министерство на финансите"
-  homepage  String
-  documents SourceDocument[]
+enum CheckStatus {
+  pass
+  warn
+  fail
 }
 
-/// An original official document (PDF/XLSX/DOCX/JSON) as retrieved.
+enum Role {
+  viewer
+  researcher
+  editor
+  publisher
+  administrator
+}
+
+/// A legal/editorial version of the budget (06.11 draft, 16.11 bill, enacted law, ...).
+model BudgetVersion {
+  id           String              @id
+  label        String
+  stage        VersionStage
+  date         DateTime            @db.Date
+  legalStatus  String
+  evidence     String
+  documents    SourceDocument[]
+  observations MetricObservation[]
+  measures     BudgetMeasure[]
+}
+
+/// An original file exactly as retrieved; sha256 identifies the bytes.
 model SourceDocument {
-  id          String    @id @default(cuid())
-  publisher   Publisher @relation(fields: [publisherId], references: [id])
-  publisherId String
+  id          String              @id
+  sha256      String
+  bytes       Int
+  publisher   String
   title       String
   url         String
-  /// SHA-256 of the exact bytes we parsed. Same URL + different hash = new version.
-  sha256      String    @unique
-  mimeType    String
-  publishedOn DateTime? @db.Date
-  retrievedAt DateTime
-  /// e.g. "законопроект, внесен 2026-07-01" / "ДВ бр. 69 от 31.07.2026"
+  pageUrl     String?
+  mime        String
+  retrievedOn DateTime            @db.Date
+  publishedOn DateTime?           @db.Date
   legalStatus String?
-  figures     Figure[]
+  version     BudgetVersion       @relation(fields: [versionId], references: [id])
+  versionId   String
+  citations   ObservationSource[]
+  measures    BudgetMeasure[]
+  events      LegislativeEvent[]
 
-  @@index([url])
+  @@index([sha256])
 }
 
-/// A dataset release (e.g. SIGMA dataVersion "2026-11-18.1").
-model Release {
-  id         String   @id @default(cuid())
-  source     String // "sigma-budget" | "minfin" | ...
-  version    String
-  asOf       DateTime @db.Date
-  importedAt DateTime @default(now())
-  figures    Figure[]
-
-  @@unique([source, version])
+model ImportJob {
+  id         String        @id @default(cuid())
+  kind       String // "snapshot-seed" | "sigma-check" | ...
+  startedAt  DateTime      @default(now())
+  finishedAt DateTime?
+  status     String // "running" | "succeeded" | "failed"
+  log        String        @default("")
+  snapshot   DataSnapshot? @relation(fields: [snapshotId], references: [id])
+  snapshotId String?
 }
 
-model Figure {
-  id             String         @id @default(cuid())
-  key            String // stable semantic key, e.g. "kfp.revenue.total"
-  label          String
-  /// Exact value as published; null only when status = PENDING.
-  value          Decimal?       @db.Decimal(24, 6)
-  unit           String // "млн. €", "хил. €", "%"
-  scope          Scope
-  status         FigureStatus
-  period         String // "2027", "2026-09", "2026-01..2026-09"
-  asOf           DateTime       @db.Date
-  document       SourceDocument @relation(fields: [documentId], references: [id])
-  documentId     String
-  /// page / table / sheet!cell / article inside the document
-  locator        String
-  sigmaRecord    String?
-  release        Release?       @relation(fields: [releaseId], references: [id])
-  releaseId      String?
-  /// Set by fiscal-calculation-auditor after independent re-check.
-  verifiedAt     DateTime?
-  verifiedBy     String?
-  createdAt      DateTime       @default(now())
-  claims         ClaimFigure[]
-  municipality   Municipality?  @relation(fields: [municipalityId], references: [id])
-  municipalityId String?
-
-  @@unique([key, period, status, documentId])
-  @@index([scope, period])
+/// Immutable bundle of observations built by scripts/build-snapshot.ts.
+model DataSnapshot {
+  id           String              @id // "snap-<content hash>"
+  createdAt    DateTime
+  retrievedOn  DateTime            @db.Date
+  sigmaVersion String
+  publishedAt  DateTime?
+  publishedBy  String?
+  supersededAt DateTime?
+  observations MetricObservation[]
+  measures     BudgetMeasure[]
+  checks       ValidationCheck[]
+  versionDiffs VersionDiff[]
+  importJobs   ImportJob[]
 }
 
-/// Bulgarian municipality, keyed by the official EKATTE-based municipality code.
+model Metric {
+  key          String              @id
+  label        String
+  short        String
+  definition   String
+  scope        String
+  basis        String
+  unit         String
+  changeIn     String
+  observations MetricObservation[]
+}
+
+model MetricObservation {
+  id         String              @id @default(cuid())
+  snapshot   DataSnapshot        @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  snapshotId String
+  metric     Metric              @relation(fields: [metricKey], references: [key])
+  metricKey  String
+  version    BudgetVersion       @relation(fields: [versionId], references: [id])
+  versionId  String
+  period     String
+  vintage    Vintage
+  /// null = no data published (never coerced to 0)
+  value      Decimal?            @db.Decimal(24, 6)
+  unit       String
+  review     ReviewStatus
+  sources    ObservationSource[]
+  claims     ClaimEvidence[]
+
+  @@unique([snapshotId, metricKey, versionId, period])
+  @@index([metricKey, period])
+}
+
+model ObservationSource {
+  id            String            @id @default(cuid())
+  observation   MetricObservation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+  observationId String
+  document      SourceDocument    @relation(fields: [documentId], references: [id])
+  documentId    String
+  ordinal       Int
+  locator       String
+  value         Decimal?          @db.Decimal(24, 6)
+  original      String?
+}
+
+model BudgetMeasure {
+  id         String         @id // "<version>:<direction>:<row>"
+  snapshot   DataSnapshot   @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  snapshotId String
+  version    BudgetVersion  @relation(fields: [versionId], references: [id])
+  versionId  String
+  direction  String // "revenue" | "expenditure"
+  title      String
+  effect2027 Decimal?       @db.Decimal(24, 6)
+  effect2028 Decimal?       @db.Decimal(24, 6)
+  effect2029 Decimal?       @db.Decimal(24, 6)
+  unit       String
+  basis      String
+  document   SourceDocument @relation(fields: [documentId], references: [id])
+  documentId String
+  locator    String
+
+  @@index([snapshotId, direction])
+}
+
+model ValidationCheck {
+  id          String       @id @default(cuid())
+  snapshot    DataSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  snapshotId  String
+  checkId     String
+  kind        String
+  status      CheckStatus
+  description String
+  details     Json?
+
+  @@unique([snapshotId, checkId])
+}
+
+model VersionDiff {
+  id         String       @id @default(cuid())
+  snapshot   DataSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  snapshotId String
+  fromId     String
+  toId       String
+  label      String
+  period     String
+  before     Decimal?     @db.Decimal(24, 6)
+  after      Decimal?     @db.Decimal(24, 6)
+  difference Decimal?     @db.Decimal(24, 6)
+}
+
+model LegislativeEvent {
+  id         String         @id
+  date       DateTime       @db.Date
+  type       String
+  title      String
+  note       String?
+  document   SourceDocument @relation(fields: [documentId], references: [id])
+  documentId String
+}
+
+/// Bulgarian municipality, keyed by the official code used in EKATTE/SIGMA (e.g. "BGS01").
 model Municipality {
   id             String    @id @default(cuid())
-  code           String    @unique // municipality code from the NSI EKATTE register
+  code           String    @unique
   nameBg         String
   province       String
   population     Int?
   populationAsOf DateTime? @db.Date
-  figures        Figure[]
+}
+
+model PoliticalStatement {
+  id       String   @id @default(cuid())
+  speaker  String
+  saidAt   DateTime
+  platform String
+  url      String
+  timecode String?
+  excerpt  String // short quotation only
+  summary  String
+  claims   Claim[]
 }
 
 model Claim {
-  id          String        @id @default(cuid())
+  id          String             @id @default(cuid())
+  statement   PoliticalStatement @relation(fields: [statementId], references: [id], onDelete: Cascade)
+  statementId String
   text        String
-  speaker     String
-  saidOn      DateTime      @db.Date
-  sourceUrl   String // where the claim was made
-  verdict     Verdict?
+  verdict     String? // Потвърдено | Частично вярно | Подвеждащо | Невярно | Недостатъчно данни | Прогноза | Мнение
   reasoning   String?
   reviewedBy  String?
   publishedAt DateTime?
-  figures     ClaimFigure[]
+  evidence    ClaimEvidence[]
 }
 
-model ClaimFigure {
-  claim    Claim  @relation(fields: [claimId], references: [id], onDelete: Cascade)
-  claimId  String
-  figure   Figure @relation(fields: [figureId], references: [id])
-  figureId String
-  role     String // "evidence" | "counter-evidence" | "context"
+model ClaimEvidence {
+  claim         Claim             @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  claimId       String
+  observation   MetricObservation @relation(fields: [observationId], references: [id])
+  observationId String
+  role          String // evidence | counter-evidence | context
 
-  @@id([claimId, figureId])
+  @@id([claimId, observationId])
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  role      Role       @default(viewer)
+  createdAt DateTime   @default(now())
+  audit     AuditLog[]
+}
+
+model AuditLog {
+  id      String   @id @default(cuid())
+  at      DateTime @default(now())
+  user    User?    @relation(fields: [userId], references: [id])
+  userId  String?
+  action  String
+  target  String
+  details Json?
 }

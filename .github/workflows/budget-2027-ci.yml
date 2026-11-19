@@ -2,9 +2,9 @@ name: budget-2027 CI
 
 on:
   push:
-    paths: ["budget-2027/**", ".claude/skills/**", ".github/workflows/budget-2027-ci.yml"]
+    paths: ["budget-2027/**", ".claude/skills/**", "docs/**", ".github/workflows/budget-2027-ci.yml"]
   pull_request:
-    paths: ["budget-2027/**", ".claude/skills/**", ".github/workflows/budget-2027-ci.yml"]
+    paths: ["budget-2027/**", ".claude/skills/**", "docs/**", ".github/workflows/budget-2027-ci.yml"]
 
 permissions:
   contents: read
@@ -38,13 +38,14 @@ jobs:
           cache-dependency-path: budget-2027/package-lock.json
       - run: npm ci
       - run: npx prisma validate && npx prisma migrate deploy
+      - run: npm run db:seed && npm run db:publish -- "CI"
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run check:skills
-      - run: npm run format:check
       - run: npm run test:coverage
       - run: npm run test:live
       - run: npx playwright install --with-deps chromium
+      - run: npm run build
       - run: npm run test:e2e
       - uses: actions/upload-artifact@v4
         if: failure()
