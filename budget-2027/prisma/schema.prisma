@@ -1,0 +1,144 @@
+// Budget 2027 — data model.
+// Principle: a Figure cannot exist without a SourceDocument; values are exact decimals, never floats.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Scope {
+  STATE_BUDGET
+  KFP
+  KFP_EXCL_EU_CONTRIBUTION
+  DCO
+  NHIF
+  MUNICIPAL
+  EU_FUNDS
+  GENERAL_GOVERNMENT_ESA
+  MINISTRY
+  PROGRAM
+}
+
+enum FigureStatus {
+  DRAFT
+  LAW
+  REPORT
+  EXPECTED
+  FORECAST
+  PARTIAL
+  PENDING
+}
+
+enum Verdict {
+  TRUE
+  MOSTLY_TRUE
+  MISLEADING
+  FALSE
+  UNVERIFIABLE
+}
+
+model Publisher {
+  id        String           @id @default(cuid())
+  name      String           @unique // e.g. "Министерство на финансите"
+  homepage  String
+  documents SourceDocument[]
+}
+
+/// An original official document (PDF/XLSX/DOCX/JSON) as retrieved.
+model SourceDocument {
+  id          String    @id @default(cuid())
+  publisher   Publisher @relation(fields: [publisherId], references: [id])
+  publisherId String
+  title       String
+  url         String
+  /// SHA-256 of the exact bytes we parsed. Same URL + different hash = new version.
+  sha256      String    @unique
+  mimeType    String
+  publishedOn DateTime? @db.Date
+  retrievedAt DateTime
+  /// e.g. "законопроект, внесен 2026-07-01" / "ДВ бр. 69 от 31.07.2026"
+  legalStatus String?
+  figures     Figure[]
+
+  @@index([url])
+}
+
+/// A dataset release (e.g. SIGMA dataVersion "2026-11-18.1").
+model Release {
+  id         String   @id @default(cuid())
+  source     String // "sigma-budget" | "minfin" | ...
+  version    String
+  asOf       DateTime @db.Date
+  importedAt DateTime @default(now())
+  figures    Figure[]
+
+  @@unique([source, version])
+}
+
+model Figure {
+  id             String         @id @default(cuid())
+  key            String // stable semantic key, e.g. "kfp.revenue.total"
+  label          String
+  /// Exact value as published; null only when status = PENDING.
+  value          Decimal?       @db.Decimal(24, 6)
+  unit           String // "млн. €", "хил. €", "%"
+  scope          Scope
+  status         FigureStatus
+  period         String // "2027", "2026-09", "2026-01..2026-09"
+  asOf           DateTime       @db.Date
+  document       SourceDocument @relation(fields: [documentId], references: [id])
+  documentId     String
+  /// page / table / sheet!cell / article inside the document
+  locator        String
+  sigmaRecord    String?
+  release        Release?       @relation(fields: [releaseId], references: [id])
+  releaseId      String?
+  /// Set by fiscal-calculation-auditor after independent re-check.
+  verifiedAt     DateTime?
+  verifiedBy     String?
+  createdAt      DateTime       @default(now())
+  claims         ClaimFigure[]
+  municipality   Municipality?  @relation(fields: [municipalityId], references: [id])
+  municipalityId String?
+
+  @@unique([key, period, status, documentId])
+  @@index([scope, period])
+}
+
+/// Bulgarian municipality, keyed by the official EKATTE-based municipality code.
+model Municipality {
+  id             String    @id @default(cuid())
+  code           String    @unique // municipality code from the NSI EKATTE register
+  nameBg         String
+  province       String
+  population     Int?
+  populationAsOf DateTime? @db.Date
+  figures        Figure[]
+}
+
+model Claim {
+  id          String        @id @default(cuid())
+  text        String
+  speaker     String
+  saidOn      DateTime      @db.Date
+  sourceUrl   String // where the claim was made
+  verdict     Verdict?
+  reasoning   String?
+  reviewedBy  String?
+  publishedAt DateTime?
+  figures     ClaimFigure[]
+}
+
+model ClaimFigure {
+  claim    Claim  @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  claimId  String
+  figure   Figure @relation(fields: [figureId], references: [id])
+  figureId String
+  role     String // "evidence" | "counter-evidence" | "context"
+
+  @@id([claimId, figureId])
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "enabledMcpjsonServers": ["sigma-budget", "context7", "playwright"],
+  "permissions": {
+    "allow": [
+      "Bash(npm run lint)",
+      "Bash(npm run typecheck)",
+      "Bash(npm run test:*)",
+      "Bash(npm test)",
+      "Bash(npm run verify)",
+      "Bash(npm run check:skills)",
+      "Bash(npm run db:validate)",
+      "mcp__sigma-budget__search",
+      "mcp__sigma-budget__fetch",
+      "mcp__sigma-budget__list_datasets",
+      "mcp__sigma-budget__describe_dataset",
+      "mcp__sigma-budget__get_data",
+      "mcp__sigma-budget__explain_number",
+      "mcp__sigma-budget__about_data",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__query-docs"
+    ],
+    "deny": ["Read(./budget-2027/.env)", "Read(./**/.env.local)"]
+  }
+}

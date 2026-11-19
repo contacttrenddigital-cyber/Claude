@@ -1,0 +1,53 @@
+name: budget-2027 CI
+
+on:
+  push:
+    paths: ["budget-2027/**", ".claude/skills/**", ".github/workflows/budget-2027-ci.yml"]
+  pull_request:
+    paths: ["budget-2027/**", ".claude/skills/**", ".github/workflows/budget-2027-ci.yml"]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: budget-2027
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: budget
+          POSTGRES_PASSWORD: budget
+          POSTGRES_DB: budget2027
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U budget" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://budget:budget@localhost:5432/budget2027?schema=public
+      SIGMA_BASE_URL: https://sigma-budget.midt.bg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: budget-2027/package-lock.json
+      - run: npm ci
+      - run: npx prisma validate && npx prisma migrate deploy
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run check:skills
+      - run: npm run format:check
+      - run: npm run test:coverage
+      - run: npm run test:live
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: budget-2027/playwright-report
