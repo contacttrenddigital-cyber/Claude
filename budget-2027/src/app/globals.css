@@ -25,6 +25,12 @@
   --series-2: #eb6834;
   --neutral-mark: #5b6b82;
   --focus: #2a78d6;
+  /* sequential ramp for maps (validated, ordinal, light surface) */
+  --seq-1: #86b6ef;
+  --seq-2: #5598e7;
+  --seq-3: #2a78d6;
+  --seq-4: #1c5cab;
+  --seq-5: #104281;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -47,6 +53,11 @@
     --series-2: #d95926;
     --neutral-mark: #8292a9;
     --focus: #6da7ec;
+    --seq-1: #1c5cab;
+    --seq-2: #2a78d6;
+    --seq-3: #5598e7;
+    --seq-4: #86b6ef;
+    --seq-5: #b7d3f6;
   }
 }
 :root[data-theme="dark"] {
@@ -68,6 +79,11 @@
   --series-2: #d95926;
   --neutral-mark: #8292a9;
   --focus: #6da7ec;
+  --seq-1: #1c5cab;
+  --seq-2: #2a78d6;
+  --seq-3: #5598e7;
+  --seq-4: #86b6ef;
+  --seq-5: #b7d3f6;
 }
 
 @theme inline {

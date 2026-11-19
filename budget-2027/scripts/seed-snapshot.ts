@@ -115,6 +115,15 @@ async function main() {
           for (const t of snap.tables) {
             await tx.dataTable.create({ data: { snapshotId: snap.id, id: t.id, title: t.title, documentId: t.documentId, data: t } });
           }
+          await tx.municipalBudget.createMany({
+            data: snap.municipalities.map((m) => ({
+              ...m,
+              snapshotId: snap.id,
+              populationAsOf: day(m.populationAsOf)!,
+              perCapita2027: dec(m.perCapita2027)!,
+              perCapita2026: dec(m.perCapita2026)!,
+            })),
+          });
           await tx.versionDiff.createMany({
             data: snap.versionDiffs.map((d) => ({
               snapshotId: snap.id,
@@ -128,6 +137,10 @@ async function main() {
             })),
           });
         }
+        await tx.snapshotDocument.createMany({
+          data: snap.documents.map((d) => ({ snapshotId: snap.id, documentId: d.id })),
+          skipDuplicates: true,
+        });
         for (const e of snap.legislativeEvents) {
           await tx.legislativeEvent.upsert({
             where: { id: e.id },

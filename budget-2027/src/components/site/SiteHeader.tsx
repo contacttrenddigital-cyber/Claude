@@ -15,6 +15,7 @@ const MORE = [
   { href: "/osigurovki", label: "Осигуровки и социални плащания" },
   { href: "/investitsii", label: "Инвестиции и проекти" },
   { href: "/institutsii", label: "Институции" },
+  { href: "/obshtini", label: "Общини" },
   { href: "/izpalnenie", label: "Изпълнение" },
   { href: "/#merki", label: "Мерки" },
   { href: "/iztochnitsi", label: "Източници и проверки" },

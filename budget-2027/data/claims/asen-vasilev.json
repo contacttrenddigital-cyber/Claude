@@ -70,15 +70,6 @@
    "publishedAt": "2026-07-01T17:58:00+03:00",
    "sha256": "378042f3c6f05aad760099f3b5ccceaf597fd287b28242fe89b99d2a981fc174",
    "note": "Използван само за прогнозата от 2026 г. (предходна версия на прогнозата)."
-  },
-  {
-   "id": "sigma-municipalities-2026-11-18",
-   "publisher": "СИГМА Бюджет (вторичен източник)",
-   "title": "СИГМА: Общини — трансфери, население и области; население по области към 01.01.2025 (Евростат demo_r_pjanaggr3)",
-   "url": "https://sigma-budget.midt.bg/data/municipalities.json",
-   "publishedAt": "2026-07-31T00:00:00+03:00",
-   "sha256": "cda50349fef2f8b9456c0f9ff7ce9ab52d2337c74ff41f9a640e7b7a29185919",
-   "note": "Сумата от населението на 28-те области към 01.01.2025 г. = 6 437 360 души."
   }
  ],
  "statements": [
@@ -210,7 +201,7 @@
        "label": "Капиталови разходи по КФП 2027, проект от 06.11 (по СИГМА)",
        "value": "6018.6",
        "unit": "млн. €",
-       "documentId": "sigma-expenditure-2026-11-18",
+       "documentId": "sigma-expenditure-2026-11-18-1a4da439",
        "check": null
       },
       {
@@ -847,7 +838,7 @@
        "label": "Население на България към 01.01.2025 (Евростат, по данни в СИГМА)",
        "value": "6437360",
        "unit": "души",
-       "documentId": "sigma-municipalities-2026-11-18",
+       "documentId": "sigma-municipalities-2026-11-18-cda50349",
        "check": null
       }
      ],

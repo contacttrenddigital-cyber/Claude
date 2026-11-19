@@ -64,12 +64,13 @@ export function createSigmaClient(opts: SigmaClientOptions = {}) {
   ).replace(/\/+$/, "");
   const doFetch = opts.fetchImpl ?? fetch;
 
-  async function getJson(path: string): Promise<unknown> {
+  async function getText(path: string): Promise<string> {
     const url = `${baseUrl}${path}`;
     const res = await doFetch(url, { headers: { accept: "application/json" } });
     if (!res.ok) throw new SigmaError(`GET ${url} → HTTP ${res.status}`);
-    return res.json();
+    return res.text();
   }
+  const getJson = async (path: string): Promise<unknown> => JSON.parse(await getText(path));
 
   return {
     baseUrl,
@@ -82,17 +83,19 @@ export function createSigmaClient(opts: SigmaClientOptions = {}) {
     },
 
     /** Fetch one dataset file. Rejects mock data and files without a valid meta block. */
+    /** `raw` is the exact response text: hash and archive this, never a re-serialisation. */
     async dataset<T = Record<string, unknown>>(
       slug: string,
-    ): Promise<{ meta: SigmaMeta; data: T; fileUrl: string }> {
+    ): Promise<{ meta: SigmaMeta; data: T; fileUrl: string; raw: string }> {
       if (!SLUG.test(slug)) throw new SigmaError(`invalid dataset slug "${slug}"`);
-      const raw = (await getJson(`/data/${slug}.json`)) as { meta?: unknown };
+      const text = await getText(`/data/${slug}.json`);
+      const raw = JSON.parse(text) as { meta?: unknown };
       const meta = SigmaMeta.safeParse(raw?.meta);
       if (!meta.success) throw new SigmaError(`${slug}: missing or invalid meta block`);
       if (meta.data.mock || meta.data.status === "mock") {
         throw new SigmaError(`${slug}: dataset is marked as mock and must not be used`);
       }
-      return { meta: meta.data, data: raw as T, fileUrl: `${baseUrl}/data/${slug}.json` };
+      return { meta: meta.data, data: raw as T, fileUrl: `${baseUrl}/data/${slug}.json`, raw: text };
     },
   };
 }

@@ -42,9 +42,10 @@ export const getPublished = cache(async () => {
     db.versionDiff.findMany({ where: { snapshotId: snapshot.id } }),
     db.legislativeEvent.findMany({ orderBy: { date: "asc" }, include: { document: true } }),
     db.budgetVersion.findMany({ orderBy: { date: "asc" } }),
-    db.sourceDocument.findMany({ orderBy: [{ versionId: "desc" }, { id: "asc" }] }),
+    db.sourceDocument.findMany({ where: { snapshotDocuments: { some: { snapshotId: snapshot.id } } }, orderBy: [{ versionId: "desc" }, { id: "asc" }] }),
     db.dataTable.findMany({ where: { snapshotId: snapshot.id } }),
   ]);
+  const munis = await db.municipalBudget.findMany({ where: { snapshotId: snapshot.id }, orderBy: { name: "asc" } });
 
   const series: Record<string, SeriesView> = {};
   for (const o of observations) {
@@ -116,6 +117,19 @@ export const getPublished = cache(async () => {
   }));
 
   return {
+    municipalities: munis.map((m) => ({
+      code: m.code,
+      name: m.name,
+      billName: m.billName,
+      region: m.region,
+      population: m.population,
+      populationAsOf: iso(m.populationAsOf)!,
+      y2027: m.y2027 as Record<string, string | null>,
+      y2026: m.y2026 as Record<string, string | null>,
+      perCapita2027: m.perCapita2027.toString(),
+      perCapita2026: m.perCapita2026.toString(),
+      billLocator: m.billLocator,
+    })),
     tables: Object.fromEntries(tables.map((t) => [t.id, TableSchema.parse(t.data)])) as Record<string, TableData>,
     snapshot: {
       id: snapshot.id,

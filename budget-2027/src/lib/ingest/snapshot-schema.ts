@@ -118,6 +118,21 @@ export const SnapshotSchema = z.object({
     }),
   ),
   tables: z.array(TableSchema),
+  municipalities: z.array(
+    z.object({
+      code: z.string().regex(/^[A-Z]{3}\d{2}$/),
+      name: z.string(),
+      billName: z.string(),
+      region: z.string(),
+      population: z.number().int().positive(),
+      populationAsOf: date,
+      y2027: z.record(z.string(), dec.nullable()),
+      y2026: z.record(z.string(), dec.nullable()),
+      perCapita2027: dec,
+      perCapita2026: dec,
+      billLocator: z.string(),
+    }),
+  ),
   legislativeEvents: z.array(
     z.object({ id: z.string(), date, type: z.string(), title: z.string(), documentId: z.string(), note: z.string().nullable() }),
   ),

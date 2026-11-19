@@ -65,24 +65,35 @@ model BudgetVersion {
 
 /// An original file exactly as retrieved; sha256 identifies the bytes.
 model SourceDocument {
-  id          String              @id
-  sha256      String
-  bytes       Int
-  publisher   String
-  title       String
-  url         String
-  pageUrl     String?
-  mime        String
-  retrievedOn DateTime            @db.Date
-  publishedOn DateTime?           @db.Date
-  legalStatus String?
-  version     BudgetVersion?      @relation(fields: [versionId], references: [id])
-  versionId   String?
-  citations   ObservationSource[]
-  measures    BudgetMeasure[]
-  events      LegislativeEvent[]
+  id                String              @id
+  sha256            String
+  bytes             Int
+  publisher         String
+  title             String
+  url               String
+  pageUrl           String?
+  mime              String
+  retrievedOn       DateTime            @db.Date
+  publishedOn       DateTime?           @db.Date
+  legalStatus       String?
+  version           BudgetVersion?      @relation(fields: [versionId], references: [id])
+  versionId         String?
+  citations         ObservationSource[]
+  measures          BudgetMeasure[]
+  events            LegislativeEvent[]
+  snapshotDocuments SnapshotDocument[]
 
   @@index([sha256])
+}
+
+/// Which documents a snapshot is built from (documents themselves are shared and immutable).
+model SnapshotDocument {
+  snapshot   DataSnapshot   @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  snapshotId String
+  document   SourceDocument @relation(fields: [documentId], references: [id])
+  documentId String
+
+  @@id([snapshotId, documentId])
 }
 
 model ImportJob {
@@ -98,19 +109,21 @@ model ImportJob {
 
 /// Immutable bundle of observations built by scripts/build-snapshot.ts.
 model DataSnapshot {
-  id           String              @id // "snap-<content hash>"
-  createdAt    DateTime
-  retrievedOn  DateTime            @db.Date
-  sigmaVersion String
-  publishedAt  DateTime?
-  publishedBy  String?
-  supersededAt DateTime?
-  observations MetricObservation[]
-  measures     BudgetMeasure[]
-  checks       ValidationCheck[]
-  versionDiffs VersionDiff[]
-  importJobs   ImportJob[]
-  dataTables   DataTable[]
+  id                String              @id // "snap-<content hash>"
+  createdAt         DateTime
+  retrievedOn       DateTime            @db.Date
+  sigmaVersion      String
+  publishedAt       DateTime?
+  publishedBy       String?
+  supersededAt      DateTime?
+  observations      MetricObservation[]
+  measures          BudgetMeasure[]
+  checks            ValidationCheck[]
+  versionDiffs      VersionDiff[]
+  importJobs        ImportJob[]
+  dataTables        DataTable[]
+  municipalBudgets  MunicipalBudget[]
+  snapshotDocuments SnapshotDocument[]
 }
 
 model Metric {
@@ -214,6 +227,25 @@ model DataTable {
   data       Json
 
   @@id([snapshotId, id])
+}
+
+/// Transfers from the central budget to one municipality: 2026 (ЗДБ 2026, via SIGMA) and 2027 (bill, чл. 52).
+model MunicipalBudget {
+  snapshot       DataSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  snapshotId     String
+  code           String
+  name           String
+  billName       String
+  region         String
+  population     Int
+  populationAsOf DateTime     @db.Date
+  y2027          Json
+  y2026          Json
+  perCapita2027  Decimal      @db.Decimal(14, 2)
+  perCapita2026  Decimal      @db.Decimal(14, 2)
+  billLocator    String
+
+  @@id([snapshotId, code])
 }
 
 model LegislativeEvent {

@@ -102,6 +102,15 @@ export function TableView({ table, columns, sourceUrl, sourceTitle, searchable, 
                     </th>
                   </tr>
                 );
+              const allEmpty = cols.every((c) => !(r.cells[c.key]?.text ?? "").trim());
+              if (allEmpty && /:$/.test(r.label))
+                return (
+                  <tr key={r.rowIndex} className="border-b border-rule">
+                    <th scope="row" colSpan={cols.length + 1 + textCols.length} className={`px-3 py-1 text-left text-xs font-normal text-muted ${r.level ? "pl-7" : ""}`}>
+                      {r.label}
+                    </th>
+                  </tr>
+                );
               const a = highlightChanges ? (r.cells[highlightChanges[0]]?.text ?? "").replace(/\s+/g, " ").trim() : "";
               const b = highlightChanges ? (r.cells[highlightChanges[1]]?.text ?? "").replace(/\s+/g, " ").trim() : "";
               const changed = !!highlightChanges && b !== "" && a !== b;

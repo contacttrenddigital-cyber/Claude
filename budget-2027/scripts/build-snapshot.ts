@@ -25,6 +25,8 @@ import { SNAPSHOT_SCHEMA_VERSION, type Snapshot } from "../src/lib/ingest/snapsh
 import { annex3AsTable, extractTable } from "../src/lib/tables/extract";
 import { TABLES } from "../src/lib/tables/catalog";
 import { childSumChecks, crossCheck, grandTotalChecks, sumTopLevel } from "../src/lib/tables/checks";
+import { joinByName } from "../src/lib/municipal/join";
+import { locatorOf } from "../src/lib/tables/extract";
 
 const ROOT = join(__dirname, "..");
 const RAW = join(ROOT, "data/raw");
@@ -166,11 +168,12 @@ async function main() {
   const sigmaFiles: Record<string, unknown> = {};
   for (const slug of ["budget2027", "outlook", "expenditure", "revenue"]) {
     const r = await sigma.dataset(slug);
-    const text = JSON.stringify(r.data);
+    const text = r.raw;
     writeFileSync(join(sigmaDir, `${slug}.json`), text);
     sigmaFiles[slug] = r.data;
     documents.push({
-      id: `sigma-${slug}-${cat.meta.asOf}`,
+      // content-addressed id: a changed SIGMA file is a new document, never an overwrite
+      id: `sigma-${slug}-${cat.meta.asOf}-${sha256(text).slice(0, 8)}`,
       sha256: sha256(text),
       bytes: Buffer.byteLength(text),
       publisher: "СИГМА Бюджет (вторичен източник)",
@@ -222,7 +225,7 @@ async function main() {
       review: "single_source",
       sources: [
         {
-          documentId: `sigma-${row.dataset}-${cat.meta.asOf}`,
+          documentId: documents.find((d) => d.id.startsWith(`sigma-${row.dataset}-${cat.meta.asOf}-`))!.id,
           locator: `СИГМА, byPeriod["2027.draft"], ред „${label}“ (Приложение № 3 по публикацията на МФ от 06.11.2026)`,
           value: row.value,
           original: row.value,
@@ -231,8 +234,84 @@ async function main() {
     });
   }
 
+  // ── Municipalities: bill (чл. 52, 2027) ↔ SIGMA codes, population and ЗДБ 2026 transfers ──
+  const muniRaw = await sigma.dataset("municipalities");
+  const muniText = muniRaw.raw;
+  writeFileSync(join(sigmaDir, "municipalities.json"), muniText);
+  documents.push({
+    id: `sigma-municipalities-${cat.meta.asOf}-${sha256(muniText).slice(0, 8)}`,
+    sha256: sha256(muniText),
+    bytes: Buffer.byteLength(muniText),
+    publisher: "СИГМА Бюджет (вторичен източник)",
+    title: `СИГМА: ${muniRaw.meta.title} (${muniRaw.meta.sourceNote ?? ""})`,
+    url: muniRaw.fileUrl,
+    pageUrl: "https://sigma-budget.midt.bg/danni/municipalities",
+    mime: "application/json",
+    retrievedOn: RETRIEVED,
+    publishedOn: muniRaw.meta.asOf,
+    legalStatus: "ЗДБ 2026 (приет закон), население по Eurostat GISCO LAU 2024",
+    versionId: "mf-draft-2026-11-06",
+  });
+  type MuniItem = { id: string; name: string; region: string; population: number; lawName?: string; transfers: Record<string, number> };
+  const muniItems = (muniRaw.data as unknown as { items: MuniItem[]; totals: { transfersKhil: number } }).items;
+  const muniTable = T("municipalities");
+  const j = joinByName(
+    muniTable.rows.filter((r) => r.kind === "data"),
+    muniItems,
+  );
+  checks.push({
+    id: "join:municipalities",
+    kind: "cross-source",
+    status: j.unmatched.length === 0 && j.duplicates.length === 0 && j.matched.length === muniItems.length ? "pass" : "fail",
+    description: `Общини: ${j.matched.length} от ${muniTable.rows.filter((r) => r.kind === "data").length} реда в законопроекта са свързани с код; несвързани ${j.unmatched.length}; дублирани кодове ${j.duplicates.length}`,
+  });
+  const dstr = (n: number | undefined) => (n === undefined || n === null ? null : String(n));
+  const municipalities = j.matched.map(({ code, entry, row }) => {
+    const it = muniItems.find((i) => i.id === code)!;
+    const y2027 = Object.fromEntries(Object.entries(row.cells).map(([k, c]) => [k, c.value]));
+    const y2026 = {
+      total: dstr(it.transfers.total),
+      delegated: dstr(it.transfers.delegated),
+      equalizing: dstr(it.transfers.equalizing),
+      winter: dstr(it.transfers.winterRoads),
+      capital: dstr(it.transfers.capital),
+    };
+    const pc = (v: string | null) => (v === null ? "0" : new Decimal(v).times(1000).dividedBy(it.population).toDecimalPlaces(2).toFixed(2));
+    return {
+      code,
+      name: entry.name,
+      billName: row.label,
+      region: it.region,
+      population: it.population,
+      populationAsOf: "2024-01-01",
+      y2027,
+      y2026,
+      perCapita2027: pc(y2027.total ?? null),
+      perCapita2026: pc(y2026.total),
+      billLocator: locatorOf(muniTable, row),
+    };
+  });
+  const sum2026 = municipalities.reduce((s, m) => s.plus(m.y2026.total ?? "0"), new Decimal(0));
+  checks.push(
+    crossCheck(
+      "xsrc:municipalities-2026-total",
+      "Сбор на трансферите 2026 по общини (СИГМА) = общата сума в СИГМА (ЗДБ 2026, чл. 51)",
+      sum2026.toString(),
+      String((muniRaw.data as unknown as { totals: { transfersKhil: number } }).totals.transfersKhil),
+      "1",
+    ),
+  );
+
   const failed = checks.filter((c) => c.status === "fail");
-  const content = { observations: [...observations, ...draftObs], measures: m.measures, versionDiffs, tables, checks };
+  const content = {
+    documents: documents.map((d) => [d.id, d.sha256]),
+    observations: [...observations, ...draftObs],
+    measures: m.measures,
+    versionDiffs,
+    tables,
+    checks,
+    municipalities,
+  };
   const id = `snap-${sha256(JSON.stringify(content)).slice(0, 16)}`;
   const snapshot: Snapshot = {
     schemaVersion: SNAPSHOT_SCHEMA_VERSION,
@@ -265,6 +344,7 @@ async function main() {
     measures: content.measures,
     versionDiffs,
     tables,
+    municipalities,
     checks,
     legislativeEvents: [
       {
@@ -280,7 +360,7 @@ async function main() {
         date: "2026-11-06",
         type: "PUBLIC_DRAFT",
         title: "МФ публикува проекта на бюджет 2027 и АСБП 2027–2029",
-        documentId: `sigma-budget2027-${cat.meta.asOf}`,
+        documentId: documents.find((d) => d.id.startsWith(`sigma-budget2027-${cat.meta.asOf}-`))!.id,
         note: "Датата е по СИГМА; първичната страница на МФ не беше достъпна за автоматична проверка.",
       },
       {
