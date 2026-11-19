@@ -38,7 +38,7 @@ jobs:
           cache-dependency-path: budget-2027/package-lock.json
       - run: npm ci
       - run: npx prisma validate && npx prisma migrate deploy
-      - run: npm run db:seed && npm run db:publish -- "CI"
+      - run: npm run db:seed && npm run db:publish -- "CI" && npm run db:seed:claims
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run check:skills

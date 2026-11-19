@@ -1,7 +1,7 @@
 # TASKS — Бюджет 2027: под лупа
 
 `[x]` готово и проверено · `[~]` частично · `[ ]` предстои · `[!]` блокирано (с причина)
-Последна актуализация: 19.11.2026, етап 2 (P1, част 1).
+Последна актуализация: 19.11.2026, етап 3 (P1, част 2).
 
 ## Фаза 0 — Настройка ✅
 Skills (8), MCP (sigma-budget, context7, playwright), стек, правила, CI. Виж историята в git.
@@ -41,7 +41,14 @@ Skills (8), MCP (sigma-budget, context7, playwright), стек, правила, 
 - [ ] Данъци и осигуровки: страница с всички ставки и акцизи от Приложение № 2 → `/danatsi`, `/osigurovki`
 - [ ] Страници `/prihodi`, `/razhodi`, `/defitsit`, `/dalg`, `/investitsii` със същия модел
 - [ ] Каталог на мерките `/promeni` с детайлни страници
-- [!] Архив „Асен Василев“ и `/factcheck`: искането за достъп до mediapool, offnews, bgvoice, btvnovinite, nova, bta беше отказано от услугата за среди (два опита, 19.11.2026). Собственикът трябва да ги добави ръчно: меню на средата → Edit → Network access → Allowed domains.
+- [x] Архив „Асен Василев“ (`/analizi/asen-vasilev`): 3 изказвания, 21 твърдения; 8 потвърдени, 5 частично верни, 3 с недостатъчно данни, 3 прогнози, 2 мнения
+  - [x] Всяко число се преизчита от документа, всяко изчисление се възпроизвежда, цитатите се сверяват дословно (68 теста)
+  - [x] Позиция на правителството от мотивите; контекст; версия на бюджета (06.11)
+  - [x] Хронология: гласуване в бюджетната комисия на 17.11.2026 (по БТА, 12 „за“ / 10 „против“)
+  - [!] Facebook: не се събира автоматично (условия на Meta). Чакаме линкове или текст на постовете от последните 10 дни от собственика
+  - [!] bTV: Cloudflare проверка — интервюто в „Тази сутрин“ не е включено
+  - [ ] Поредицата „Перо по перо“ (следващите части), стенограми от НС, видео с времеви кодове
+  - [ ] Други изказващи се (правителство, Фискален съвет, икономисти) по същата методика → `/factcheck`
 - [ ] Търсене в сайта
 
 ## P2 / P3 (не са започнати)
@@ -49,7 +56,8 @@ Skills (8), MCP (sigma-budget, context7, playwright), стек, правила, 
 
 ## Документи по MASTER PROMPT
 - [x] README, .env.example, SOURCE_INVENTORY, SIGMA_INTEGRATION, BUDGET_VERSION_HISTORY, FISCAL_DATA_DICTIONARY (генериран), FISCAL_METHODOLOGY, DESIGN_SYSTEM, ARCHITECTURE, DATA_REFRESH_AND_REVIEW, DEPLOYMENT, KNOWN_LIMITATIONS
-- [ ] ASEN_VASILEV_SOURCE_ARCHIVE, CLAIMS_AND_VERIFICATIONS, BENCHMARK_AUDIT, EDITORIAL_STANDARDS, PERFORMANCE_INDICATOR_METHODS, PROCUREMENT_JOIN_LIMITATIONS, FORECAST_UNCERTAINTY_RUBRIC
+- [x] ASEN_VASILEV_SOURCE_ARCHIVE, CLAIMS_AND_VERIFICATIONS
+- [ ] BENCHMARK_AUDIT, EDITORIAL_STANDARDS, PERFORMANCE_INDICATOR_METHODS, PROCUREMENT_JOIN_LIMITATIONS, FORECAST_UNCERTAINTY_RUBRIC
 
 ## Решения
 - 2026-11-19: основният източник е внесеният в НС DOCX, а не PDF-ите на МФ (Cloudflare). СИГМА служи само за версията от 06.11 и за сравнение.

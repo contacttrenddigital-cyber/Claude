@@ -1,0 +1,22 @@
+{
+ "documents": [
+  {
+   "id": "bta-2026-11-17-committee",
+   "publisher": "БТА",
+   "title": "Бюджетната комисия към Народното събрание одобри на първо гласуване проекта на Закон за държавния бюджет за 2027 г.",
+   "url": "https://www.bta.bg/bg/news/economy/1248831-byudzhetnata-komisiya-kam-narodnoto-sabranie-odobri-na-parvo-glasuvane-proekta-n",
+   "publishedAt": "2026-11-17T18:57:38+02:00",
+   "sha256": "0c022788117244d19b5edc288985caf52f5d35159003f9eb1684d1a0c6cf17d3"
+  }
+ ],
+ "events": [
+  {
+   "id": "ev-2026-11-17-committee",
+   "date": "2026-11-17",
+   "type": "COMMITTEE_FIRST_VOTE",
+   "title": "Комисията по бюджет и финанси одобрява законопроекта на първо гласуване (12 „за“, 10 „против“)",
+   "documentId": "bta-2026-11-17-committee",
+   "note": "По БТА. Докладът на комисията още не е публикуван в API на Народното събрание (19.11.2026). Това не е гласуване в пленарна зала."
+  }
+ ]
+}

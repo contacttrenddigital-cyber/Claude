@@ -76,8 +76,8 @@ model SourceDocument {
   retrievedOn DateTime            @db.Date
   publishedOn DateTime?           @db.Date
   legalStatus String?
-  version     BudgetVersion       @relation(fields: [versionId], references: [id])
-  versionId   String
+  version     BudgetVersion?      @relation(fields: [versionId], references: [id])
+  versionId   String?
   citations   ObservationSource[]
   measures    BudgetMeasure[]
   events      LegislativeEvent[]
@@ -224,27 +224,35 @@ model Municipality {
 }
 
 model PoliticalStatement {
-  id       String   @id @default(cuid())
-  speaker  String
-  saidAt   DateTime
-  platform String
-  url      String
-  timecode String?
-  excerpt  String // short quotation only
-  summary  String
-  claims   Claim[]
+  id            String   @id
+  speaker       String
+  saidOn        DateTime @db.Date
+  title         String
+  platform      String
+  summary       String
+  budgetVersion String
+  /// SourceDocument ids (media articles, posts) — first is the primary reproduction
+  documentIds   String[]
+  claims        Claim[]
 }
 
 model Claim {
-  id          String             @id @default(cuid())
-  statement   PoliticalStatement @relation(fields: [statementId], references: [id], onDelete: Cascade)
-  statementId String
-  text        String
-  verdict     String? // Потвърдено | Частично вярно | Подвеждащо | Невярно | Недостатъчно данни | Прогноза | Мнение
-  reasoning   String?
-  reviewedBy  String?
-  publishedAt DateTime?
-  evidence    ClaimEvidence[]
+  id                 String             @id
+  statement          PoliticalStatement @relation(fields: [statementId], references: [id], onDelete: Cascade)
+  statementId        String
+  ordinal            Int
+  topic              String
+  kind               String // factual | forecast | opinion
+  quote              String // short verbatim quotation
+  verdict            String // Потвърдено | Частично вярно | Подвеждащо | Невярно | Недостатъчно данни | Прогноза | Мнение
+  reasoning          String
+  context            String?
+  governmentPosition String?
+  figures            Json
+  calculation        Json?
+  reviewedBy         String
+  reviewedOn         DateTime           @db.Date
+  evidence           ClaimEvidence[]
 }
 
 model ClaimEvidence {

@@ -5,6 +5,7 @@ const NAV = [
   { href: "/#pokazateli", label: "Показатели" },
   { href: "/#merki", label: "Мерки" },
   { href: "/kalkulator", label: "Калкулатор" },
+  { href: "/analizi/asen-vasilev", label: "Проверка на твърдения" },
   { href: "/#defitsit-i-dalg", label: "Дефицит и дълг" },
   { href: "/#promeni", label: "Промени" },
   { href: "/iztochnitsi", label: "Източници" },

@@ -281,7 +281,7 @@ export default async function Home() {
               ))}
               <li className="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-3 py-3">
                 <span className="text-sm text-muted">предстои</span>
-                <p className="text-sm text-ink-2">Обсъждане в комисиите и гласуване на първо четене — ще бъде добавено след проверка в официалните записи на НС.</p>
+                <p className="text-sm text-ink-2">Гласуване на първо четене в пленарна зала — ще бъде добавено след проверка в официалните записи на НС.</p>
               </li>
             </ol>
           </div>
