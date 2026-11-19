@@ -119,6 +119,7 @@ export function TableView({ table, columns, sourceUrl, sourceTitle, searchable, 
                 <tr key={r.rowIndex} className={`border-b border-rule ${changed ? "bg-warning/10" : ""}`}>
                   <th
                     scope="row"
+                    style={r.level > 1 ? { paddingLeft: `${0.75 + r.level}rem` } : undefined}
                     className={`px-3 py-1.5 text-left align-top ${r.level ? "pl-7 font-normal text-ink-2" : "font-normal text-ink"} ${r.kind === "total" ? "font-semibold" : ""}`}
                   >
                     {href ? (

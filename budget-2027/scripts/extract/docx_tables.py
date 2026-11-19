@@ -1,6 +1,8 @@
 """Extract every table of a DOCX into JSON with coordinates (table index, row, column).
 
-Usage: python3 -I docx_tables.py <input.docx> <output.json>
+Usage: python3 -I docx_tables.py <input.docx> <output.json> [<original file>]
+When the DOCX was converted from another format (e.g. the RTF bills, via LibreOffice), pass the
+original file: `file` and `sha256` then identify the original, and `via` records the conversion.
 Output records keep the exact printed cell text; normalisation happens in TypeScript.
 Each table also records the nearest preceding heading/paragraph text as `caption`,
 so a value can be cited as "<document>, таблица <n> (<caption>), ред <r>, колона <c>".
@@ -24,8 +26,8 @@ def iter_blocks(doc):
             yield Table(child, doc)
 
 
-def main(src, out):
-    data = open(src, "rb").read()
+def main(src, out, original=None):
+    data = open(original or src, "rb").read()
     doc = docx.Document(src)
     tables, prev_texts, paragraphs = [], [], []
     for block in iter_blocks(doc):
@@ -46,7 +48,13 @@ def main(src, out):
             rows.append(cells)
         tables.append({"index": len(tables), "context": prev_texts[:], "rows": rows})
     json.dump(
-        {"file": src.rsplit("/", 1)[-1], "sha256": hashlib.sha256(data).hexdigest(), "tables": tables, "paragraphs": paragraphs},
+        {
+            "file": (original or src).rsplit("/", 1)[-1],
+            "sha256": hashlib.sha256(data).hexdigest(),
+            **({"via": "LibreOffice → DOCX"} if original else {}),
+            "tables": tables,
+            "paragraphs": paragraphs,
+        },
         open(out, "w", encoding="utf-8"),
         ensure_ascii=False,
         indent=1,
@@ -55,4 +63,4 @@ def main(src, out):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2])
+    main(sys.argv[1], sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else None)

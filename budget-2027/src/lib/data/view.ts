@@ -1,6 +1,7 @@
 /** Shared helpers for building page view models from the published snapshot. */
 import type { BarSeries } from "@/components/charts/YearBars";
 import type { SeriesView } from "./types";
+import type { TableData } from "@/lib/ingest/snapshot-schema";
 import type { Published } from "./published";
 
 export function bars(name: string, color: BarSeries["color"], s: SeriesView): BarSeries {
@@ -14,6 +15,23 @@ export function bars(name: string, color: BarSeries["color"], s: SeriesView): Ba
 export function billSource(p: Published) {
   const d = p.documents.find((x) => x.id === "ns-52-602-01-71-docx")!;
   return { url: d.url, title: "Законопроект за ДБРБ 2027 с мотиви (НС, вх. № 52-602-01-71)" };
+}
+
+/** Source link for one of the social fund bills (ДОО, НЗОК). */
+export function lawSource(p: Published, id: "ns-52-602-01-68-rtf" | "ns-52-602-01-70-rtf") {
+  const d = p.documents.find((x) => x.id === id)!;
+  return { url: d.url, title: d.title };
+}
+
+/** Bars for one table row across its year columns (values as printed). */
+export function rowBars(name: string, color: BarSeries["color"], t: TableData, label: string, caption: string): BarSeries {
+  const r = t.rows.find((x) => x.label === label);
+  if (!r) throw new Error(`${t.id}: row „${label}“ not found`);
+  return {
+    name,
+    color,
+    points: t.columns.map((c) => ({ period: c.period, value: r.cells[c.key]?.value ?? null, vintage: c.vintage, source: caption })),
+  };
 }
 
 import type { FindingsData } from "@/lib/findings";

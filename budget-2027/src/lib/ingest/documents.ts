@@ -9,6 +9,8 @@ import { parseBgNumber, type ParsedNumber } from "./bg-number";
 export const DocxExtract = z.object({
   file: z.string(),
   sha256: z.string().regex(/^[a-f0-9]{64}$/),
+  /** set when the DOCX was converted from the original (file/sha256 then identify the original) */
+  via: z.string().optional(),
   tables: z.array(
     z.object({
       index: z.number(),

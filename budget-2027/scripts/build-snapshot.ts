@@ -24,6 +24,7 @@ import { createSigmaClient } from "../src/lib/sigma/client";
 import { SNAPSHOT_SCHEMA_VERSION, type Snapshot } from "../src/lib/ingest/snapshot-schema";
 import { annex3AsTable, extractTable } from "../src/lib/tables/extract";
 import { TABLES } from "../src/lib/tables/catalog";
+import { socialFundTables } from "../src/lib/tables/social-funds";
 import { childSumChecks, crossCheck, grandTotalChecks, sumTopLevel } from "../src/lib/tables/checks";
 import { joinByName } from "../src/lib/municipal/join";
 import { locatorOf } from "../src/lib/tables/extract";
@@ -129,6 +130,19 @@ async function main() {
     annex3AsTable(annex3, 1, { id: "kfpRevenue", title: "Приходи по КФП, подробно", description: "Приложение № 3: приходи, помощи и дарения по видове, 2025–2029.", documentId: documents[0]!.id, file: docx.file }),
     annex3AsTable(annex3, 2, { id: "kfpExpenditure", title: "Разходи по КФП по икономически вид", description: "Приложение № 3: разходи по икономически елементи, 2025–2029.", documentId: documents[0]!.id, file: docx.file }),
   );
+  // ── ДОО and НЗОК bills (RTF → DOCX via LibreOffice; file/sha256 identify the RTF) ──
+  const lawDoc = (name: string, id: string) => {
+    const x = DocxExtract.parse(JSON.parse(readFileSync(join(ROOT, `data/extracted/${name}.tables.json`), "utf8")));
+    const d = documents.find((doc) => doc.id === id)!;
+    if (x.sha256 !== d.sha256) throw new Error(`${name}.tables.json was extracted from a different file`);
+    return x;
+  };
+  const social = socialFundTables(lawDoc("52-602-01-68", "ns-52-602-01-68-rtf"), lawDoc("52-602-01-70", "ns-52-602-01-70-rtf"), {
+    doo: "ns-52-602-01-68-rtf",
+    nzok: "ns-52-602-01-70-rtf",
+  });
+  tables.push(...social.tables);
+  checks.push(...social.checks);
   const T = (id: string) => tables.find((t) => t.id === id)!;
   const yrs = ["2026", "2027", "2028", "2029"];
   checks.push(...childSumChecks(T("functions"), yrs));
@@ -159,6 +173,24 @@ async function main() {
     ),
   );
 
+
+  // Табл. III-2: the NATO-classified total = МО + ДВВУ + централен бюджет + other spending units
+  const def = T("defense");
+  const natoTotal = def.rows.find((r) => r.label === "Разходи за отбрана, съгласно класификацията на НАТО")!;
+  const defParts = def.rows.filter((r) => r.level === 0 && /^(Общо разходи по бюджета на МО|Общо трансфери по бюджетите на ДВВУ|Общо разходи по ЦБ|Разходи за отбрана по бюджетите на други ПРБ)/.test(r.label));
+  if (defParts.length !== 4) throw new Error("defense: expected 4 component rows");
+  for (const y of yrs) {
+    checks.push(
+      crossCheck(
+        `tbl:defense:components:${y}`,
+        `Табл. III-2: МО + ДВВУ + ЦБ + други ПРБ = разходи за отбрана по НАТО, ${y}`,
+        defParts.reduce((acc, r) => acc.plus(r.cells[y]?.value ?? "0"), new Decimal(0)).toString(),
+        natoTotal.cells[y]?.value ?? null,
+        "0.1",
+      ),
+    );
+  }
+  checks.push(...childSumChecks(def, yrs, "0.1"));
 
   // ── SIGMA: the MoF draft published on 06.11.2026, as presented by SIGMA ──
   const sigma = createSigmaClient();

@@ -13,6 +13,9 @@ const PRIMARY = [
 
 const MORE = [
   { href: "/osigurovki", label: "Осигуровки и социални плащания" },
+  { href: "/pensii", label: "Пенсии и ДОО" },
+  { href: "/zdraveopazvane", label: "Здравеопазване и НЗОК" },
+  { href: "/otbrana", label: "Отбрана" },
   { href: "/investitsii", label: "Инвестиции и проекти" },
   { href: "/institutsii", label: "Институции" },
   { href: "/obshtini", label: "Общини" },

@@ -31,6 +31,7 @@ export function RankedBars({
   baseLabel: string;
 }) {
   const [showTable, setShowTable] = useState(false);
+  const hasBase = items.some((i) => i.base !== null);
   const sorted = [...items].filter((i) => i.value !== null).sort((a, b) => Number(b.value) - Number(a.value));
   const max = Math.max(...sorted.flatMap((i) => [Number(i.value), Number(i.base ?? 0)]), 0) || 1;
   return (
@@ -44,10 +45,12 @@ export function RankedBars({
           <span aria-hidden className="inline-block h-2.5 w-4 rounded-[2px]" style={{ background: "var(--series-1)" }} />
           {valueLabel}
         </li>
-        <li className="flex items-center gap-1.5">
-          <span aria-hidden className="inline-block h-3 w-0.5" style={{ background: "var(--ink)" }} />
-          {baseLabel}
-        </li>
+        {hasBase && (
+          <li className="flex items-center gap-1.5">
+            <span aria-hidden className="inline-block h-3 w-0.5" style={{ background: "var(--ink)" }} />
+            {baseLabel}
+          </li>
+        )}
       </ul>
       {!showTable ? (
         <ol className="flex flex-col">
@@ -87,9 +90,11 @@ export function RankedBars({
                 <th scope="col" className="py-1 pr-3 text-left font-normal">
                   Категория
                 </th>
-                <th scope="col" className="py-1 pr-3 text-right font-normal">
-                  {baseLabel}
-                </th>
+                {hasBase && (
+                  <th scope="col" className="py-1 pr-3 text-right font-normal">
+                    {baseLabel}
+                  </th>
+                )}
                 <th scope="col" className="py-1 text-right font-normal">
                   {valueLabel}
                 </th>
@@ -101,7 +106,7 @@ export function RankedBars({
                   <th scope="row" className="py-1 pr-3 text-left font-normal">
                     {i.label}
                   </th>
-                  <td className="py-1 pr-3 text-right">{i.base === null ? "—" : fmtNum(i.base)}</td>
+                  {hasBase && <td className="py-1 pr-3 text-right">{i.base === null ? "—" : fmtNum(i.base)}</td>}
                   <td className="py-1 text-right">{fmtNum(i.value)}</td>
                 </tr>
               ))}
