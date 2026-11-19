@@ -7,7 +7,7 @@
 Изисквания: **Node.js ≥ 22**, **PostgreSQL 16** (локално на порт 5432), Python 3 само ако ще извличаш документите наново.
 
 ```bash
-cd budget-2027 && cp -n .env.example .env && npm ci && npx prisma migrate deploy && npm run db:seed && npm run db:publish -- "Локален преглед" && npm run build && npm start
+cd budget-2027 && cp -n .env.example .env && npm ci && npx prisma migrate deploy && npm run db:seed && npm run db:publish -- "Локален преглед" && npm run db:seed:claims && npm run build && npm start
 ```
 
 Отвори http://localhost:3000. Снимката на данните е в git (`data/snapshots/`), затова стартирането не изисква мрежа.
@@ -29,6 +29,8 @@ sudo -u postgres psql -c "CREATE USER budget WITH PASSWORD 'budget' CREATEDB;" -
 | `npm run extract` | извлича таблиците и Приложение № 3 от DOCX |
 | `npm run snapshot:build` | сглобява проверена снимка (спира при неуспешна проверка) |
 | `npm run db:seed` / `db:publish -- "Име"` | зарежда / публикува снимка (с одит лог) |
+| `npm run db:seed:claims` | зарежда проверките на твърдения (`data/claims/`) |
+| `ADMIN_PASSWORD=… npm run user:create -- --email … --role publisher` | създава редактор за `/admin` (нужен е `SESSION_SECRET` в `.env`) |
 | `npm run docs:dictionary` | генерира `docs/FISCAL_DATA_DICTIONARY.md` |
 
 ## Документация
