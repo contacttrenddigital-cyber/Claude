@@ -302,6 +302,38 @@ async function main() {
     ),
   );
 
+  // ── Glossary (SIGMA; definitions only — SIGMA's examples use illustrative numbers and are excluded) ──
+  const gl = await sigma.dataset("glossary");
+  writeFileSync(join(sigmaDir, "glossary.json"), gl.raw);
+  const glId = `sigma-glossary-${cat.meta.asOf}-${sha256(gl.raw).slice(0, 8)}`;
+  documents.push({
+    id: glId,
+    sha256: sha256(gl.raw),
+    bytes: Buffer.byteLength(gl.raw),
+    publisher: "СИГМА Бюджет (вторичен източник)",
+    title: `СИГМА: ${gl.meta.title}`,
+    url: gl.fileUrl,
+    pageUrl: "https://sigma-budget.midt.bg/rechnik",
+    mime: "application/json",
+    retrievedOn: RETRIEVED,
+    publishedOn: gl.meta.asOf,
+    legalStatus: "речник; използвани са само определенията",
+    versionId: "mf-draft-2026-11-06",
+  });
+  type GlTerm = { slug: string; title: string; def: string; aliases?: string[] };
+  const glossary = (gl.data as unknown as { terms: GlTerm[] }).terms.map((t) => ({
+    slug: t.slug,
+    term: t.title,
+    definition: t.def,
+    aliases: t.aliases ?? [],
+    documentId: glId,
+  }));
+  // ── Committees the bill is assigned to (Parliament API) ──
+  const billApi = JSON.parse(readFileSync(join(RAW, "parliament/bill_167645.json"), "utf8")) as {
+    dist_list: { A_ns_CL_value: string; L_Act_DTL_value: string }[];
+  };
+  const committees = billApi.dist_list.map((d) => ({ name: d.A_ns_CL_value, role: d.L_Act_DTL_value, documentId: "ns-api-bill-167645" }));
+
   const failed = checks.filter((c) => c.status === "fail");
   const content = {
     documents: documents.map((d) => [d.id, d.sha256]),
@@ -311,6 +343,8 @@ async function main() {
     tables,
     checks,
     municipalities,
+    glossary,
+    committees,
   };
   const id = `snap-${sha256(JSON.stringify(content)).slice(0, 16)}`;
   const snapshot: Snapshot = {
@@ -345,6 +379,8 @@ async function main() {
     versionDiffs,
     tables,
     municipalities,
+    glossary,
+    committees,
     checks,
     legislativeEvents: [
       {

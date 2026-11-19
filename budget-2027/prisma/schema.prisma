@@ -96,6 +96,16 @@ model SnapshotDocument {
   @@id([snapshotId, documentId])
 }
 
+/// Small reference datasets of a snapshot (glossary, committees), stored as validated JSON.
+model SnapshotReference {
+  snapshot   DataSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  snapshotId String
+  key        String
+  data       Json
+
+  @@id([snapshotId, key])
+}
+
 model ImportJob {
   id         String        @id @default(cuid())
   kind       String // "snapshot-seed" | "sigma-check" | ...
@@ -109,21 +119,22 @@ model ImportJob {
 
 /// Immutable bundle of observations built by scripts/build-snapshot.ts.
 model DataSnapshot {
-  id                String              @id // "snap-<content hash>"
-  createdAt         DateTime
-  retrievedOn       DateTime            @db.Date
-  sigmaVersion      String
-  publishedAt       DateTime?
-  publishedBy       String?
-  supersededAt      DateTime?
-  observations      MetricObservation[]
-  measures          BudgetMeasure[]
-  checks            ValidationCheck[]
-  versionDiffs      VersionDiff[]
-  importJobs        ImportJob[]
-  dataTables        DataTable[]
-  municipalBudgets  MunicipalBudget[]
-  snapshotDocuments SnapshotDocument[]
+  id                 String              @id // "snap-<content hash>"
+  createdAt          DateTime
+  retrievedOn        DateTime            @db.Date
+  sigmaVersion       String
+  publishedAt        DateTime?
+  publishedBy        String?
+  supersededAt       DateTime?
+  observations       MetricObservation[]
+  measures           BudgetMeasure[]
+  checks             ValidationCheck[]
+  versionDiffs       VersionDiff[]
+  importJobs         ImportJob[]
+  dataTables         DataTable[]
+  municipalBudgets   MunicipalBudget[]
+  snapshotDocuments  SnapshotDocument[]
+  snapshotReferences SnapshotReference[]
 }
 
 model Metric {

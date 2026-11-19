@@ -17,6 +17,12 @@ const MORE = [
   { href: "/institutsii", label: "Институции" },
   { href: "/obshtini", label: "Общини" },
   { href: "/izpalnenie", label: "Изпълнение" },
+  { href: "/pod-lupa", label: "Под лупа" },
+  { href: "/pozitivni-merki", label: "Положителни мерки" },
+  { href: "/zakonodatelstvo", label: "Законодателство" },
+  { href: "/dokumenti", label: "Търсене в документите" },
+  { href: "/rechnik", label: "Речник" },
+  { href: "/metodologia", label: "Методология" },
   { href: "/#merki", label: "Мерки" },
   { href: "/iztochnitsi", label: "Източници и проверки" },
 ];

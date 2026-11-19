@@ -133,6 +133,8 @@ export const SnapshotSchema = z.object({
       billLocator: z.string(),
     }),
   ),
+  glossary: z.array(z.object({ slug: z.string(), term: z.string(), definition: z.string(), aliases: z.array(z.string()), documentId: z.string() })),
+  committees: z.array(z.object({ name: z.string(), role: z.string(), documentId: z.string() })),
   legislativeEvents: z.array(
     z.object({ id: z.string(), date, type: z.string(), title: z.string(), documentId: z.string(), note: z.string().nullable() }),
   ),

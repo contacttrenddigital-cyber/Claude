@@ -10,6 +10,8 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // /dokumenti reads the extracted official texts at request time
+  outputFileTracingIncludes: { "/dokumenti": ["./data/extracted/*.json", "./data/extracted/*.txt"] },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

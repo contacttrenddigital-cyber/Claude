@@ -115,6 +115,12 @@ async function main() {
           for (const t of snap.tables) {
             await tx.dataTable.create({ data: { snapshotId: snap.id, id: t.id, title: t.title, documentId: t.documentId, data: t } });
           }
+          await tx.snapshotReference.createMany({
+            data: [
+              { snapshotId: snap.id, key: "glossary", data: snap.glossary },
+              { snapshotId: snap.id, key: "committees", data: snap.committees },
+            ],
+          });
           await tx.municipalBudget.createMany({
             data: snap.municipalities.map((m) => ({
               ...m,

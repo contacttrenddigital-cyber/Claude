@@ -45,6 +45,8 @@ export const getPublished = cache(async () => {
     db.sourceDocument.findMany({ where: { snapshotDocuments: { some: { snapshotId: snapshot.id } } }, orderBy: [{ versionId: "desc" }, { id: "asc" }] }),
     db.dataTable.findMany({ where: { snapshotId: snapshot.id } }),
   ]);
+  const refs = await db.snapshotReference.findMany({ where: { snapshotId: snapshot.id } });
+  const ref = (k: string) => refs.find((r) => r.key === k)?.data ?? [];
   const munis = await db.municipalBudget.findMany({ where: { snapshotId: snapshot.id }, orderBy: { name: "asc" } });
 
   const series: Record<string, SeriesView> = {};
@@ -117,6 +119,8 @@ export const getPublished = cache(async () => {
   }));
 
   return {
+    glossary: ref("glossary") as { slug: string; term: string; definition: string; aliases: string[]; documentId: string }[],
+    committees: ref("committees") as { name: string; role: string; documentId: string }[],
     municipalities: munis.map((m) => ({
       code: m.code,
       name: m.name,

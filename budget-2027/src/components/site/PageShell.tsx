@@ -37,6 +37,9 @@ export async function PageShell({
           <Link href="/iztochnitsi" className="underline underline-offset-2">
             Източници и проверки
           </Link>
+          <Link href="/metodologia" className="underline underline-offset-2">
+            Методология
+          </Link>
         </div>
       </footer>
     </>
