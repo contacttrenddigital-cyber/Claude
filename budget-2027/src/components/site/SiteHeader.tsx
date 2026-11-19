@@ -4,6 +4,7 @@ import { ThemeToggle } from "./ThemeToggle";
 const NAV = [
   { href: "/#pokazateli", label: "Показатели" },
   { href: "/#merki", label: "Мерки" },
+  { href: "/kalkulator", label: "Калкулатор" },
   { href: "/#defitsit-i-dalg", label: "Дефицит и дълг" },
   { href: "/#promeni", label: "Промени" },
   { href: "/iztochnitsi", label: "Източници" },
@@ -30,7 +31,7 @@ export function SiteHeader({ status }: { status: string }) {
           </ul>
         </nav>
         <div className="ml-auto flex items-center gap-3">
-          <span className="hidden text-xs text-muted md:inline">{status}</span>
+          <span className="hidden text-xs text-muted xl:inline">{status}</span>
           <ThemeToggle />
         </div>
       </div>

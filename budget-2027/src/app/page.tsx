@@ -102,6 +102,21 @@ export default async function Home() {
           </div>
         </section>
 
+        {/* ── Calculator CTA ─────────────────────────────────── */}
+        <section aria-labelledby="cta-title" className="flex flex-col gap-3 border-l-2 border-accent-fill bg-surface px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 id="cta-title" className="text-xl font-semibold">
+              Колко ще ми струва Бюджет 2027?
+            </h2>
+            <p className="text-sm text-ink-2">
+              Нетна заплата, данък и осигуровки по трудов договор: 2026 г. срещу предложенията за 2027 г. Изчислява се само в браузъра.
+            </p>
+          </div>
+          <Link href="/kalkulator" className="inline-flex min-h-11 shrink-0 items-center rounded-sm bg-ink px-4 text-sm font-medium text-bg hover:opacity-90">
+            Отвори калкулатора →
+          </Link>
+        </section>
+
         {/* ── Scope explainer ─────────────────────────────────── */}
         <section aria-labelledby="scope-title" className="grid gap-6 border-y border-rule py-8 md:grid-cols-[minmax(0,4fr)_minmax(0,8fr)]">
           <h2 id="scope-title" className="text-xl font-semibold tracking-tight">
