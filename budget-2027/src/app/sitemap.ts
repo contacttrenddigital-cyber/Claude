@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site-url";
 import type { MetadataRoute } from "next";
 import { getPublished, tableOf } from "@/lib/data/published";
 import { slugify } from "@/lib/slug";
@@ -44,7 +45,7 @@ const STATIC = [
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = process.env.SITE_URL ?? "http://localhost:3000";
+  const base = siteUrl();
   const data = await getPublished();
   const lastModified = new Date(data.snapshot.publishedAt);
   const inst = tableOf(data, "ceilings").rows.filter((r) => r.level === 0).map((r) => `/institutsii/${slugify(r.label)}`);

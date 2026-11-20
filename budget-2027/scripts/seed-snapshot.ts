@@ -31,6 +31,7 @@ async function main() {
 
   const db = new PrismaClient();
   const job = await db.importJob.create({ data: { kind: "snapshot-seed", status: "running", log: `file=${file}` } });
+  let published = false;
   try {
     await db.$transaction(
       async (tx) => {
@@ -155,7 +156,12 @@ async function main() {
           });
         }
 
-        if (publish) {
+        const current = publish ? await tx.dataSnapshot.findUnique({ where: { id: snap.id } }) : null;
+        if (publish && current?.publishedAt && !current.supersededAt) {
+          // idempotent: re-running a deploy must not rewrite who published the snapshot or when
+          console.log(`${snap.id}: already published by ${current.publishedBy} on ${current.publishedAt.toISOString()}`);
+        } else if (publish) {
+          published = true;
           await tx.dataSnapshot.updateMany({
             where: { publishedAt: { not: null }, supersededAt: null, NOT: { id: snap.id } },
             data: { supersededAt: new Date() },
@@ -172,7 +178,7 @@ async function main() {
       where: { id: job.id },
       data: { status: "succeeded", finishedAt: new Date(), snapshotId: snap.id },
     });
-    console.log(`${snap.id}: loaded${publish ? " and published" : ""} (${snap.observations.length} observations)`);
+    console.log(`${snap.id}: loaded${published ? " and published" : ""} (${snap.observations.length} observations)`);
   } catch (e) {
     await db.importJob.update({ where: { id: job.id }, data: { status: "failed", finishedAt: new Date(), log: String(e) } });
     throw e;

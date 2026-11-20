@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site-url";
 import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/inter";
 import "@fontsource/ibm-plex-mono/cyrillic-400.css";
@@ -6,7 +7,7 @@ import "./globals.css";
 import { THEME_SCRIPT } from "@/lib/theme";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.SITE_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(siteUrl()),
   title: { default: "Бюджет 2027 — под лупа", template: "%s · Бюджет 2027 — под лупа" },
   description:
     "Независим анализ на бюджета на България за 2027 г.: всяко число с официален източник, версия и дата. Приходи, разходи, дефицит, дълг и мерки по законопроекта.",
