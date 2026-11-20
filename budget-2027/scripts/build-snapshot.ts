@@ -23,7 +23,10 @@ import { METRICS } from "../src/lib/metrics/catalog";
 import { createSigmaClient } from "../src/lib/sigma/client";
 import { SNAPSHOT_SCHEMA_VERSION, type Snapshot } from "../src/lib/ingest/snapshot-schema";
 import { annex3AsTable, extractTable } from "../src/lib/tables/extract";
-import { TABLES } from "../src/lib/tables/catalog";
+import { RISK_TABLES, TABLES } from "../src/lib/tables/catalog";
+import { paragraphAmounts } from "../src/lib/tables/paragraphs";
+import { JsonStat, edptTable } from "../src/lib/eurostat/jsonstat";
+import { readdirSync } from "node:fs";
 import { socialFundTables } from "../src/lib/tables/social-funds";
 import { childSumChecks, crossCheck, grandTotalChecks, sumTopLevel } from "../src/lib/tables/checks";
 import { joinByName } from "../src/lib/municipal/join";
@@ -130,6 +133,57 @@ async function main() {
     annex3AsTable(annex3, 1, { id: "kfpRevenue", title: "Приходи по КФП, подробно", description: "Приложение № 3: приходи, помощи и дарения по видове, 2025–2029.", documentId: documents[0]!.id, file: docx.file }),
     annex3AsTable(annex3, 2, { id: "kfpExpenditure", title: "Разходи по КФП по икономически вид", description: "Приложение № 3: разходи по икономически елементи, 2025–2029.", documentId: documents[0]!.id, file: docx.file }),
   );
+  // ── Risks and sensitivity (Табл. VII-1..3) and the 2027 education allocations (мотиви) ──
+  tables.push(...RISK_TABLES.map((spec) => extractTable(docx, spec, documents[0]!.id)));
+  tables.push(
+    paragraphAmounts(
+      docx,
+      [
+        { title: "Предучилищно и училищно образование", from: 614, to: 629 },
+        { title: "Висше образование и наука", from: 631, to: 633 },
+      ],
+      {
+        id: "educationAllocations",
+        title: "Средства за образование и наука, 2027",
+        description: "Мотиви към ЗДБРБ 2027, „Политика в областта на образованието и науката“: изброените суми за 2027 г. Документът не дава сбор.",
+        documentId: documents[0]!.id,
+        period: "2027",
+      },
+    ),
+  );
+
+  // ── Eurostat: EDP deficit and debt, EU-27 (same year, same status, ESA 2010) ──
+  const esDir = join(RAW, "eurostat");
+  const esFile = readdirSync(esDir).filter((f) => /^gov_10dd_edpt1-\d{4}-\d{2}-\d{2}\.json$/.test(f)).sort().at(-1);
+  if (!esFile) throw new Error("Eurostat file missing: npm run sources:eurostat");
+  const esRaw = readFileSync(join(esDir, esFile));
+  const es = JsonStat.parse(JSON.parse(esRaw.toString("utf8")));
+  const esId = `eurostat-gov_10dd_edpt1-${es.updated.slice(0, 10)}-${sha256(esRaw).slice(0, 8)}`;
+  documents.push({
+    id: esId,
+    sha256: sha256(esRaw),
+    bytes: esRaw.length,
+    publisher: "Евростат",
+    title: `Евростат, gov_10dd_edpt1: дефицит и дълг на сектор „Държавно управление“ (EDP нотификация), обновено ${es.updated.slice(0, 10)}`,
+    url: readFileSync(join(esDir, "gov_10dd_edpt1.url"), "utf8").trim(),
+    pageUrl: "https://ec.europa.eu/eurostat/databrowser/view/gov_10dd_edpt1/default/table",
+    mime: "application/json",
+    retrievedOn: RETRIEVED,
+    publishedOn: es.updated.slice(0, 10),
+    legalStatus: "официална статистика (отчет)",
+    versionId: null,
+  });
+  const eu = edptTable(es, ["2023", "2024", "2025"], { documentId: esId, file: esFile });
+  tables.push(eu);
+  const missing = eu.rows.filter((r) => r.cells["B9:2025"]?.value === null || r.cells["GD:2025"]?.value === null).map((r) => r.label);
+  checks.push({
+    id: "eurostat:edpt1:complete-2025",
+    kind: "total",
+    status: missing.length === 0 ? "pass" : "warn",
+    description: "Евростат: салдо и дълг за 2025 г. за всички 27 държави и ЕС-27",
+    details: { missing: missing.join(", ") || "—" },
+  });
+
   // ── ДОО and НЗОК bills (RTF → DOCX via LibreOffice; file/sha256 identify the RTF) ──
   const lawDoc = (name: string, id: string) => {
     const x = DocxExtract.parse(JSON.parse(readFileSync(join(ROOT, `data/extracted/${name}.tables.json`), "utf8")));

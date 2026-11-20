@@ -24,13 +24,15 @@ export function lawSource(p: Published, id: "ns-52-602-01-68-rtf" | "ns-52-602-0
 }
 
 /** Bars for one table row across its year columns (values as printed). */
-export function rowBars(name: string, color: BarSeries["color"], t: TableData, label: string, caption: string): BarSeries {
+export function rowBars(name: string, color: BarSeries["color"], t: TableData, label: string, caption: string, keys?: string[]): BarSeries {
   const r = t.rows.find((x) => x.label === label);
   if (!r) throw new Error(`${t.id}: row „${label}“ not found`);
   return {
     name,
     color,
-    points: t.columns.map((c) => ({ period: c.period, value: r.cells[c.key]?.value ?? null, vintage: c.vintage, source: caption })),
+    points: t.columns
+      .filter((c) => !keys || keys.includes(c.key))
+      .map((c) => ({ period: c.period, value: r.cells[c.key]?.value ?? null, vintage: c.vintage, source: caption })),
   };
 }
 

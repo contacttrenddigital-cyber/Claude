@@ -13,6 +13,8 @@ export interface RankedItem {
   value: string | null;
   base: string | null;
   href?: string;
+  /** emphasised row (bold label, second series colour) */
+  highlight?: boolean;
 }
 
 export function RankedBars({
@@ -33,7 +35,12 @@ export function RankedBars({
   const [showTable, setShowTable] = useState(false);
   const hasBase = items.some((i) => i.base !== null);
   const sorted = [...items].filter((i) => i.value !== null).sort((a, b) => Number(b.value) - Number(a.value));
-  const max = Math.max(...sorted.flatMap((i) => [Number(i.value), Number(i.base ?? 0)]), 0) || 1;
+  // zero baseline; negative values extend to the left of it (pixels only, never arithmetic)
+  const max = Math.max(...sorted.flatMap((i) => [Number(i.value), Number(i.base ?? 0)]), 0);
+  const min = Math.min(...sorted.flatMap((i) => [Number(i.value), Number(i.base ?? 0)]), 0);
+  const range = max - min || 1;
+  const zero = (-min / range) * 100;
+  const pos = (v: number) => zero + (v / range) * 100;
   return (
     <figure className="flex flex-col gap-3">
       <figcaption>
@@ -55,12 +62,14 @@ export function RankedBars({
       {!showTable ? (
         <ol className="flex flex-col">
           {sorted.map((i) => {
-            const w = (Number(i.value) / max) * 100;
-            const bw = i.base === null ? null : (Number(i.base) / max) * 100;
+            const v = Number(i.value);
+            const left = Math.min(pos(v), zero);
+            const w = Math.abs(pos(v) - zero);
+            const bw = i.base === null ? null : pos(Number(i.base));
             const delta = i.base === null ? null : new Decimal(i.value!).minus(i.base).toFixed(1);
             return (
               <li key={i.label} className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 border-b border-rule py-1.5">
-                <span className="text-[13px] leading-tight text-ink-2">
+                <span className={`text-[13px] leading-tight ${i.highlight ? "font-semibold text-ink" : "text-ink-2"}`}>
                   {i.href ? (
                     <a href={i.href} className="underline decoration-rule-strong underline-offset-2 hover:decoration-ink">
                       {i.label}
@@ -74,7 +83,8 @@ export function RankedBars({
                   {delta !== null && <span className="ml-2 text-xs text-muted">{fmtSigned(delta)}</span>}
                 </span>
                 <div className="relative col-span-2 mt-1 h-3" aria-hidden>
-                  <div className="absolute inset-y-0 left-0 rounded-[2px]" style={{ width: `${w}%`, background: "var(--series-1)" }} />
+                  <div className="absolute inset-y-0 rounded-[2px]" style={{ left: `${left}%`, width: `${w}%`, background: i.highlight ? "var(--series-2)" : "var(--series-1)" }} />
+                  {min < 0 && <div className="absolute -inset-y-0.5 w-px" style={{ left: `${zero}%`, background: "var(--rule-strong)" }} />}
                   {bw !== null && <div className="absolute -inset-y-0.5 w-0.5" style={{ left: `calc(${bw}% - 1px)`, background: "var(--ink)" }} />}
                 </div>
               </li>

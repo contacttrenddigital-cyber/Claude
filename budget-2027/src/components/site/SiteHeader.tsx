@@ -13,9 +13,15 @@ const PRIMARY = [
 
 const MORE = [
   { href: "/osigurovki", label: "Осигуровки и социални плащания" },
+  { href: "/sektori", label: "Сектори" },
   { href: "/pensii", label: "Пенсии и ДОО" },
   { href: "/zdraveopazvane", label: "Здравеопазване и НЗОК" },
   { href: "/otbrana", label: "Отбрана" },
+  { href: "/obrazovanie", label: "Образование" },
+  { href: "/zaplati", label: "Заплати" },
+  { href: "/biznes", label: "Бизнес" },
+  { href: "/riskove", label: "Рискове" },
+  { href: "/sravnenia", label: "Сравнения с ЕС" },
   { href: "/investitsii", label: "Инвестиции и проекти" },
   { href: "/institutsii", label: "Институции" },
   { href: "/obshtini", label: "Общини" },

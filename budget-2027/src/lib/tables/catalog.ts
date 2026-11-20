@@ -218,6 +218,48 @@ export const TABLES: TableSpec[] = [
   },
 ];
 
+export const RISK_TABLES: TableSpec[] = [
+  {
+    id: "sustainability",
+    title: "Индикатори за фискална устойчивост S1 и S2 (МФ и ЕК)",
+    description: "Табл. VII-1 от мотивите: индикатори за устойчивост на публичните финанси по оценка на МФ и на ЕК, % от БВП.",
+    table: 30,
+    scope: "general-government",
+    basis: "accrual",
+    labelCol: 0,
+    firstDataRow: 2,
+    columns: [
+      { key: "mfS1", col: 1, label: "МФ, S1", period: "S1", vintage: "forecast", unit: "" },
+      { key: "mfS2", col: 2, label: "МФ, S2", period: "S2", vintage: "forecast", unit: "" },
+      { key: "ecS1", col: 3, label: "ЕК, S1", period: "S1", vintage: "forecast", unit: "" },
+      { key: "ecS2", col: 4, label: "ЕК, S2", period: "S2", vintage: "forecast", unit: "" },
+    ],
+  },
+  {
+    id: "altAssumptions",
+    title: "Алтернативен сценарий: допускания (отклонение спрямо базовия)",
+    description: "Табл. VII-2 от мотивите: по-високи цени на петрола и газа и по-слаб растеж навън.",
+    table: 31,
+    scope: "economy",
+    basis: "rate",
+    labelCol: 0,
+    firstDataRow: 1,
+    columns: years(Y2629.map(([y, c]) => [y, c, "forecast"] as [string, number, Vintage]), ""),
+  },
+  {
+    id: "altScenario",
+    title: "Алтернативен сценарий: ефект върху икономиката и бюджета (отклонение спрямо базовия)",
+    description: "Табл. VII-3 от мотивите: резултати от симулацията на МФ, отклонение спрямо базовия сценарий.",
+    table: 32,
+    scope: "economy",
+    basis: "rate",
+    labelCol: 0,
+    firstDataRow: 1,
+    headerPattern: "^[А-Я ]{6,}$",
+    columns: years(Y2629.map(([y, c]) => [y, c, "forecast"] as [string, number, Vintage]), ""),
+  },
+];
+
 export function tableSpec(id: string): TableSpec {
   const t = TABLES.find((x) => x.id === id);
   if (!t) throw new Error(`unknown table ${id}`);

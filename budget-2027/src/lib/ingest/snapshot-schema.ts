@@ -63,7 +63,7 @@ export const SnapshotSchema = z.object({
       retrievedOn: date,
       publishedOn: date.nullable(),
       legalStatus: z.string().nullable(),
-      versionId: z.string(),
+      versionId: z.string().nullable(), // null for sources outside a budget version (e.g. Eurostat)
     }),
   ),
   metrics: z.array(
