@@ -28,6 +28,7 @@ import { paragraphAmounts } from "../src/lib/tables/paragraphs";
 import { JsonStat, edptTable } from "../src/lib/eurostat/jsonstat";
 import { readdirSync } from "node:fs";
 import { socialFundTables } from "../src/lib/tables/social-funds";
+import { ProgramExtract, programChecks, programTable, reconcileUnits } from "../src/lib/programs/programs";
 import { childSumChecks, crossCheck, grandTotalChecks, sumTopLevel } from "../src/lib/tables/checks";
 import { joinByName } from "../src/lib/municipal/join";
 import { locatorOf } from "../src/lib/tables/extract";
@@ -227,6 +228,12 @@ async function main() {
     ),
   );
 
+
+  // ── Programme budgets (PDF annexes): published only where programmes add up to the ceiling ──
+  const progX = ProgramExtract.parse(JSON.parse(readFileSync(join(ROOT, "data/extracted/program-budgets.json"), "utf8")));
+  const progStatus = reconcileUnits(progX, T("ceilings"));
+  checks.push(...programChecks(progStatus));
+  tables.push(programTable(progX, progStatus, { documentId: "ns-52-602-01-71-zip", file: "52-602-01-71.zip" }));
 
   // Табл. III-2: the NATO-classified total = МО + ДВВУ + централен бюджет + other spending units
   const def = T("defense");

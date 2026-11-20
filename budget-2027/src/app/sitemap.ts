@@ -24,6 +24,7 @@ const STATIC = [
   "/sravnenia",
   "/investitsii",
   "/institutsii",
+  "/programi",
   "/obshtini",
   "/izpalnenie",
   "/kalkulator",

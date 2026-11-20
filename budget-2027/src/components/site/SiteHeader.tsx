@@ -24,6 +24,7 @@ const MORE = [
   { href: "/sravnenia", label: "Сравнения с ЕС" },
   { href: "/investitsii", label: "Инвестиции и проекти" },
   { href: "/institutsii", label: "Институции" },
+  { href: "/programi", label: "Бюджетни програми" },
   { href: "/obshtini", label: "Общини" },
   { href: "/izpalnenie", label: "Изпълнение" },
   { href: "/prognozi", label: "Прогнози и ревизии" },

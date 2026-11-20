@@ -73,6 +73,24 @@ export default async function Institution({ params }: { params: Promise<{ slug: 
           <TableView table={tableOf(data, "defense")} sourceUrl={src.url} sourceTitle={src.title} />
         </Section>
       )}
+      {(() => {
+        const pt = data.tables["programBudgets"];
+        if (!pt) return null;
+        const g = pt.rows.find((r) => r.kind === "group" && r.label === row.label);
+        const progs = g ? pt.rows.filter((r) => r.group === row.label) : [];
+        const check = data.checks.find((c) => c.id.startsWith("programs:") && c.description.includes(`(${row.label})`));
+        if (g)
+          return (
+            <Section title="Бюджетни програми" lead="Програмен бюджет на институцията: „Общо разходи по бюджета“ по програми, хил. €. Сборът за 2027 г. е равен на тавана (автоматична проверка).">
+              <TableView table={pt} only={[g.rowIndex, ...progs.map((r) => r.rowIndex)]} sourceUrl={src.url} sourceTitle="Програмни бюджети, приложение към законопроекта (52-602-01-71.zip)" />
+            </Section>
+          );
+        return check ? (
+          <Section title="Бюджетни програми">
+            <p className="max-w-3xl text-sm text-ink-2">Програмите не са публикувани: {check.description.split("— ")[1] ?? "не минаха проверката"}.</p>
+          </Section>
+        ) : null;
+      })()}
       <Section title="Какво още има">
         <ul className="list-disc space-y-1 pl-5 text-sm text-ink-2">
           <li>
@@ -80,7 +98,11 @@ export default async function Institution({ params }: { params: Promise<{ slug: 
             <a href={data.documents.find((d) => d.id === "ns-52-602-01-71-zip")?.url} className="underline underline-offset-2" rel="noreferrer">
               52-602-01-71.zip
             </a>
-            ). Програмите и показателите за резултати още не са извлечени в платформата.
+            ). Показателите за резултати още не са извлечени. Всички програми са в{" "}
+            <Link href="/programi" className="underline underline-offset-2">
+              Бюджетни програми
+            </Link>
+            .
           </li>
           <li>
             <Link href="/institutsii" className="underline underline-offset-2">
