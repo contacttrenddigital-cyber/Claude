@@ -1,29 +1,62 @@
+import Decimal from "decimal.js";
 import Link from "next/link";
-import { YearBars, type BarSeries } from "@/components/charts/YearBars";
-import { Waterfall } from "@/components/charts/Waterfall";
-import { MeasuresExplorer } from "@/components/dashboard/MeasuresExplorer";
-import { KpiTile } from "@/components/fiscal/KpiTile";
-import { SourceNote } from "@/components/fiscal/SourceNote";
+import { Icon, type IconName } from "@/components/site/Icon";
+import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
-import { kfpWaterfall, point } from "@/lib/data/derive";
-import { NoPublishedSnapshotError, getPublished, seriesOf, type Published } from "@/lib/data/published";
-import type { SeriesView } from "@/lib/data/types";
-import { dateBg, dateBgLong, fmt, fmtNum, fmtSigned, rescale } from "@/lib/format";
+import { sectorRows } from "@/lib/analysis/sectors";
+import { NoPublishedSnapshotError, getPublished, tableOf, type Published } from "@/lib/data/published";
+import { findingsData } from "@/lib/data/view";
+import { computeFindings } from "@/lib/findings";
+import { bgText, dateBg, fmtNum } from "@/lib/format";
+import { homeFacts } from "@/lib/home";
 
 export const revalidate = 3600;
 
-function bars(name: string, color: BarSeries["color"], s: SeriesView): BarSeries {
-  return {
-    name,
-    color,
-    points: s.points.map((p) => ({
-      period: p.period,
-      value: p.value,
-      vintage: p.vintage,
-      source: p.sources[0]!.locator.split(" (")[0]!,
-    })),
-  };
-}
+const ENTRIES: { href: string; icon: IconName; title: string; text: string; cta: string }[] = [
+  {
+    href: "/kalkulator",
+    icon: "calculator",
+    title: "Как ме засяга?",
+    text: "Въведи брутната си заплата и виж колко ще получаваш на ръка през 2027 г. в сравнение с 2026 г.",
+    cta: "Към калкулатора",
+  },
+  {
+    href: "/sektori",
+    icon: "pie",
+    title: "Къде отиват парите?",
+    text: "Пенсии, здраве, образование, отбрана: колко отива за всяко и как се променя спрямо тази година.",
+    cta: "Виж разходите",
+  },
+  {
+    href: "/analizi/asen-vasilev",
+    icon: "check",
+    title: "Вярно ли е?",
+    text: "Проверяваме какво казват политиците за бюджета срещу официалните документи. Без мнения, с източници.",
+    cta: "Към проверките",
+  },
+];
+
+const TOPICS: { href: string; icon: IconName; title: string; text: string }[] = [
+  { href: "/prihodi", icon: "coins", title: "Приходи", text: "Откъде идват парите" },
+  { href: "/danatsi", icon: "receipt", title: "Данъци", text: "Какво се променя" },
+  { href: "/defitsit", icon: "scale", title: "Дефицит", text: "Колко не достига" },
+  { href: "/dalg", icon: "trend", title: "Дълг", text: "Колко дължим" },
+  { href: "/pensii", icon: "users", title: "Пенсии", text: "Най-голямото перо" },
+  { href: "/zdraveopazvane", icon: "cross", title: "Здраве", text: "Бюджетът на касата" },
+  { href: "/obrazovanie", icon: "book", title: "Образование", text: "Училища и учители" },
+  { href: "/otbrana", icon: "shield", title: "Отбрана", text: "Целите в НАТО" },
+  { href: "/biznes", icon: "briefcase", title: "Фирми", text: "Нови данъци и мерки" },
+  { href: "/obshtini", icon: "map", title: "Моята община", text: "265 общини на карта" },
+  { href: "/programi", icon: "layers", title: "Министерства", text: "За какво харчат" },
+  { href: "/sravnenia", icon: "globe", title: "България в ЕС", text: "Сравнение с другите" },
+];
+
+const FACT_TEXT: Record<string, { label: string; verb: string }> = {
+  "kfp.revenue": { label: "Приходи", verb: "Държавата планира да събере" },
+  "kfp.expenditure": { label: "Разходи", verb: "и да похарчи" },
+  "kfp.balance": { label: "Дефицит", verb: "Недостигът е" },
+  "debt.government": { label: "Държавен дълг", verb: "Дългът в края на годината" },
+};
 
 export default async function Home() {
   let data: Published;
@@ -33,318 +66,270 @@ export default async function Home() {
     if (e instanceof NoPublishedSnapshotError) return <NoData />;
     throw e;
   }
-  const S = (k: string) => seriesOf(data, k);
   const bill = data.versions.find((v) => v.id === "bill-2026-11-16")!;
-  const statusLine = `${bill.legalStatus} · внесен ${dateBg(bill.date)}`;
-  const waterfall = kfpWaterfall(
-    Object.fromEntries(Object.entries(data.series).filter(([k]) => k.endsWith("@bill-2026-11-16")).map(([k, v]) => [k.split("@")[0]!, v])),
-    "2027",
-  );
-  const conflicts = data.checks.filter((c) => c.kind === "cross-source" && c.status === "warn");
-  const counts = { pass: 0, warn: 0, fail: 0 } as Record<string, number>;
-  for (const c of data.checks) counts[c.status] = (counts[c.status] ?? 0) + 1;
-  const stateRev = point(S("stateBudget.revenue"), "2027")!;
-  const stateExp = point(S("stateBudget.expenditure"), "2027")!;
-  const kfpRev = point(S("kfp.revenue"), "2027")!;
-  const mrz = S("param.minimumWage");
+  const get = (k: string) => data.series[`${k}@bill-2026-11-16`]?.points.find((p) => p.period === "2027")?.value ?? null;
+  const facts = homeFacts(get);
+  const F = Object.fromEntries(facts.map((f) => [f.key, f]));
+  const sectors = sectorRows(tableOf(data, "functions"));
+  const ranked = [...sectors.rows].sort((a, b) => b.share.comparedTo(a.share));
+  const top = ranked.slice(0, 5);
+  const rest = ranked.slice(5);
+  const restShare = rest.reduce((s, r) => s.plus(r.share), new Decimal(0));
+  const bn = (v: string) => new Decimal(v).dividedBy(1000).toFixed(1);
+  const findings = computeFindings(findingsData(data));
+  const pick = ["lihvi", "kapitalovi", "polozhitelni"].map((id) => findings.find((f) => f.id === id)!).filter(Boolean);
+  const checks = { pass: data.checks.filter((c) => c.status === "pass").length, fail: data.checks.filter((c) => c.status === "fail").length };
+  const official = data.documents.filter((d) => !d.publisher.startsWith("СИГМА")).length;
+  const snap = { id: data.snapshot.id, publishedAt: data.snapshot.publishedAt ? dateBg(data.snapshot.publishedAt) : "—", publishedBy: data.snapshot.publishedBy ?? "—" };
 
   return (
     <>
-      <SiteHeader status={statusLine} />
-      <main id="main" className="mx-auto flex max-w-7xl flex-col gap-16 px-4 pt-8 pb-20 sm:px-6 sm:pt-12">
-        {/* ── Hero ─────────────────────────────────────────────── */}
-        <section aria-labelledby="hero-title" className="grid gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end">
-          <div className="flex flex-col gap-4">
-            <p className="text-xs font-medium tracking-[0.18em] text-accent uppercase">Независим анализ · по официалните документи</p>
-            <h1 id="hero-title" className="text-5xl font-semibold tracking-tight sm:text-7xl">
-              БЮДЖЕТ 2027
-            </h1>
-            <p className="text-xl text-ink sm:text-2xl">Всяко евро. Всяка промяна. Всяко последствие.</p>
-            <p className="max-w-2xl text-base text-ink-2">Кой плаща повече, кой получава повече и къде отиват парите?</p>
-          </div>
-          <aside aria-label="Правен статус" className="border-l-2 border-accent-fill bg-surface px-4 py-3 text-sm">
-            <p className="text-xs tracking-wide text-muted uppercase">Правен статус към {dateBg(data.snapshot.retrievedOn)}</p>
-            <p className="mt-1 text-lg font-semibold">Законопроект — не е приет</p>
-            <p className="mt-1 text-ink-2">
-              Внесен в Народното събрание на {dateBgLong(bill.date)} (вх. № 52-602-01-71) след одобрение от Министерския съвет. Числата
-              по-долу са от внесения текст и мотивите към него (АСБП 2027–2029), освен ако не е посочено друго.
-            </p>
-          </aside>
-        </section>
-
-        {/* ── Headline indicators ─────────────────────────────── */}
-        <section id="pokazateli" aria-labelledby="kpi-title" className="flex scroll-mt-32 sm:scroll-mt-24 flex-col gap-6">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 id="kpi-title" className="text-2xl font-semibold tracking-tight">
-              Основните числа
-            </h2>
-            <p className="text-sm text-muted">Сравнение с 2026 г. — очакваното изпълнение от същия документ.</p>
-          </div>
-          <div className="grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
-            <KpiTile size="lg" series={S("kfp.balance")} ratio={S("kfp.balance.pctGdp")} note="Касово салдо по консолидираната фискална програма. Отрицателно = дефицит." />
-            <KpiTile size="lg" series={S("esa.balance")} ratio={S("esa.balance.pctGdp")} note="Начислена основа, сектор „Държавно управление“ — показателят за критерия от 3% на ЕС." />
-            <KpiTile size="lg" series={S("debt.government")} ratio={S("debt.government.pctGdp")} note="Номинален държавен дълг в края на годината (наличност)." />
-            <KpiTile size="lg" series={S("kfp.expenditure.interest")} note="Лихви по дълга, касова основа, КФП." />
-          </div>
-          <div className="grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
-            <KpiTile series={S("kfp.revenue")} ratio={S("kfp.revenue.pctGdp")} />
-            <KpiTile series={S("kfp.expenditure")} ratio={S("kfp.expenditure.pctGdp")} />
-            <KpiTile series={S("kfp.expenditure.capital")} ratio={S("kfp.expenditure.capital.pctGdp")} />
-            <KpiTile series={S("debt.newDebtLimit")} base={null} />
-            <KpiTile
-              series={mrz}
-              base={null}
-              note={`Прогнозен размер, заложен в бюджета: ${mrz.points.map((p) => `${p.period} г. — ${fmtNum(p.value, 0)} €`).join("; ")}. Определя се с постановление на МС.`}
-            />
-            <KpiTile series={S("param.maxInsurableIncome")} base={null} note="Таван на месечния осигурителен доход от 01.01.2027 г., заложен в мотивите." />
-            <KpiTile series={S("macro.hicp")} />
-            <KpiTile series={S("macro.gdpGrowth")} />
-          </div>
-        </section>
-
-        {/* ── Calculator CTA ─────────────────────────────────── */}
-        <section aria-labelledby="cta-title" className="flex flex-col gap-3 border-l-2 border-accent-fill bg-surface px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 id="cta-title" className="text-xl font-semibold">
-              Колко ще ми струва Бюджет 2027?
-            </h2>
-            <p className="text-sm text-ink-2">
-              Нетна заплата, данък и осигуровки по трудов договор: 2026 г. срещу предложенията за 2027 г. Изчислява се само в браузъра.
-            </p>
-          </div>
-          <Link href="/kalkulator" className="inline-flex min-h-11 shrink-0 items-center rounded-sm bg-ink px-4 text-sm font-medium text-bg hover:opacity-90">
-            Отвори калкулатора →
-          </Link>
-        </section>
-
-        {/* ── Scope explainer ─────────────────────────────────── */}
-        <section aria-labelledby="scope-title" className="grid gap-6 border-y border-rule py-8 md:grid-cols-[minmax(0,4fr)_minmax(0,8fr)]">
-          <h2 id="scope-title" className="text-xl font-semibold tracking-tight">
-            Държавен бюджет ≠ КФП
-          </h2>
-          <div className="grid gap-6 sm:grid-cols-3">
-            <div>
-              <p className="text-xs text-muted uppercase">Приходи по държавния бюджет (чл. 1)</p>
-              <p className="num text-2xl font-semibold">{fmt(rescale(stateRev.value!, "хил. €", "млрд. €"), "млрд. €")}</p>
-              <SourceNote point={stateRev} />
+      <SiteHeader />
+      <main id="main">
+        {/* ── Hero ───────────────────────────────────────────── */}
+        <section aria-labelledby="hero-title" className="relative overflow-hidden bg-[#08111f] text-[#f7f9fc]">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(60rem 30rem at 85% -10%, rgba(255,107,0,0.22), transparent 60%), radial-gradient(50rem 30rem at -10% 110%, rgba(57,135,229,0.25), transparent 60%)",
+            }}
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 opacity-[0.07]"
+            style={{ backgroundImage: "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)", backgroundSize: "48px 48px" }}
+          />
+          <div className="relative mx-auto grid max-w-7xl gap-10 px-4 pt-12 pb-14 sm:px-6 sm:pt-20 sm:pb-20 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-center">
+            <div className="flex flex-col gap-6">
+              <p className="inline-flex w-fit items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-[13px] text-[#c9d3e1] ring-1 ring-white/15">
+                <span className="h-2 w-2 rounded-full bg-[#ff6b00]" aria-hidden />
+                Законопроект, внесен на {dateBg(bill.date)} · още не е приет
+              </p>
+              <h1 id="hero-title" className="text-[2.6rem] leading-[1.05] font-semibold tracking-tight text-balance sm:text-6xl lg:text-[4.2rem]">
+                Бюджет 2027,
+                <br />
+                <span className="text-[#ff8a3d]">обяснен ясно.</span>
+              </h1>
+              <p className="max-w-xl text-lg leading-relaxed text-[#c9d3e1] sm:text-xl">
+                Откъде идват парите на държавата, къде отиват и как това засяга теб. Независимо, на прост език и с източник за всяко
+                число.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href="/kalkulator"
+                  className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#ff6b00] px-6 text-base font-semibold text-[#08111f] shadow-lg shadow-[#ff6b00]/20 transition hover:brightness-110"
+                >
+                  <Icon name="calculator" />
+                  Изчисли как те засяга
+                </Link>
+                <Link href="#kade" className="inline-flex min-h-12 items-center gap-2 rounded-full px-6 text-base font-medium text-white ring-1 ring-white/30 transition hover:bg-white/10">
+                  Къде отиват парите
+                  <Icon name="arrow" className="h-4 w-4" />
+                </Link>
+              </div>
             </div>
-            <div>
-              <p className="text-xs text-muted uppercase">Разходи по държавния бюджет (чл. 1)</p>
-              <p className="num text-2xl font-semibold">{fmt(rescale(stateExp.value!, "хил. €", "млрд. €"), "млрд. €")}</p>
-              <SourceNote point={stateExp} />
-            </div>
-            <div>
-              <p className="text-xs text-muted uppercase">Приходи по КФП</p>
-              <p className="num text-2xl font-semibold">{fmt(rescale(kfpRev.value!, "млн. €", "млрд. €"), "млрд. €")}</p>
-              <SourceNote point={kfpRev} />
-            </div>
-            <p className="text-sm text-ink-2 sm:col-span-3">
-              Държавният (републиканският) бюджет е само една част. Консолидираната фискална програма събира и бюджетите на ДОО, НЗОК,
-              общините и сметките за средства от ЕС, като премахва трансферите между тях. Двата обхвата не се сравняват и не се събират.
-              Разходите по чл. 1 не включват трансферите към други бюджети. Сумите в хил. € са превърнати в млрд. € само чрез точно
-              мащабиране.
-            </p>
-          </div>
-        </section>
 
-        {/* ── Waterfall ───────────────────────────────────────── */}
-        <section aria-labelledby="wf-title" className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] [&>*]:min-w-0">
-          <div className="flex flex-col gap-3">
-            <h2 id="wf-title" className="text-2xl font-semibold tracking-tight">
-              Откъде идват и къде отиват парите
-            </h2>
-            <p className="text-ink-2">
-              Консолидираната фискална програма за 2027 г. по Приложение № 3 към законопроекта: приходи{" "}
-              <span className="num">{fmt(point(S("kfp.revenue"), "2027")!.value, "млн. €")}</span>, разходи с вноската в ЕС{" "}
-              <span className="num">{fmt(point(S("kfp.expenditure"), "2027")!.value, "млн. €")}</span>. Разликата е дефицитът от{" "}
-              <span className="num">{fmt(point(S("kfp.balance"), "2027")!.value, "млн. €")}</span>; срещу него в същата таблица стои ред „Финансиране“ със същата
-              стойност и обратен знак.
-            </p>
-            <p className="text-sm text-muted">
-              В Приложение № 3 редът „Текущи разходи“ включва и лихвите. Затова тук лихвите са отделени и не се броят два пъти.
-            </p>
-          </div>
-          <Waterfall steps={waterfall} unitLabel="млн. €" title="КФП 2027: от приходите до салдото" subtitle="Проект, касова основа, млн. €" />
-        </section>
-
-        {/* ── Deficit & debt ──────────────────────────────────── */}
-        <section id="defitsit-i-dalg" aria-labelledby="dd-title" className="flex scroll-mt-32 sm:scroll-mt-24 flex-col gap-8">
-          <div className="flex flex-col gap-2">
-            <h2 id="dd-title" className="text-2xl font-semibold tracking-tight">
-              Дефицит, дълг и цената на дълга
-            </h2>
-            <p className="max-w-3xl text-ink-2">
-              2025 г. е отчет, 2026 г. — очаквано изпълнение, 2027 г. — проект, 2028–2029 г. — прогноза. Щрихованите стълбове не са
-              изпълнение.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 [&>*]:min-w-0">
-            <YearBars
-              title="Бюджетно салдо, % от БВП"
-              subtitle="Касово салдо по КФП и баланс по ЕСС 2010 (начислена основа). Табл. II-5 няма данни за 2025 г. по ЕСС."
-              unitLabel="% от БВП"
-              series={[bars("КФП (касова основа)", "series-1", S("kfp.balance.pctGdp")), bars("ЕСС 2010 (начислена основа)", "series-2", S("esa.balance.pctGdp"))]}
-              reference={{ value: -3, label: "−3% — референтна стойност на ЕС (за ЕСС)" }}
-            />
-            <YearBars
-              title="Дълг, % от БВП"
-              subtitle="Държавен дълг (Закон за държавния дълг) и консолидиран дълг на сектор „Държавно управление“ (ЕСС 2010)."
-              unitLabel="% от БВП"
-              series={[bars("Държавен дълг", "series-1", S("debt.government.pctGdp")), bars("Дълг по ЕСС 2010", "series-2", S("esa.debt.pctGdp"))]}
-            />
-            <YearBars title="Лихвени разходи" subtitle="КФП, касова основа" unitLabel="млн. €" series={[bars("Лихви", "neutral", S("kfp.expenditure.interest"))]} />
-            <YearBars
-              title="Капиталови разходи"
-              subtitle="КФП, касова основа. Разчетът не означава извършени инвестиции."
-              unitLabel="млн. €"
-              series={[bars("Капиталови разходи", "neutral", S("kfp.expenditure.capital"))]}
-            />
-          </div>
-        </section>
-
-        {/* ── Measures ────────────────────────────────────────── */}
-        <section id="merki" aria-labelledby="m-title" className="flex scroll-mt-32 sm:scroll-mt-24 flex-col gap-4">
-          <h2 id="m-title" className="text-2xl font-semibold tracking-tight">
-            Мерките в бюджета
-          </h2>
-          <p className="max-w-3xl text-ink-2">
-            Всички {data.measures.length} дискреционни мерки, за които МФ дава оценка на ефекта в мотивите към законопроекта (Табл. II-7 —
-            приходи, Табл. II-8 — разходи).
-          </p>
-          <MeasuresExplorer measures={data.measures} />
-        </section>
-
-        {/* ── Changes between versions ────────────────────────── */}
-        <section id="promeni" aria-labelledby="ch-title" className="grid scroll-mt-32 sm:scroll-mt-24 grid-cols-1 gap-10 lg:grid-cols-2 [&>*]:min-w-0">
-          <div className="flex flex-col gap-3">
-            <h2 id="ch-title" className="text-2xl font-semibold tracking-tight">
-              Какво се промени между 6 и 16 ноември
-            </h2>
-            <p className="text-sm text-ink-2">
-              Приложение № 3 (КФП), 2027 г.: проектът на МФ от 06.11.2026 г. (по данни на СИГМА Бюджет) срещу внесения в Народното
-              събрание текст от 16.11.2026 г. Общите суми не се променят; различават се {data.versionDiffs.length} реда.
-            </p>
-            <div className="overflow-x-auto">
-              <table className="num w-full text-sm">
-                <caption className="sr-only">Разлики между версиите на Приложение № 3 за 2027 г., млн. €</caption>
-                <thead>
-                  <tr className="border-b border-rule-strong text-xs text-muted">
-                    <th scope="col" className="py-2 pr-3 text-left font-normal">
-                      Ред
-                    </th>
-                    <th scope="col" className="py-2 pr-3 text-right font-normal">
-                      06.11
-                    </th>
-                    <th scope="col" className="py-2 pr-3 text-right font-normal">
-                      16.11
-                    </th>
-                    <th scope="col" className="py-2 text-right font-normal">
-                      Разлика
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.versionDiffs.map((d) => (
-                    <tr key={d.label} className="border-b border-rule">
-                      <th scope="row" className="py-2 pr-3 text-left font-normal">
-                        {d.label}
-                      </th>
-                      <td className="py-2 pr-3 text-right">{fmtNum(d.before)}</td>
-                      <td className="py-2 pr-3 text-right">{fmtNum(d.after)}</td>
-                      <td className="py-2 text-right font-semibold">{d.difference === null ? "—" : fmtSigned(d.difference)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <p className="text-xs text-muted">
-              млн. €. Първичният файл от 06.11 на сайта на МФ не можа да бъде изтеглен автоматично (защита на сайта). Стойностите за
-              06.11 са от СИГМА Бюджет, версия на данните {data.snapshot.sigmaVersion}.
-            </p>
-          </div>
-          <div className="flex flex-col gap-3">
-            <h2 className="text-2xl font-semibold tracking-tight">Хронология</h2>
-            <ol className="flex flex-col">
-              {data.events.map((e) => (
-                <li key={e.id} className="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-3 border-b border-rule py-3">
-                  <time dateTime={e.date} className="num text-sm text-muted">
-                    {dateBg(e.date)}
-                  </time>
-                  <div>
-                    <p className="text-sm text-ink">{e.title}</p>
-                    {e.note && <p className="text-xs text-muted">{e.note}</p>}
-                    <a href={e.url} rel="noreferrer" className="text-xs text-ink-2 underline underline-offset-2">
-                      {e.documentTitle}
-                    </a>
+            <div className="rounded-3xl bg-white/[0.06] p-6 ring-1 ring-white/15 backdrop-blur sm:p-8" aria-labelledby="facts-title">
+              <h2 id="facts-title" className="text-sm font-medium tracking-wide text-[#c9d3e1]">
+                Бюджетът за 2027 г. с 4 числа
+              </h2>
+              <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-6">
+                {facts.map((f) => (
+                  <div key={f.key} className="flex flex-col gap-1">
+                    <dt className="text-[13px] text-[#c9d3e1]">{FACT_TEXT[f.key]!.label}</dt>
+                    <dd className="num text-3xl font-semibold tracking-tight sm:text-4xl">
+                      {fmtNum(f.value, 1)}
+                      <span className="ml-1 text-base font-normal text-[#c9d3e1]">млрд. €</span>
+                    </dd>
+                    {f.pctGdp && <dd className="num text-[13px] text-[#8fa0b8]">{fmtNum(f.pctGdp.replace("-", ""), 1)}% от БВП</dd>}
                   </div>
-                </li>
-              ))}
-              <li className="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-3 py-3">
-                <span className="text-sm text-muted">предстои</span>
-                <p className="text-sm text-ink-2">Гласуване на първо четене в пленарна зала — ще бъде добавено след проверка в официалните записи на НС.</p>
-              </li>
-            </ol>
+                ))}
+              </dl>
+              <p className="mt-6 border-t border-white/10 pt-4 text-[15px] leading-relaxed text-[#dfe6f0]">
+                {FACT_TEXT["kfp.revenue"]!.verb} <strong className="num font-semibold text-white">{fmtNum(F["kfp.revenue"]!.value, 1)} млрд. €</strong>{" "}
+                {FACT_TEXT["kfp.expenditure"]!.verb} <strong className="num font-semibold text-white">{fmtNum(F["kfp.expenditure"]!.value, 1)} млрд. €</strong>.
+                Разликата от <strong className="num font-semibold text-[#ff8a3d]">{fmtNum(F["kfp.balance"]!.value, 1)} млрд. €</strong> е дефицитът.
+              </p>
+              <p className="mt-3 text-xs text-[#8fa0b8]">
+                Целият публичен сектор (консолидирана фискална програма), проект за 2027 г.{" "}
+                <Link href="/tablo" className="underline underline-offset-2 hover:text-white">
+                  Всички показатели
+                </Link>
+              </p>
+            </div>
           </div>
         </section>
 
-        {/* ── Data quality ────────────────────────────────────── */}
-        <section aria-labelledby="q-title" className="flex flex-col gap-4 border-t border-rule pt-8">
-          <h2 id="q-title" className="text-xl font-semibold tracking-tight">
-            Проверки на данните
+        {/* ── Entry points ───────────────────────────────────── */}
+        <section aria-labelledby="start-title" className="mx-auto max-w-7xl px-4 pt-14 sm:px-6 sm:pt-20">
+          <h2 id="start-title" className="text-[1.75rem] font-semibold tracking-tight sm:text-4xl">
+            С какво да започнеш?
           </h2>
-          <p className="num text-sm text-ink-2">
-            {counts.pass} успешни проверки · {counts.warn} предупреждения · {counts.fail} неуспешни. Проверяват се съвпадението на
-            стойностите на различни места в документа, счетоводните равенства (приходи − разходи = салдо, дълг = външен + вътрешен и др.)
-            и сборовете на мерките.
-          </p>
-          {conflicts.map((c) => (
-            <div key={c.id} className="border-l-2 border-warning bg-surface px-4 py-3 text-sm">
-              <p className="font-medium text-ink">{c.description}</p>
-              <ul className="num mt-1 text-xs text-muted">
-                {Object.entries(c.details ?? {}).map(([k, v]) => (
-                  <li key={k}>
-                    {k}: <strong className="text-ink-2">{v}</strong>
+          <ul className="mt-8 grid gap-4 md:grid-cols-3">
+            {ENTRIES.map((e, i) => (
+              <li key={e.href}>
+                <Link
+                  href={e.href}
+                  className={`group flex h-full flex-col gap-4 rounded-3xl border p-6 transition hover:-translate-y-0.5 hover:shadow-xl sm:p-7 ${
+                    i === 0 ? "border-transparent bg-[#08111f] text-white shadow-lg" : "border-rule bg-surface hover:border-rule-strong"
+                  }`}
+                >
+                  <span className={`grid h-12 w-12 place-items-center rounded-2xl ${i === 0 ? "bg-[#ff6b00] text-[#08111f]" : "bg-surface-2 text-accent"}`}>
+                    <Icon name={e.icon} className="h-6 w-6" />
+                  </span>
+                  <span className="text-2xl font-semibold tracking-tight">{e.title}</span>
+                  <span className={`text-[15px] leading-relaxed ${i === 0 ? "text-[#c9d3e1]" : "text-ink-2"}`}>{e.text}</span>
+                  <span className={`mt-auto inline-flex items-center gap-2 text-[15px] font-semibold ${i === 0 ? "text-[#ff8a3d]" : "text-accent"}`}>
+                    {e.cta}
+                    <Icon name="arrow" className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* ── Where the money goes ───────────────────────────── */}
+        <section id="kade" aria-labelledby="kade-title" className="mx-auto max-w-7xl scroll-mt-20 px-4 pt-16 sm:px-6 sm:pt-24">
+          <div className="grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-start">
+            <div className="flex flex-col gap-4">
+              <p className="inline-flex w-fit rounded-full bg-surface-2 px-3 py-1 text-[13px] font-medium text-accent">Къде отиват парите</p>
+              <h2 id="kade-title" className="text-[1.75rem] leading-tight font-semibold tracking-tight text-balance sm:text-4xl">
+                {fmtNum(top[0]!.share, 0)}% от разходите отиват за {top[0]!.label.toLowerCase().replace(", подпомагане и грижи", ", помощи и грижи")}
+              </h2>
+              <p className="text-[17px] leading-relaxed text-ink-2">
+                {top[0]!.label.startsWith("Социално") ? "Тук влизат пенсиите и социалните помощи. " : ""}Следват {top[1]!.label.toLowerCase()} ({fmtNum(top[1]!.share, 0)}%),{" "}
+                {top[2]!.label.toLowerCase()} ({fmtNum(top[2]!.share, 0)}%) и {top[3]!.label.toLowerCase()} ({fmtNum(top[3]!.share, 0)}%).
+              </p>
+              <Link href="/sektori" className="inline-flex w-fit items-center gap-2 text-[15px] font-semibold text-accent">
+                Всички сектори и промените спрямо 2026 г.
+                <Icon name="arrow" className="h-4 w-4" />
+              </Link>
+            </div>
+            <figure className="rounded-3xl border border-rule bg-surface p-5 sm:p-7">
+              <figcaption className="mb-5 flex flex-wrap items-baseline justify-between gap-2">
+                <span className="text-base font-semibold">Разходи по сектори, 2027</span>
+                <span className="num text-sm text-muted">общо {fmtNum(sectors.total.dividedBy(1000).toFixed(1), 1)} млрд. €</span>
+              </figcaption>
+              <ol className="flex flex-col gap-4">
+                {[...top.map((r) => ({ label: r.label, share: r.share, value: r.value })), { label: "Всичко останало", share: restShare, value: null as string | null }].map((r, i) => (
+                  <li key={r.label} className="flex flex-col gap-1.5">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span className="text-[15px] text-ink">{r.label}</span>
+                      <span className="num shrink-0 text-[15px] font-semibold">
+                        {fmtNum(r.share, 0)}%
+                        {r.value && <span className="ml-2 text-sm font-normal text-muted">{fmtNum(bn(r.value), 1)} млрд. €</span>}
+                      </span>
+                    </div>
+                    <div className="h-3 overflow-hidden rounded-full bg-surface-2" aria-hidden>
+                      <div
+                        className="h-full rounded-full"
+                        style={{ width: `${r.share.dividedBy(top[0]!.share).times(100).toNumber()}%` /* pixels only */, background: i === 0 ? "var(--accent-fill)" : i === 5 ? "var(--neutral-mark)" : "var(--series-1)" }}
+                      />
+                    </div>
                   </li>
                 ))}
-              </ul>
-              <p className="mt-1 text-xs text-muted">Показваме и двете стойности; документът не обяснява разликата.</p>
+              </ol>
+              <p className="mt-5 text-xs text-muted">
+                Източник: мотиви към законопроекта, Табл. III-1 (функции, целият публичен сектор, без вноската в бюджета на ЕС). Дяловете са
+                изчислени от отпечатаните стойности.
+              </p>
+            </figure>
+          </div>
+        </section>
+
+        {/* ── Three things to know ───────────────────────────── */}
+        <section aria-labelledby="know-title" className="mx-auto max-w-7xl px-4 pt-16 sm:px-6 sm:pt-24">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <h2 id="know-title" className="text-[1.75rem] font-semibold tracking-tight sm:text-4xl">
+              3 неща, които да знаеш
+            </h2>
+            <Link href="/pod-lupa" className="inline-flex items-center gap-2 text-[15px] font-semibold text-accent">
+              Всички находки <Icon name="arrow" className="h-4 w-4" />
+            </Link>
+          </div>
+          <ol className="mt-8 grid gap-4 md:grid-cols-3">
+            {pick.map((f, i) => (
+              <li key={f.id}>
+                <Link href={`/pod-lupa#${f.id}`} className="group flex h-full flex-col gap-3 rounded-3xl border border-rule bg-surface p-6 transition hover:border-rule-strong hover:shadow-lg sm:p-7">
+                  <span className="flex items-center gap-3">
+                    <span className="num grid h-9 w-9 place-items-center rounded-full bg-ink text-sm font-semibold text-bg">{i + 1}</span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium text-ink-2 ring-1 ring-rule">
+                      <span aria-hidden className={`h-2 w-2 rounded-full ${f.tone === "positive" ? "bg-beneficial" : f.tone === "risk" ? "bg-adverse" : "bg-muted"}`} />
+                      {f.tone === "positive" ? "Подобрение" : f.tone === "risk" ? "Риск" : "Данни"}
+                    </span>
+                  </span>
+                  <span className="text-xl font-semibold tracking-tight text-balance">{f.title}</span>
+                  <span className="text-[15px] leading-relaxed text-ink-2">{bgText(f.conclusion)}</span>
+                  <span className="mt-auto inline-flex items-center gap-2 pt-2 text-sm font-semibold text-accent">
+                    Как го изчислихме <Icon name="arrow" className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        {/* ── Topics ─────────────────────────────────────────── */}
+        <section aria-labelledby="topics-title" className="mx-auto max-w-7xl px-4 pt-16 sm:px-6 sm:pt-24">
+          <h2 id="topics-title" className="text-[1.75rem] font-semibold tracking-tight sm:text-4xl">
+            Разгледай по тема
+          </h2>
+          <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {TOPICS.map((t) => (
+              <li key={t.href}>
+                <Link href={t.href} className="group flex h-full flex-col items-start gap-3 rounded-2xl border border-rule bg-surface p-4 transition hover:border-rule-strong hover:shadow-md sm:flex-row sm:items-center">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-surface-2 text-accent transition group-hover:bg-accent-fill group-hover:text-[#08111f]">
+                    <Icon name={t.icon} />
+                  </span>
+                  <span className="flex min-w-0 flex-col">
+                    <span className="text-[15px] font-semibold text-ink">{t.title}</span>
+                    <span className="text-[13px] text-muted">{t.text}</span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* ── Trust ──────────────────────────────────────────── */}
+        <section aria-labelledby="trust-title" className="mx-auto max-w-7xl px-4 pt-16 pb-6 sm:px-6 sm:pt-24">
+          <div className="rounded-3xl bg-surface-2 p-6 sm:p-10">
+            <h2 id="trust-title" className="text-[1.75rem] font-semibold tracking-tight sm:text-3xl">
+              Защо да ни вярваш?
+            </h2>
+            <ul className="mt-8 grid gap-8 md:grid-cols-3">
+              <li className="flex flex-col gap-2">
+                <span className="num text-4xl font-semibold tracking-tight">{official}</span>
+                <span className="text-[15px] font-semibold">официални документа</span>
+                <span className="text-[15px] leading-relaxed text-ink-2">Законопроектите от Народното събрание, Министерския съвет и Евростат. Всеки е запазен с цифров отпечатък.</span>
+              </li>
+              <li className="flex flex-col gap-2">
+                <span className="num text-4xl font-semibold tracking-tight">{checks.pass}</span>
+                <span className="text-[15px] font-semibold">автоматични проверки, {checks.fail} неуспешни</span>
+                <span className="text-[15px] leading-relaxed text-ink-2">Сборовете, равенствата и числата, отпечатани на няколко места, се сверяват при всяко обновяване.</span>
+              </li>
+              <li className="flex flex-col gap-2">
+                <span className="text-4xl font-semibold tracking-tight">0</span>
+                <span className="text-[15px] font-semibold">връзки с партии и институции</span>
+                <span className="text-[15px] leading-relaxed text-ink-2">Показваме и рисковете, и подобренията, със същата строгост. Без внушения.</span>
+              </li>
+            </ul>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href="/za-platformata" className="inline-flex min-h-11 items-center rounded-full bg-ink px-5 text-[15px] font-semibold text-bg">
+                Как работим
+              </Link>
+              <Link href="/iztochnitsi" className="inline-flex min-h-11 items-center rounded-full border border-rule-strong px-5 text-[15px] font-medium text-ink">
+                Всички източници
+              </Link>
             </div>
-          ))}
-          <Link href="/iztochnitsi" className="text-sm text-ink-2 underline underline-offset-4">
-            Всички източници, хешове и проверки →
-          </Link>
+          </div>
         </section>
       </main>
-      <SiteFooter data={data} />
+      <SiteFooter billDate={dateBg(bill.date)} snapshot={snap} />
     </>
-  );
-}
-
-function SiteFooter({ data }: { data: Published }) {
-  return (
-    <footer className="border-t border-rule bg-surface">
-      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-8 text-xs text-muted sm:grid-cols-3 sm:px-6">
-        <div>
-          <p className="font-medium text-ink-2">Данни</p>
-          <p className="num">
-            Снимка {data.snapshot.id} · публикувана {dateBg(data.snapshot.publishedAt)} ({data.snapshot.publishedBy}) · документите са
-            изтеглени на {dateBg(data.snapshot.retrievedOn)}.
-          </p>
-          <p>Редакторско одобрение от човек: предстои. Числата са проверени автоматично спрямо първичния документ.</p>
-        </div>
-        <div>
-          <p className="font-medium text-ink-2">Източници</p>
-          <p>
-            Народно събрание (законопроект 52-602-01-71 с мотиви), Министерски съвет, СИГМА Бюджет (данни {data.snapshot.sigmaVersion}) за
-            сравнение с проекта от 06.11.
-          </p>
-        </div>
-        <div>
-          <p className="font-medium text-ink-2">Независимост</p>
-          <p>Платформата не е свързана с правителството, институции, партии или издателите на източниците.</p>
-        </div>
-      </div>
-    </footer>
   );
 }
 

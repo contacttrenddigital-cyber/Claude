@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { SiteHeader } from "./SiteHeader";
+import { SiteFooter } from "./SiteFooter";
 import { getPublished } from "@/lib/data/published";
 import { dateBg } from "@/lib/format";
 
@@ -20,40 +20,30 @@ export async function PageShell({
   return (
     <>
       <SiteHeader status={`${bill.legalStatus} · внесен ${dateBg(bill.date)}`} />
-      <main id="main" className="mx-auto flex max-w-7xl flex-col gap-10 px-4 pt-10 pb-20 sm:px-6">
-        <header className="flex max-w-3xl flex-col gap-3">
-          <p className="text-xs font-medium tracking-[0.18em] text-accent uppercase">{eyebrow}</p>
-          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">{title}</h1>
-          <div className="text-ink-2">{lead}</div>
+      <main id="main" className="mx-auto flex max-w-7xl flex-col gap-12 px-4 pt-8 pb-16 sm:px-6 sm:pt-12">
+        <header className="flex max-w-3xl flex-col gap-4">
+          <p className="inline-flex w-fit items-center rounded-full bg-surface-2 px-3 py-1 text-[13px] font-medium text-accent">{eyebrow}</p>
+          <h1 className="text-[2.25rem] leading-[1.1] font-semibold tracking-tight text-balance sm:text-5xl">{title}</h1>
+          <div className="flex flex-col gap-3 text-[17px] leading-relaxed text-ink-2">{lead}</div>
         </header>
         {children}
       </main>
-      <footer className="border-t border-rule bg-surface">
-        <div className="mx-auto flex max-w-7xl flex-wrap gap-x-6 gap-y-2 px-4 py-6 text-xs text-muted sm:px-6">
-          <span className="num">
-            Снимка {data.snapshot.id} · публикувана {dateBg(data.snapshot.publishedAt)} ({data.snapshot.publishedBy})
-          </span>
-          <span>Законопроект, внесен в НС на {dateBg(bill.date)} — не е приет закон.</span>
-          <Link href="/iztochnitsi" className="underline underline-offset-2">
-            Източници и проверки
-          </Link>
-          <Link href="/metodologia" className="underline underline-offset-2">
-            Методология
-          </Link>
-        </div>
-      </footer>
+      <SiteFooter
+        billDate={dateBg(bill.date)}
+        snapshot={{ id: data.snapshot.id, publishedAt: data.snapshot.publishedAt ? dateBg(data.snapshot.publishedAt) : "—", publishedBy: data.snapshot.publishedBy ?? "—" }}
+      />
     </>
   );
 }
 
 export function Section({ id, title, lead, children }: { id?: string; title: string; lead?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section id={id} aria-labelledby={id ? `${id}-t` : undefined} className="flex scroll-mt-32 flex-col gap-4 sm:scroll-mt-24">
-      <div className="flex max-w-3xl flex-col gap-1">
-        <h2 id={id ? `${id}-t` : undefined} className="text-2xl font-semibold tracking-tight">
+    <section id={id} aria-labelledby={id ? `${id}-t` : undefined} className="flex scroll-mt-24 flex-col gap-5">
+      <div className="flex max-w-3xl flex-col gap-2">
+        <h2 id={id ? `${id}-t` : undefined} className="text-2xl font-semibold tracking-tight text-balance sm:text-[1.75rem]">
           {title}
         </h2>
-        {lead && <div className="text-sm text-ink-2">{lead}</div>}
+        {lead && <div className="text-[15px] leading-relaxed text-ink-2">{lead}</div>}
       </div>
       {children}
     </section>

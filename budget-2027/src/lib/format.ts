@@ -65,3 +65,8 @@ export function dateBgLong(iso: string): string {
 export function unitOf(unit: string): string {
   return unitLabelBg(parseUnit(unit));
 }
+
+/** Rewrites plain decimal numbers inside generated text ("34.6%", "3355.6 млн.") in Bulgarian format. */
+export function bgText(text: string): string {
+  return text.replace(/(?<![\d.,])-?\d+\.\d+(?![\d.])/g, (m) => fmtNum(m, m.split(".")[1]!.length));
+}

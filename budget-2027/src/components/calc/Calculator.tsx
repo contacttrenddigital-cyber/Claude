@@ -90,11 +90,11 @@ export function Calculator({ docUrls }: { docUrls: Record<string, { url: string;
   return (
     <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] [&>*]:min-w-0">
       {/* ── Inputs ── */}
-      <form className="flex flex-col gap-5 self-start lg:sticky lg:top-24" onSubmit={(e) => e.preventDefault()} aria-describedby="calc-privacy">
+      <form className="flex flex-col gap-5 self-start rounded-3xl border border-rule bg-surface p-5 sm:p-6 lg:sticky lg:top-24" onSubmit={(e) => e.preventDefault()} aria-describedby="calc-privacy">
         <fieldset className="flex flex-col gap-4">
           <legend className="mb-2 text-lg font-semibold">Твоите данни</legend>
-          <label className="flex flex-col gap-1 text-sm">
-            Брутна месечна заплата по трудов договор, €
+          <label className="flex flex-col gap-1.5 text-[15px] font-medium">
+            Брутна заплата на месец, €
             <input
               inputMode="decimal"
               autoComplete="off"
@@ -102,7 +102,7 @@ export function Calculator({ docUrls }: { docUrls: Record<string, { url: string;
               onChange={(e) => set("grossText", e.target.value)}
               aria-invalid={!!error}
               aria-describedby={error ? "calc-error" : undefined}
-              className="num min-h-11 rounded-sm border border-rule-strong bg-surface px-3 text-lg text-ink"
+              className="num min-h-14 w-full min-w-0 rounded-xl border border-rule-strong bg-surface px-4 text-2xl font-semibold text-ink focus:border-accent-fill"
             />
           </label>
           <label className="flex flex-col gap-1 text-sm">
@@ -113,7 +113,7 @@ export function Calculator({ docUrls }: { docUrls: Record<string, { url: string;
                 const n = Number(e.target.value) as PayrollInput["children"];
                 setForm((f) => ({ ...f, children: n, disabledChild: n === 0 ? false : f.disabledChild }));
               }}
-              className="min-h-11 rounded-sm border border-rule-strong bg-surface px-3 text-ink"
+              className="min-h-12 w-full min-w-0 rounded-xl border border-rule-strong bg-surface px-3 text-ink"
             >
               <option value={0}>няма</option>
               <option value={1}>1</option>
@@ -139,7 +139,7 @@ export function Calculator({ docUrls }: { docUrls: Record<string, { url: string;
               value={form.devText}
               disabled={form.children === 0}
               onChange={(e) => set("devText", e.target.value)}
-              className="num min-h-11 rounded-sm border border-rule-strong bg-surface px-3 text-ink disabled:opacity-60"
+              className="num min-h-12 w-full min-w-0 rounded-xl border border-rule-strong bg-surface px-3 text-ink disabled:opacity-60"
             />
           </label>
           <label className="flex min-h-11 items-center gap-2 text-sm">
@@ -165,7 +165,7 @@ export function Calculator({ docUrls }: { docUrls: Record<string, { url: string;
               <select
                 value={form.tzpbPct}
                 onChange={(e) => set("tzpbPct", e.target.value)}
-                className="min-h-11 rounded-sm border border-rule-strong bg-surface px-3 text-ink"
+                className="min-h-12 w-full min-w-0 rounded-xl border border-rule-strong bg-surface px-3 text-ink"
               >
                 {["0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1", "1.1"].map((v) => (
                   <option key={v} value={v}>
@@ -190,6 +190,24 @@ export function Calculator({ docUrls }: { docUrls: Record<string, { url: string;
         <p className="-mt-3 text-xs text-muted">Връзката съдържа въведените стойности. Сподели я само ако нямаш нищо против.</p>
       </form>
 
+      {/* ── Phone: the answer stays visible while typing ── */}
+      {result && (
+        <a
+          href="#sum-title"
+          className="fixed inset-x-3 bottom-3 z-30 flex items-center justify-between gap-3 rounded-2xl bg-[#08111f] px-4 py-3 text-white shadow-2xl ring-1 ring-white/10 lg:hidden"
+          aria-label={`Нетна заплата 2027: ${eur(result.y2027.periods[0]!.net)}, разлика ${sEur(result.monthlyDelta.net)} на месец. Към подробностите.`}
+        >
+          <span className="flex flex-col leading-tight">
+            <span className="text-xs text-[#c9d3e1]">Нето на месец, 2027</span>
+            <span className="num text-2xl font-semibold">{eur(result.y2027.periods[0]!.net)}</span>
+          </span>
+          <span className="flex flex-col items-end leading-tight">
+            <span className="text-xs text-[#c9d3e1]">спрямо 2026</span>
+            <span className="num text-lg font-semibold text-[#ff8a3d]">{sEur(result.monthlyDelta.net)}</span>
+          </span>
+        </a>
+      )}
+
       {/* ── Results ── */}
       <div className="flex flex-col gap-8" aria-live="polite">
         {error && (
@@ -200,10 +218,10 @@ export function Calculator({ docUrls }: { docUrls: Record<string, { url: string;
         {result && (
           <>
             <section aria-labelledby="sum-title" className="flex flex-col gap-4">
-              <h2 id="sum-title" className="text-xl font-semibold">
-                Резултат
+              <h2 id="sum-title" className="scroll-mt-24 text-xl font-semibold">
+                Резултат за 2027 г.
               </h2>
-              <div className="grid gap-6 sm:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-3">
                 <Stat
                   label="Нетна заплата на месец"
                   a={result.y2026.periods.at(-1)!.net}
@@ -282,9 +300,9 @@ function explain(c: NonNullable<ReturnType<typeof compareYears>>) {
 
 function Stat({ label, a, b, delta, note }: { label: string; a: string; b: string; delta: string; note: string }) {
   return (
-    <div className="flex flex-col gap-1 border-t border-rule-strong pt-3">
-      <p className="text-[13px] font-medium tracking-wide text-ink-2 uppercase">{label}</p>
-      <p className="num text-3xl font-semibold">{eur(b)}</p>
+    <div className="flex flex-col gap-1 rounded-2xl border border-rule bg-surface p-4">
+      <p className="text-[13px] font-medium text-ink-2">{label}</p>
+      <p className="num text-3xl font-semibold tracking-tight">{eur(b)}</p>
       <p className="num text-sm text-ink-2">
         2026: {eur(a)} · разлика <strong className="text-ink">{sEur(delta)}</strong>
       </p>

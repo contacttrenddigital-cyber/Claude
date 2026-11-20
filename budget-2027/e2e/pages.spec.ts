@@ -50,9 +50,16 @@ test("институции: търсене и връзка към профил",
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Министерство на образованието и науката");
 });
 
-test("менюто „Още“ води към страниците", async ({ page }) => {
+test("менюто води към страниците (групи на компютър, цял екран на телефон)", async ({ page }) => {
   await page.goto("/");
-  await page.locator("summary", { hasText: "Още" }).click();
-  await page.locator("details[open]").getByRole("link", { name: "Изпълнение" }).click();
+  const burger = page.getByRole("button", { name: "Отвори менюто" });
+  if (await burger.isVisible()) {
+    await burger.click();
+    await page.locator("#mobile-menu").getByRole("link", { name: /Изпълнение 2026/ }).click();
+  } else {
+    await page.getByRole("button", { name: "Анализи" }).click();
+    await page.locator("#menu-analizi").getByRole("link", { name: /Изпълнение 2026/ }).click();
+  }
   await expect(page).toHaveURL(/\/izpalnenie$/);
+  await expect(page.locator("#mobile-menu")).toHaveCount(0); // closes after navigation
 });

@@ -24,7 +24,7 @@ test("под лупа: 8 находки със схемата източник �
   await page.goto("/pod-lupa");
   await expect(page.locator("ol > li[id]")).toHaveCount(8);
   const lihvi = page.locator("#lihvi");
-  await expect(lihvi).toContainText("34.6%");
+  await expect(lihvi).toContainText("34,6%");
   for (const part of ["Източник", "Методология", "Пресмятане", "Извод", "Ограничения", "Право на отговор"]) await expect(lihvi).toContainText(part);
 });
 

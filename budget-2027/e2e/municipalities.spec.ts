@@ -5,7 +5,7 @@ test.describe("Общини", () => {
   test("карта, легенда, списък от 265 общини, филтър по област и търсене", async ({ page }) => {
     await page.goto("/obshtini");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Колко получава всяка община");
-    await expect(page.locator("svg path").first()).toBeVisible();
+    await expect(page.locator("svg[aria-label^='Карта на общините'] path").first()).toBeVisible();
     expect(await page.locator("svg[aria-label^='Карта на общините'] path").count()).toBe(265);
     await expect(page.getByText("265 общини", { exact: true })).toBeVisible();
     await page.getByLabel("Област").selectOption("Бургас");

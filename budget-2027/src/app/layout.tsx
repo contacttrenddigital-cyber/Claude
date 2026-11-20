@@ -10,9 +10,15 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
   title: { default: "Бюджет 2027 — под лупа", template: "%s · Бюджет 2027 — под лупа" },
   description:
-    "Независим анализ на бюджета на България за 2027 г.: всяко число с официален източник, версия и дата. Приходи, разходи, дефицит, дълг и мерки по законопроекта.",
+    "Бюджетът на България за 2027 г., обяснен ясно: откъде идват парите, къде отиват и как те засягат. Независимо, с източник за всяко число.",
   alternates: { canonical: "/" },
-  openGraph: { locale: "bg_BG", type: "website", siteName: "Бюджет 2027 — под лупа" },
+  openGraph: {
+    locale: "bg_BG",
+    type: "website",
+    siteName: "Бюджет 2027 — под лупа",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Бюджет 2027, обяснен ясно" }],
+  },
+  twitter: { card: "summary_large_image", images: ["/og.png"] },
 };
 
 export const viewport: Viewport = {

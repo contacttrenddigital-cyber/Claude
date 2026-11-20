@@ -3,7 +3,7 @@ import { PageShell } from "@/components/site/PageShell";
 import { computeFindings } from "@/lib/findings";
 import { getPublished } from "@/lib/data/published";
 import { findingsData } from "@/lib/data/view";
-import { fmtNum } from "@/lib/format";
+import { fmtNum, bgText } from "@/lib/format";
 
 export const revalidate = 3600;
 export const metadata: Metadata = {
@@ -51,9 +51,9 @@ export default async function UnderTheLens() {
               <dt className="text-xs font-semibold tracking-wide text-ink-2 uppercase">Методология</dt>
               <dd>{f.method}</dd>
               <dt className="text-xs font-semibold tracking-wide text-ink-2 uppercase">Пресмятане</dt>
-              <dd className="num">{f.calculation}</dd>
+              <dd className="num">{bgText(f.calculation)}</dd>
               <dt className="text-xs font-semibold tracking-wide text-ink-2 uppercase">Извод</dt>
-              <dd className="text-ink">{f.conclusion}</dd>
+              <dd className="text-ink">{bgText(f.conclusion)}</dd>
               <dt className="text-xs font-semibold tracking-wide text-ink-2 uppercase">Ограничения</dt>
               <dd className="text-ink-2">{f.limitations}</dd>
               <dt className="text-xs font-semibold tracking-wide text-ink-2 uppercase">Право на отговор</dt>

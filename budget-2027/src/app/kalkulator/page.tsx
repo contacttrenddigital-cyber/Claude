@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { Calculator } from "@/components/calc/Calculator";
 import { SiteHeader } from "@/components/site/SiteHeader";
+import { SiteFooter } from "@/components/site/SiteFooter";
 import { NoPublishedSnapshotError, getPublished } from "@/lib/data/published";
 import { dateBg } from "@/lib/format";
 
 export const revalidate = 3600;
 export const metadata: Metadata = {
-  title: "Колко ще ми струва Бюджет 2027?",
+  title: "Калкулатор: колко ще получаваш през 2027 г.",
   description:
     "Калкулатор за нетна заплата, осигуровки и разход на работодателя по трудов договор: 2026 г. срещу предложенията за 2027 г., с източник за всяко правило. Изчислява се в браузъра.",
   alternates: { canonical: "/kalkulator" },
@@ -26,18 +27,17 @@ export default async function CalculatorPage() {
   return (
     <>
       <SiteHeader status={status} />
-      <main id="main" className="mx-auto flex max-w-7xl flex-col gap-10 px-4 pt-10 pb-20 sm:px-6">
-        <header className="flex max-w-3xl flex-col gap-3">
-          <p className="text-xs font-medium tracking-[0.18em] text-accent uppercase">Калкулатор · трудов договор</p>
-          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">Колко ще ми струва Бюджет 2027?</h1>
-          <p className="text-ink-2">
-            Сравнява нетната заплата, данъка, осигуровките и разхода на работодателя по правилата в сила през 2026 г. с предложенията в
-            законопроектите за 2027 г. Ставките на данъка и осигуровките не се променят. Променят се максималният осигурителен доход
-            (2 400 €) и облекченията за деца.
+      <main id="main" className="mx-auto flex max-w-7xl flex-col gap-8 px-4 pt-8 pb-28 sm:px-6 sm:pt-12 lg:pb-20">
+        <header className="flex max-w-3xl flex-col gap-4">
+          <p className="inline-flex w-fit items-center rounded-full bg-surface-2 px-3 py-1 text-[13px] font-medium text-accent">Калкулатор · трудов договор</p>
+          <h1 className="text-[2.25rem] leading-[1.1] font-semibold tracking-tight text-balance sm:text-5xl">Колко ще получаваш през 2027 г.?</h1>
+          <p className="text-[17px] leading-relaxed text-ink-2">
+            Въведи брутната си заплата и виж нетната сума, данъка и осигуровките по сегашните правила и по предложението за 2027 г.
           </p>
         </header>
         <Calculator docUrls={docUrls} />
       </main>
+      <SiteFooter />
     </>
   );
 }

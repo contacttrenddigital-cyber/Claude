@@ -14,24 +14,24 @@ test.describe("Калкулатор", () => {
 
   test("промяна на заплатата и деца преизчислява на място", async ({ page }) => {
     await page.goto("/kalkulator");
-    await page.getByLabel("Брутна месечна заплата по трудов договор, €").fill("2600");
+    await page.getByLabel("Брутна заплата на месец, €").fill("2600");
     await page.getByLabel("Брой ненавършили пълнолетие деца").selectOption("1");
     // по-висок таван → повече осигуровки; по-високо облекчение → по-малко данък
     await expect(page.getByText(/осигуровките на работника се увеличават/)).toBeVisible();
     await expect(page.getByText(/данъкът намалява/)).toBeVisible();
-    await expect(page.getByText(money("2 042,35 €")).first()).toBeVisible();
+    await expect(page.getByText(money("2 042,35 €")).filter({ visible: true }).first()).toBeVisible();
   });
 
   test("невалиден вход показва грешка, без резултат", async ({ page }) => {
     await page.goto("/kalkulator");
-    await page.getByLabel("Брутна месечна заплата по трудов договор, €").fill("абв");
+    await page.getByLabel("Брутна заплата на месец, €").fill("абв");
     await expect(page.locator("#calc-error")).toContainText("Въведи брутна заплата");
     await expect(page.getByRole("heading", { name: "Резултат" })).toHaveCount(0);
   });
 
   test("сценарият се зарежда от връзка и показва източници", async ({ page }) => {
     await page.goto("/kalkulator?bruto=1500&detsa=2&razhodi=1500&avans=1");
-    await expect(page.getByLabel("Брутна месечна заплата по трудов договор, €")).toHaveValue("1500");
+    await expect(page.getByLabel("Брутна заплата на месец, €")).toHaveValue("1500");
     await expect(page.getByLabel("Брой ненавършили пълнолетие деца")).toHaveValue("2");
     await expect(page.getByText(/месечно облекчение за деца/).first()).toBeVisible();
     await expect(page.getByText(/ред 18/).first()).toBeVisible();

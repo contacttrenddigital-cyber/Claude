@@ -43,9 +43,13 @@ test("отбрана: разлика между двата реда в % от Б
   await expect(gap.getByRole("row", { name: /^2029/ })).toContainText("2,65%");
 });
 
-test("навигация: новите страници са в менюто „Още“", async ({ page }) => {
+test("навигация: пенсии, здраве и отбрана са в менюто", async ({ page }) => {
   await page.goto("/");
-  const more = page.locator("header details");
-  await more.locator("summary").click();
-  for (const name of ["Пенсии и ДОО", "Здравеопазване и НЗОК", "Отбрана"]) await expect(more.getByRole("link", { name })).toBeVisible();
+  const burger = page.getByRole("button", { name: "Отвори менюто" });
+  const phone = await burger.isVisible();
+  if (phone) await burger.click();
+  else await page.getByRole("button", { name: "Бюджетът" }).click();
+  const scope = phone ? page.locator("#mobile-menu") : page.locator("#menu-byudzhetat");
+  for (const name of ["Здравеопазване", "Отбрана"]) await expect(scope.getByRole("link", { name: new RegExp(`^${name}`) })).toBeVisible();
+  if (phone) await expect(scope.getByRole("link", { name: /^Пенсии/ })).toBeVisible();
 });

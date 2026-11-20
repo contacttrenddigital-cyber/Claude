@@ -4,14 +4,14 @@ import AxeBuilder from "@axe-core/playwright";
 const NB = "[\\s\\u00a0]";
 const num = (s: string) => new RegExp(s.replace(/ /g, NB));
 
-test.describe("Началното табло", () => {
+test.describe("Пълно табло (/tablo)", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/tablo");
   });
 
   test("показва заглавието, правния статус и ключовите числа от законопроекта", async ({ page }) => {
     await expect(page.locator("html")).toHaveAttribute("lang", "bg");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("БЮДЖЕТ 2027");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Пълно табло");
     await expect(page.getByText("Законопроект — не е приет", { exact: true })).toBeVisible();
     const kpis = page.locator("#pokazateli");
     await expect(kpis.getByText(num("−4 907,0"))).toBeVisible(); // салдо по КФП
@@ -67,8 +67,9 @@ test.describe("Началното табло", () => {
   });
 
   test("темата се помни след презареждане", async ({ page }) => {
-    const btn = page.getByRole("button", { name: /Смени темата/ });
-    await btn.click(); // system → dark
+    const menu = page.getByRole("button", { name: "Отвори менюто" });
+    if (await menu.isVisible()) await menu.click(); // on phones the theme switch is in the menu
+    await page.getByRole("button", { name: /Смени темата/ }).filter({ visible: true }).first().click(); // system → dark
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
     await page.reload();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");

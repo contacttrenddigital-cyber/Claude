@@ -37,7 +37,7 @@ export default async function Taxes() {
         <TableView table={a} only={changed.map((r) => r.rowIndex)} columns={["2026", "2027", "2028", "2029"]} sourceUrl={src.url} sourceTitle={src.title} highlightChanges={["2026", "2027"]} />
         <p className="text-sm text-ink-2">
           Ефектът на всяка мярка върху приходите (оценка на МФ) е в{" "}
-          <Link href="/#merki" className="underline underline-offset-2">
+          <Link href="/tablo#merki" className="underline underline-offset-2">
             изследователя на мерките
           </Link>
           .
