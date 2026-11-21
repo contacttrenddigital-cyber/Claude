@@ -5,7 +5,7 @@ import { ABOUT, NAV } from "./nav";
 /** Footer: the full site map, what the platform is, and which data snapshot is shown. */
 export function SiteFooter({ snapshot, billDate }: { snapshot?: { id: string; publishedAt: string; publishedBy: string }; billDate?: string }) {
   return (
-    <footer className="mt-10 border-t border-rule bg-surface">
+    <footer className="on-dark mt-10 border-t border-rule bg-hero">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)]">
         <div className="flex max-w-sm flex-col gap-4">
           <Logo />

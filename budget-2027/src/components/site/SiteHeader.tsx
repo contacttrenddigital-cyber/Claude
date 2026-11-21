@@ -66,7 +66,7 @@ export function SiteHeader(props: { status?: string }) {
 
   return (
     <>
-    <header className="sticky top-0 z-40 border-b border-rule bg-bg/90 backdrop-blur-md supports-[backdrop-filter]:bg-bg/75">
+    <header className="on-dark sticky top-0 z-40 border-b border-rule bg-hero">
       <div ref={bar} className="relative mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 sm:px-6">
         <Logo />
 
@@ -147,7 +147,7 @@ export function SiteHeader(props: { status?: string }) {
 
     </header>
       {mobile && (
-        <div id="mobile-menu" className="fixed inset-x-0 top-16 bottom-0 z-50 overflow-y-auto bg-bg lg:hidden">
+        <div id="mobile-menu" className="on-dark fixed inset-x-0 top-16 bottom-0 z-50 overflow-y-auto bg-hero lg:hidden">
           <nav aria-label="Мобилна навигация" className="mx-auto flex max-w-2xl flex-col gap-7 px-4 pt-5 pb-16">
             {NAV.map((g) => (
               <section key={g.id} aria-labelledby={`m-${g.id}`}>

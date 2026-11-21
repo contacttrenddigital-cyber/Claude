@@ -27,15 +27,19 @@ export default async function CalculatorPage() {
   return (
     <>
       <SiteHeader status={status} />
-      <main id="main" className="mx-auto flex max-w-7xl flex-col gap-8 px-4 pt-8 pb-28 sm:px-6 sm:pt-12 lg:pb-20">
-        <header className="flex max-w-3xl flex-col gap-4">
+      <main id="main">
+        <header className="on-dark bg-hero">
+          <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 pt-9 pb-10 sm:px-6 sm:pt-14 sm:pb-12">
           <p className="inline-flex w-fit items-center rounded-full bg-card-mustard px-3 py-1 text-[13px] font-semibold text-on-card">Калкулатор · трудов договор</p>
           <h1 className="font-display text-[2.6rem] leading-[0.95] font-semibold tracking-tight text-balance uppercase sm:text-[3.8rem]">Колко ще получаваш през 2027 г.?</h1>
-          <p className="text-[17px] leading-relaxed text-ink-2">
+          <p className="max-w-3xl text-[17px] leading-relaxed text-ink-2">
             Въведи брутната си заплата и виж нетната сума, данъка и осигуровките по сегашните правила и по предложението за 2027 г.
           </p>
+          </div>
         </header>
-        <Calculator docUrls={docUrls} />
+        <div className="mx-auto max-w-7xl px-4 pt-8 pb-28 sm:px-6 sm:pt-10 lg:pb-20">
+          <Calculator docUrls={docUrls} />
+        </div>
       </main>
       <SiteFooter />
     </>
