@@ -19,7 +19,7 @@ export function Logo() {
         27
       </span>
       <span className="flex flex-col leading-none">
-        <span className="font-display text-[17px] font-semibold tracking-wide uppercase">Бюджет 2027</span>
+        <span className="font-display text-[20px] font-semibold tracking-wide uppercase">Бюджет 2027</span>
         <span className="mt-0.5 text-[11px] text-muted">под лупа</span>
       </span>
     </Link>

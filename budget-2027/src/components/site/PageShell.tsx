@@ -52,7 +52,7 @@ export async function PageShell({
         <header className="on-dark bg-hero">
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 pt-9 pb-10 sm:px-6 sm:pt-14 sm:pb-14">
             <p className="inline-flex w-fit items-center rounded-full bg-card-mustard px-3 py-1 text-[13px] font-semibold text-on-card">{eyebrow}</p>
-            <h1 className="font-display max-w-4xl text-[2.6rem] leading-[1] font-semibold tracking-tight text-balance uppercase sm:text-6xl">{title}</h1>
+            <h1 className="font-display max-w-4xl text-[3rem] leading-[0.95] font-semibold tracking-tight text-balance uppercase sm:text-[4.4rem]">{title}</h1>
             <div className="flex max-w-3xl flex-col gap-3 text-[17px] leading-relaxed text-ink-2">{lead}</div>
             {facts && facts.length > 0 && (
               <section aria-label="Накратко" className="mt-2">
@@ -61,7 +61,7 @@ export async function PageShell({
                   {facts.map((f) => (
                     <div key={f.label} className={`flex flex-col gap-1 rounded-3xl p-4 text-on-card shadow-lg shadow-black/30 sm:p-5 ${TONE[f.tone]}`}>
                       <dt className="text-sm font-semibold">{f.label}</dt>
-                      <dd className="num font-display text-[2.3rem] leading-none font-semibold">
+                      <dd className="num font-display text-[2.7rem] leading-none font-semibold">
                         {fmtNum(f.value, f.decimals ?? 1)}
                         <span className="ml-1.5 font-sans text-sm font-medium">{f.unit}</span>
                       </dd>
@@ -89,7 +89,7 @@ export function Section({ id, title, lead, children }: { id?: string; title: str
   return (
     <section id={id} aria-labelledby={id ? `${id}-t` : undefined} className="flex scroll-mt-24 flex-col gap-5">
       <div className="flex max-w-3xl flex-col gap-2">
-        <h2 id={id ? `${id}-t` : undefined} className="font-display text-[1.9rem] leading-tight font-semibold tracking-tight text-balance sm:text-[2.3rem]">
+        <h2 id={id ? `${id}-t` : undefined} className="font-display text-[2.2rem] leading-[1.02] font-semibold tracking-tight text-balance sm:text-[2.8rem]">
           {title}
         </h2>
         {lead && <div className="text-[16px] leading-relaxed text-ink-2">{lead}</div>}

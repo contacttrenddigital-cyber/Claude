@@ -34,7 +34,7 @@ export function StatTile({
         <h3 className="text-[14px] font-semibold text-ink-2">{label}</h3>
         <span className="text-[11px] text-muted">{tag}</span>
       </header>
-      <p className="num font-display text-[2.4rem] leading-none font-semibold">
+      <p className="num font-display text-[2.8rem] leading-none font-semibold">
         {v === null ? "няма данни" : signed ? fmtSigned(v, dp) : fmtNum(v, dp)}
         {v !== null && <span className="ml-1.5 text-base font-normal text-muted">{show}</span>}
       </p>
