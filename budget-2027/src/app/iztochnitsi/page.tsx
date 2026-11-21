@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PageShell } from "@/components/site/PageShell";
+import { DocumentsExplorer } from "@/components/sources/DocumentsExplorer";
 import { NoPublishedSnapshotError, getPublished, type Published } from "@/lib/data/published";
 import { dateBg } from "@/lib/format";
 
@@ -50,16 +51,16 @@ export default async function Sources() {
         <h2 id="ver" className="font-display text-[1.9rem] leading-[1.02] font-semibold tracking-tight sm:text-[2.4rem]">
           Версии на бюджета
         </h2>
-        <ol className="flex flex-col">
+        <ol className="grid grid-cols-1 gap-4 md:grid-cols-2 [&>*]:min-w-0">
           {data.versions.map((v) => (
-            <li key={v.id} className="grid gap-1 border-b border-rule py-3 sm:grid-cols-[8rem_minmax(0,1fr)]">
-              <time className="num text-sm text-muted" dateTime={v.date}>
+            <li key={v.id} className="flex flex-col gap-1 rounded-3xl border border-rule bg-surface p-5">
+              <time className="num text-[13px] font-semibold text-ink-2" dateTime={v.date}>
                 {dateBg(v.date)}
               </time>
               <div>
                 <p className="font-medium">{v.label}</p>
                 <p className="text-sm text-ink-2">Статус: {v.legalStatus}</p>
-                <p className="text-xs text-muted">{v.evidence}</p>
+                <p className="text-[13px] text-ink-2">{v.evidence}</p>
               </div>
             </li>
           ))}
@@ -70,47 +71,25 @@ export default async function Sources() {
         <h2 id="docs" className="font-display text-[1.9rem] leading-[1.02] font-semibold tracking-tight sm:text-[2.4rem]">
           Документи ({data.documents.length})
         </h2>
-        <ul className="flex flex-col">
-          {data.documents.map((d) => (
-            <li key={d.id} className="flex flex-col gap-1 border-b border-rule py-3">
-              <p className="text-sm font-medium text-ink">{d.title}</p>
-              <p className="text-xs text-ink-2">
-                {d.publisher}
-                {d.publishedOn && <> · публикуван {dateBg(d.publishedOn)}</>} · изтеглен {dateBg(d.retrievedOn)} · {d.mime} ·{" "}
-                <span className="num">{(d.bytes / 1024).toFixed(0)} KB</span>
-                {d.legalStatus && <> · {d.legalStatus}</>}
-              </p>
-              <p className="flex flex-wrap gap-x-3 text-xs">
-                <a className="text-ink-2 underline underline-offset-2" href={d.url} rel="noreferrer">
-                  Оригинален файл
-                </a>
-                {d.pageUrl && (
-                  <a className="text-ink-2 underline underline-offset-2" href={d.pageUrl} rel="noreferrer">
-                    Страница
-                  </a>
-                )}
-              </p>
-              <p className="font-mono text-[11px] break-all text-muted">SHA-256 {d.sha256}</p>
-            </li>
-          ))}
-        </ul>
+        <DocumentsExplorer documents={data.documents} />
       </section>
 
-      <section aria-labelledby="checks" className="flex flex-col gap-6">
+      <section aria-labelledby="checks" className="flex flex-col gap-3">
         <h2 id="checks" className="font-display text-[1.9rem] leading-[1.02] font-semibold tracking-tight sm:text-[2.4rem]">
           Автоматични проверки ({data.checks.length})
         </h2>
         {kinds.map((k) => {
           const list = data.checks.filter((c) => c.kind === k);
           return (
-            <details key={k} className="border-b border-rule pb-3" open={list.some((c) => c.status !== "pass")}>
-              <summary className="flex min-h-11 items-center gap-2 text-base font-medium">
+            <details key={k} className="group rounded-3xl border border-rule bg-surface px-5 py-2" open={list.some((c) => c.status !== "pass")}>
+              <summary className="flex min-h-11 cursor-pointer list-none flex-wrap items-center gap-2 text-base font-semibold [&::-webkit-details-marker]:hidden">
+                <span aria-hidden className="transition-transform group-open:rotate-90">›</span>
                 {KIND_LABEL[k] ?? k}{" "}
-                <span className="num text-sm font-normal text-muted">
+                <span className="num text-sm font-normal text-ink-2">
                   {list.filter((c) => c.status === "pass").length}/{list.length} успешни
                 </span>
               </summary>
-              <ul className="mt-2 flex flex-col gap-2">
+              <ul className="mt-2 mb-3 flex flex-col gap-2">
                 {list.map((c) => (
                   <li key={c.id} className="text-sm">
                     <span className={c.status === "pass" ? "text-beneficial" : c.status === "warn" ? "text-warning" : "text-adverse"}>
@@ -118,7 +97,7 @@ export default async function Sources() {
                     </span>{" "}
                     <span className="text-ink-2">{c.description}</span>
                     {c.details && c.status !== "pass" && (
-                      <ul className="num mt-1 ml-5 text-xs text-muted">
+                      <ul className="num mt-1 ml-5 text-[13px] text-ink-2">
                         {Object.entries(c.details).map(([key, v]) => (
                           <li key={key}>
                             {key}: {v ?? "—"}

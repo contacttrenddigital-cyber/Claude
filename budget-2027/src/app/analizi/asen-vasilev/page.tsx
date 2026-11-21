@@ -51,7 +51,7 @@ export default async function AsenVasilevPage() {
               {archive.statements.length} изказвания, {archive.statements.reduce((n, s) => n + s.claims.length, 0)} твърдения. Търсено в:{" "}
               {meta.coverage.searched.join(", ")}. {meta.coverage.note}
             </p>
-            <ul className="mt-1 list-disc pl-5 text-xs text-muted">
+            <ul className="mt-1 list-disc pl-5 text-[13px] text-ink-2">
               {meta.coverage.notAccessible.map((n) => (
                 <li key={n.source}>
                   {n.source}: {n.reason}
@@ -72,19 +72,15 @@ export default async function AsenVasilevPage() {
           <h2 id="statements" className="font-display text-[1.9rem] font-semibold tracking-tight">
             Изказвания
           </h2>
-          <ol className="flex flex-col">
+          <ol className="grid grid-cols-1 gap-4 md:grid-cols-3 [&>*]:min-w-0">
             {archive.statements.map((s) => (
-              <li key={s.id} className="grid grid-cols-1 gap-1 border-b border-rule py-3 sm:grid-cols-[7rem_minmax(0,1fr)]">
-                <time dateTime={s.date} className="num text-sm text-muted">
-                  {dateBg(s.date)}
+              <li key={s.id} className="flex flex-col gap-2 rounded-3xl border border-rule bg-surface p-5">
+                <time dateTime={s.date} className="num text-[13px] font-semibold text-ink-2">
+                  {dateBg(s.date)} · {s.platform}
                 </time>
-                <div>
-                  <p className="font-medium">{s.title}</p>
-                  <p className="text-sm text-ink-2">{s.summary}</p>
-                  <p className="text-xs text-muted">
-                    {s.platform} · {s.claims.length} твърдения
-                  </p>
-                </div>
+                <p className="font-display text-[1.45rem] leading-tight font-semibold">{s.title}</p>
+                <p className="text-[15px] text-ink-2">{s.summary}</p>
+                <p className="mt-auto text-[13px] font-semibold text-ink">{s.claims.length} твърдения</p>
               </li>
             ))}
           </ol>
