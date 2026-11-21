@@ -49,6 +49,7 @@ export const NAV: NavGroup[] = [
     items: [
       { href: "/pod-lupa", label: "Под лупа", hint: "8 неща, на които да обърнеш внимание", icon: "search" },
       { href: "/pari-sreshtu-rezultati", label: "Пари срещу резултати", hint: "Целите на всяка програма до парите ѝ", icon: "check" },
+      { href: "/dogovori", label: "Обществени поръчки", hint: "Подписаните договори през 2026 г.", icon: "briefcase" },
       { href: "/pozitivni-merki", label: "Какво се подобрява", hint: "Облекчения и повече средства", icon: "spark" },
       { href: "/riskove", label: "Рискове", hint: "Какво може да се обърка", icon: "alert" },
       { href: "/prognozi", label: "Прогнози", hint: "Как се промениха очакванията", icon: "trend" },

@@ -31,6 +31,7 @@ import { readdirSync } from "node:fs";
 import { socialFundTables } from "../src/lib/tables/social-funds";
 import { ProgramExtract, programChecks, programTable, reconcileUnits } from "../src/lib/programs/programs";
 import { IndicatorExtract, indicatorChecks, indicatorTable } from "../src/lib/programs/indicators";
+import { ContractRow, procurementChecks, procurementTables, procurementTotals, toContracts } from "../src/lib/procurement/contracts";
 import { childSumChecks, crossCheck, grandTotalChecks, sumTopLevel } from "../src/lib/tables/checks";
 import { joinByName } from "../src/lib/municipal/join";
 import { locatorOf } from "../src/lib/tables/extract";
@@ -228,6 +229,45 @@ async function main() {
     checks.push(...cofogChecks(euC, []), ...cofogChecks(bgC, COFOG_YEARS));
     const gaps = euC.rows.filter((r) => r.cells.TOTAL?.value === null).map((r) => r.label);
     checks.push({ id: "eurostat:cofog:complete-2024", kind: "total", status: gaps.length ? "warn" : "pass", description: "Евростат COFOG: общите разходи за 2024 г. за всички 27 държави и ЕС-27", details: { missing: gaps.join(", ") || "—" } });
+  }
+
+  // ── Public procurement: signed contracts from the monthly open data of ЦАИС ЕОП (2026) ──
+  {
+    const dir = join(RAW, "procurement");
+    if (!existsSync(join(dir, "manifest.json"))) throw new Error("Missing data/raw/procurement/manifest.json: run npm run sources:procurement");
+    const man = JSON.parse(readFileSync(join(dir, "manifest.json"), "utf8")) as Record<string, { file: string; url: string; sha256: string; retrievedOn: string }>;
+    const rows: ContractRow[] = [];
+    let lastId = "";
+    for (const ym of Object.keys(man).sort()) {
+      const buf = readFileSync(join(dir, man[ym]!.file));
+      if (sha256(buf) !== man[ym]!.sha256) throw new Error(`procurement ${ym}: file differs from the manifest`);
+      lastId = `eop-contracts-${ym}-${sha256(buf).slice(0, 8)}`;
+      documents.push({
+        id: lastId,
+        sha256: sha256(buf),
+        bytes: buf.length,
+        publisher: "Агенция по обществени поръчки (ЦАИС ЕОП)",
+        title: `ЦАИС ЕОП, отворени данни: договори, публикувани през ${ym.slice(5)}.${ym.slice(0, 4)}`,
+        url: man[ym]!.url,
+        pageUrl: "https://app.eop.bg/today/reporting/open-data",
+        mime: "application/json",
+        retrievedOn: man[ym]!.retrievedOn,
+        publishedOn: null,
+        legalStatus: "регистър на обществените поръчки (отворени данни)",
+        versionId: null,
+      });
+      rows.push(...ContractRow.array().parse(JSON.parse(buf.toString("utf8"))));
+    }
+    const { contracts, otherCurrency, duplicates } = toContracts(rows);
+    const pt = procurementTables(contracts, lastId);
+    tables.push(...pt);
+    checks.push(...procurementChecks(contracts, pt), {
+      id: "procurement:scope",
+      kind: "total",
+      status: "pass",
+      description: `ЦАИС ЕОП: ${contracts.length} подписани договора (${Object.keys(man).sort()[0]} – ${Object.keys(man).sort().at(-1)}); ${duplicates} повторени реда са броени веднъж; ${otherCurrency} договора в друга валута не влизат в сумите`,
+      details: { months: Object.keys(man).sort().join(", "), ...procurementTotals(contracts) },
+    });
   }
 
   // ── ДОО and НЗОК bills (RTF → DOCX via LibreOffice; file/sha256 identify the RTF) ──

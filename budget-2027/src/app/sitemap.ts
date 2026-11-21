@@ -35,6 +35,7 @@ const STATIC = [
   "/vizualizatsii",
   "/pod-lupa",
   "/pari-sreshtu-rezultati",
+  "/dogovori",
   "/pozitivni-merki",
   "/zakonodatelstvo",
   "/dokumenti",
