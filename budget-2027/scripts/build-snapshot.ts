@@ -34,6 +34,7 @@ import { joinByName } from "../src/lib/municipal/join";
 import { locatorOf } from "../src/lib/tables/extract";
 import { BILLS } from "../src/lib/legislation/bills";
 import { billStatus } from "../src/lib/legislation/parliament";
+import { ExecutionProvenanceSchema, ExecutionSchema, monthlyChecks, monthlyTable, sameMonthTable } from "../src/lib/execution/monthly";
 
 const ROOT = join(__dirname, "..");
 const RAW = join(ROOT, "data/raw");
@@ -290,6 +291,59 @@ async function main() {
       legalStatus: "производен набор; първичният документ на МФ от 06.11.2026 не е достъпен за автоматично изтегляне",
       versionId: "mf-draft-2026-11-06",
     });
+  }
+
+  // ── SIGMA: monthly execution of КФП (cumulative, cash basis) with cell-level provenance ──
+  {
+    const ex = await sigma.dataset("execution");
+    const pv = await sigma.dataset("execution-provenance");
+    const e = ExecutionSchema.parse(ex.data);
+    ExecutionProvenanceSchema.parse(pv.data);
+    const docFor = (slug: string, r: typeof ex, title: string) => {
+      writeFileSync(join(sigmaDir, `${slug}.json`), r.raw);
+      const doc = {
+        id: `sigma-${slug}-${cat.meta.asOf}-${sha256(r.raw).slice(0, 8)}`,
+        sha256: sha256(r.raw),
+        bytes: Buffer.byteLength(r.raw),
+        publisher: "СИГМА Бюджет (вторичен източник)",
+        title,
+        url: r.fileUrl,
+        pageUrl: "https://sigma-budget.midt.bg/danni/execution",
+        mime: "application/json",
+        retrievedOn: RETRIEVED,
+        publishedOn: r.meta.asOf,
+        legalStatus: "производен набор от месечните отчети на МФ (https://www.minfin.bg/bg/statistics/5); всяка стойност сочи файл, лист и клетка",
+        versionId: null,
+      };
+      documents.push(doc);
+      return doc.id;
+    };
+    const exId = docFor("execution", ex, `СИГМА: ${ex.meta.title} (данни към ${ex.meta.asOf}; ${ex.meta.sourceNote ?? ""})`);
+    docFor("execution-provenance", pv, `СИГМА: произход на месечното изпълнение — файл, лист и клетка на всяко число (данни към ${pv.meta.asOf})`);
+    tables.push(monthlyTable(e, exId), sameMonthTable(e, exId));
+    checks.push(...monthlyChecks(e));
+    // the same September figures are printed in Приложение № 1 of the bill (rounded to 0.1)
+    const ap1 = tables.find((t) => t.id === "execution2026")!;
+    const last = e.data["2026"]!.months - 1;
+    const k = (id: string) => e.data["2026"]!.kfp[id]?.[last] ?? null;
+    // Приложение № 1, бележка „**“ към „Капиталови“: „Вкл. нетен прираст на държавния резерв.“
+    const capexWithReserve = k("exp.capex") && k("exp.reserve") ? new Decimal(k("exp.capex")!).plus(k("exp.reserve")!).toString() : null;
+    for (const [id, re, value] of [
+      ["rev", /^ПРИХОДИ, ПОМОЩИ/, k("rev")],
+      ["exp.total", /^РАЗХОДИ И ВНОСКА/, k("exp.total")],
+      ["exp.capex+reserve", /^Капиталови/, capexWithReserve],
+    ] as const) {
+      const row = ap1.rows.find((r) => re.test(r.label));
+      checks.push(
+        crossCheck(
+          `exec:ap1:${id}`,
+          `СИГМА (месечен отчет, ${e.meta.asOf}) = Приложение № 1 към мотивите, „отчет“: ${row?.label ?? id}${id === "exp.capex+reserve" ? " (капиталови + прираст на държавния резерв, по бележката към реда)" : ""}`,
+          value,
+          row?.cells.actual?.value ?? null,
+          "0.05",
+        ),
+      );
+    }
   }
 
   type SigmaRow = { label: string; cell?: { value: number | null } };

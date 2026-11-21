@@ -24,6 +24,8 @@ interface Props {
   reference?: { value: number; label: string };
   decimals?: number;
   height?: number;
+  /** display labels for period keys (e.g. { "2026-03": "мар" }) */
+  periodLabels?: Record<string, string>;
 }
 
 const COLOR: Record<BarSeries["color"], string> = {
@@ -32,7 +34,8 @@ const COLOR: Record<BarSeries["color"], string> = {
   neutral: "var(--neutral-mark)",
 };
 
-export function YearBars({ title, subtitle, unitLabel, series, reference, decimals = 1, height = 260 }: Props) {
+export function YearBars({ title, subtitle, unitLabel, series, reference, decimals = 1, height = 260, periodLabels }: Props) {
+  const periodLabel = (p: string) => periodLabels?.[p] ?? p;
   const uid = useId().replace(/:/g, "");
   const [active, setActive] = useState<{ s: number; i: number } | null>(null);
   const periods = useMemo(() => [...new Set(series.flatMap((s) => s.points.map((p) => p.period)))].sort(), [series]);
@@ -147,7 +150,7 @@ export function YearBars({ title, subtitle, unitLabel, series, reference, decima
                     strokeWidth={isActive ? 2.5 : 1}
                     tabIndex={0}
                     role="graphics-symbol"
-                    aria-label={`${s.name}, ${period} (${VINTAGE_LONG[p.vintage]}): ${fmtNum(p.value, decimals)} ${unitLabel}`}
+                    aria-label={`${s.name}, ${periodLabel(period)} (${VINTAGE_LONG[p.vintage]}): ${fmtNum(p.value, decimals)} ${unitLabel}`}
                     onMouseEnter={() => setActive({ s: si, i })}
                     onMouseLeave={() => setActive(null)}
                     onFocus={() => setActive({ s: si, i })}
@@ -157,7 +160,7 @@ export function YearBars({ title, subtitle, unitLabel, series, reference, decima
                 );
               })}
               <text x={(x0(period) ?? 0) + x0.bandwidth() / 2} y={H - m.bottom + 16} textAnchor="middle" fontSize={narrow ? 12 : 13} fill="var(--ink-2)" className="num">
-                {period}
+                {periodLabel(period)}
               </text>
               <text x={(x0(period) ?? 0) + x0.bandwidth() / 2} y={H - m.bottom + 31} textAnchor="middle" fontSize={narrow ? 10 : 11} fill="var(--muted)">
                 {VINTAGE_SHORT[series[0]!.points.find((q) => q.period === period)?.vintage ?? "forecast"]}
@@ -171,7 +174,7 @@ export function YearBars({ title, subtitle, unitLabel, series, reference, decima
             className="pointer-events-none absolute top-0 right-0 max-w-[16rem] rounded-sm border border-rule-strong bg-surface px-3 py-2 text-xs shadow-sm"
           >
             <p className="font-medium text-ink">
-              {series[active.s]!.name} · {activePoint.period}
+              {series[active.s]!.name} · {periodLabel(activePoint.period)}
             </p>
             <p className="num text-base text-ink">
               {fmtNum(activePoint.value, decimals)} <span className="text-xs text-muted">{unitLabel}</span>
@@ -220,7 +223,7 @@ export function YearBars({ title, subtitle, unitLabel, series, reference, decima
               {periods.map((period) => (
                 <tr key={period} className="border-b border-rule">
                   <th scope="row" className="py-1 pr-3 font-normal">
-                    {period}{" "}
+                    {periodLabel(period)}{" "}
                     <span className="text-xs text-muted">
                       ({VINTAGE_SHORT[series[0]!.points.find((q) => q.period === period)?.vintage ?? "forecast"]})
                     </span>

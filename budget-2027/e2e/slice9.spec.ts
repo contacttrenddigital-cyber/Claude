@@ -62,3 +62,12 @@ test("сравнения: мястото на България", async ({ page }
   await page.getByRole("searchbox", { name: "Търси в таблицата" }).fill("Бълг");
   await expect(page.getByRole("region", { name: /Салдо и дълг/ }).getByRole("row", { name: /България/ })).toContainText("29,9");
 });
+
+// СИГМА execution.json (към 30.09.2026): приходи на КФП 33 898,456 млн. € (2025, същия месец: 30 552,656), план 49 615,3
+test("изпълнение: месец по месец и същия месец на 2025", async ({ page }) => {
+  await page.goto("/izpalnenie");
+  const same = page.getByRole("region", { name: /срещу същия месец на 2025/ });
+  await expect(same.getByRole("row", { name: /Приходи, помощи и дарения/ })).toContainText(/30[\s ]552,66/);
+  await expect(same.getByRole("row", { name: /Приходи, помощи и дарения/ })).toContainText(/33[\s ]898,46/);
+  await expect(page.getByRole("img", { name: /Приходи и разходи на КФП, натрупано/ })).toBeVisible();
+});

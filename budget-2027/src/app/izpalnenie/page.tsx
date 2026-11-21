@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PageShell, Section } from "@/components/site/PageShell";
 import { TableView } from "@/components/tables/TableView";
+import { YearBars, type BarSeries } from "@/components/charts/YearBars";
 import { getPublished, tableOf } from "@/lib/data/published";
 import { billSource } from "@/lib/data/view";
 import { printed } from "@/lib/data/pick";
@@ -16,6 +17,15 @@ export default async function Execution() {
   const data = await getPublished();
   const src = billSource(data);
   const ex = tableOf(data, "execution2026");
+  const mon = tableOf(data, "executionMonthly2026");
+  const same = tableOf(data, "executionSameMonth");
+  const exDoc = data.documents.find((d) => d.id === mon.documentId)!;
+  const labels = Object.fromEntries(mon.columns.map((c) => [c.key, c.label]));
+  const line = (re: RegExp, name: string, color: BarSeries["color"]): BarSeries => {
+    const r = mon.rows.find((x) => re.test(x.label));
+    if (!r) throw new Error(`executionMonthly2026: no row ${re}`);
+    return { name, color, points: mon.columns.map((c) => ({ period: c.key, value: r.cells[c.key]?.value ?? null, vintage: "actual" as const, source: mon.caption })) };
+  };
   return (
     <PageShell
       eyebrow="Изпълнение"
@@ -33,6 +43,22 @@ export default async function Execution() {
       ]}
       factsSource="Приложение № 1 към мотивите, изпълнение на КФП към 30.09.2026 г. Процентите са отпечатаните в документа."
     >
+      <Section
+        id="mesechno"
+        title="2026 г. месец по месец"
+        lead={`Натрупано от началото на годината по месечните отчети на МФ (касова основа), данни към ${mon.columns.at(-1)!.label} 2026 г. Следващият отчет (октомври) още не е публикуван.`}
+      >
+        <YearBars
+          title="Приходи и разходи на КФП, натрупано"
+          subtitle="млн. €; разходите са с вноската в бюджета на ЕС"
+          unitLabel="млн. €"
+          periodLabels={labels}
+          series={[line(/^Приходи, помощи/, "Приходи", "series-1"), line(/^Разходи \(с вноската/, "Разходи", "series-2")]}
+        />
+        <TableView table={mon} sourceUrl={exDoc.pageUrl ?? exDoc.url} sourceTitle={exDoc.title} collapsed />
+        <p className="max-w-3xl text-sm text-ink-2">{same.description}</p>
+        <TableView table={same} sourceUrl={exDoc.pageUrl ?? exDoc.url} sourceTitle={exDoc.title} />
+      </Section>
       <Section id="2026" title="2026 г.: програма и отчет към 30.09.2026">
         <TableView table={tableOf(data, "execution2026")} sourceUrl={src.url} sourceTitle={src.title} />
       </Section>
