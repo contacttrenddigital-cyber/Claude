@@ -275,7 +275,20 @@ async function main() {
 
   // ── Programme budgets (PDF annexes): published only where programmes add up to the ceiling ──
   const progX = ProgramExtract.parse(JSON.parse(readFileSync(join(ROOT, "data/extracted/program-budgets.json"), "utf8")));
-  const progStatus = reconcileUnits(progX, T("ceilings"));
+  // НС and ВСС have no row in Приложение № 4: their programmes are reconciled with the expenditure in the bill's own article
+  const articleExpenditure = (index: number, mustContain: string, locator: string) => {
+    const t = docx.tables.find((x) => x.index === index);
+    const text = JSON.stringify([t?.context, t?.rows.slice(0, 2)]);
+    if (!t || !text.includes(mustContain)) throw new Error(`bill table ${index} is not „${mustContain}“`);
+    const row = t.rows.find((r) => r.map((c) => c.trim()).includes("РАЗХОДИ"));
+    const amount = row?.map((c) => c.trim()).find((c) => /^\d{1,3}( \d{3})*,\d$/.test(c));
+    if (!amount) throw new Error(`bill table ${index}: no „РАЗХОДИ“ amount`);
+    return { value: amount.replace(/ /g, "").replace(",", "."), locator };
+  };
+  const progStatus = reconcileUnits(progX, T("ceilings"), "0.5", {
+    "0100": articleExpenditure(5, "Приема бюджета на Народното", "чл. 3, ал. 1 от законопроекта за държавния бюджет (бюджетът на Народното събрание)"),
+    "0600": articleExpenditure(3, "Приема бюджета на съдебната власт", "чл. 2, ал. 1 от законопроекта за държавния бюджет (бюджетът на съдебната власт)"),
+  });
   checks.push(...programChecks(progStatus));
   tables.push(programTable(progX, progStatus, { documentId: "ns-52-602-01-71-zip", file: "52-602-01-71.zip" }));
 

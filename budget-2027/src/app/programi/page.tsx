@@ -20,6 +20,7 @@ export default async function Programs() {
   const units = t.rows.filter((r) => r.kind === "group");
   const progs = t.rows.filter((r) => r.kind === "data");
   const skipped = data.checks.filter((c) => c.id.startsWith("programs:") && c.status !== "pass");
+  const special = data.checks.filter((c) => c.id.startsWith("programs:") && c.status === "pass" && /чл\. \d|годишните таблици/.test(c.description));
   return (
     <PageShell
       eyebrow="Бюджетни програми"
@@ -35,17 +36,18 @@ export default async function Programs() {
             ): отчет за 2024 и 2025 г., закон за 2026 г., проект за 2027 г. и прогноза за 2028–2029 г.
           </p>
           <p>
-            Показваме {progs.length} програми на {units.length} институции: само тези, при които сборът на програмите за 2027 г. е равен на
-            тавана им в Приложение № 4. Останалите са изброени по-долу с причината.
+            Показваме {progs.length} програми на {units.length} институции. За всяка институция сборът на програмите за 2027 г. е равен на
+            тавана ѝ в Приложение № 4 (за Народното събрание и съдебната власт — на разходите в собствения им член от законопроекта).
+            {skipped.length > 0 && " Институциите, при които това не е така, не са публикувани и са изброени по-долу."}
           </p>
         </>
       }
       facts={[
         { label: "Програми", value: String(progs.length), unit: "", decimals: 0, tone: "sky", note: "Разходи по програми, 2024–2029 г." },
-        { label: "Институции", value: String(units.length), unit: "", decimals: 0, tone: "mustard", note: "Сборът на програмите им е равен на тавана в Приложение № 4." },
-        { label: "Изключени институции", value: String(skipped.length), unit: "", decimals: 0, tone: "lilac", note: "Сборът не съвпада с тавана; причините са по-долу." },
+        { label: "Институции", value: String(units.length), unit: "", decimals: 0, tone: "mustard", note: "Сборът на програмите им е равен на тавана в Приложение № 4 или на члена им в законопроекта." },
+        { label: "Непубликувани", value: String(skipped.length), unit: "", decimals: 0, tone: "lilac", note: skipped.length ? "Сборът не съвпада; причините са по-долу." : "Всички разпоредители с програмни бюджети са сверени." },
       ]}
-      factsSource="програмните бюджети към законопроекта (архив 52-602-01-71.zip) и проверката им срещу Приложение № 4."
+      factsSource="програмните бюджети към законопроекта (архив 52-602-01-71.zip) и проверката им срещу Приложение № 4 и чл. 2–3 от законопроекта."
     >
       <Section id="programi" title="Разходи по програми" lead="„Общо разходи по бюджета“ на програмата, хил. €. Последната колона включва и средствата по други бюджети и от ЕС. Търси по име на институция или програма.">
         <TableView table={t} sourceUrl={zip.pageUrl ?? zip.url} sourceTitle={zip.title} searchable maxHeight="48rem" />
@@ -63,11 +65,22 @@ export default async function Programs() {
         </ul>
       </Section>
 
-      <Section id="nepublikuvani" title={`Не са публикувани (${skipped.length})`} lead="Не показваме частични числа. Причината е или в документа (например няма отделен таван), или в разчитането на PDF файла.">
+      {skipped.length > 0 && (
+        <Section id="nepublikuvani" title={`Не са публикувани (${skipped.length})`} lead="Не показваме частични числа. Причината е или в документа, или в разчитането на PDF файла.">
+          <ul className="max-w-3xl list-disc space-y-1 pl-5 text-sm text-ink-2">
+            {skipped.map((c) => (
+              <li key={c.id}>{c.description.replace(/^Програмен бюджет /, "")}</li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
+      <Section id="osobenosti" title="Особени случаи" lead="Как са сверени институциите, при които документът се различава от обичайния формат.">
         <ul className="max-w-3xl list-disc space-y-1 pl-5 text-sm text-ink-2">
-          {skipped.map((c) => (
+          {special.map((c) => (
             <li key={c.id}>{c.description.replace(/^Програмен бюджет /, "")}</li>
           ))}
+          <li>7400 (МИДТ): две програми са отпечатани в PDF с код 7500.02.xx; показани са с кода от документа. Сборът е равен на тавана.</li>
         </ul>
       </Section>
 

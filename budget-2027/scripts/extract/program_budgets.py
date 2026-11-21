@@ -44,6 +44,43 @@ def ynums(text):
     return [n.replace(" ", "").replace("\u00a0", "").replace(",", ".") for n in YNUM.findall(text)]
 
 
+NUMBERED = re.compile(r"^\s*Програма\s+(\d{1,2})\.(.*)$")
+NUMBERED_HEADING = re.compile(r"^\s*Програма\s+(\d{1,2})\s*[„\"“]\s*(.+?)\s*[”“\"]\s*$")
+
+
+def numbered_programs(lines, page_of):
+    """Units that print "Програма 1. …" rows without codes (Народно събрание): {N: {year: (total, budget, page)}}, names."""
+    out, year = {}, None
+    for i, l in enumerate(lines):
+        labels = YEAR_LABEL.findall(l)
+        if len(labels) == 1:
+            year = labels[0][1]
+        elif len(labels) > 1:
+            year = None
+        if year not in YEARS:
+            continue
+        m = NUMBERED.match(l)
+        if not m:
+            continue
+        n = ynums(m.group(2))
+        if len(n) >= 3:
+            out.setdefault(int(m.group(1)), {}).setdefault(year, (n[0], n[1], page_of[i]))
+    names = {}
+    for i, l in enumerate(lines):
+        if not re.match(r"^\s*Програма\s+\d{1,2}\s*[„\"“]", l):
+            continue
+        # the heading may wrap over up to three lines before the closing quote
+        text = l
+        for nxt in lines[i + 1 : i + 3]:
+            if re.search(r"[”“\"]\s*$", text.strip()):
+                break
+            text += " " + nxt.strip()
+        h = NUMBERED_HEADING.match(re.sub(r"\s+", " ", text))
+        if h and int(h.group(1)) not in names:
+            names[int(h.group(1))] = h.group(2)
+    return out, names
+
+
 def year_tables(lines, page_of):
     """code → {year: (total, budget)} from the yearly summary tables; only lines inside a year's table."""
     out, year = {}, None
@@ -96,9 +133,20 @@ def names(lines):
     return {k: v[0].rstrip(".") for k, v in found.items() if not NUM.search(v[0]) and "№" not in v[0] and len(v[0]) >= 8}
 
 
+# some PDFs (МВнР) split words in the text layer: "О бщо", "бюдже та", "Прое кт"; only these keywords are re-joined
+KEYWORDS = ["Общо", "бюджета", "Отчет", "Проект", "Прогноза", "Закон", "евро"]
+KEYWORD_RE = [(re.compile(r"(?<![А-Яа-я])" + r" ?".join(map(re.escape, w)) + r"(?![А-Яа-я])"), w) for w in KEYWORDS]
+
+
+def norm(line):
+    for rx, w in KEYWORD_RE:
+        line = rx.sub(w, line)
+    return line
+
+
 def parse(pdf):
     text = subprocess.run(["pdftotext", "-layout", pdf, "-"], check=True, capture_output=True).stdout.decode("utf-8")
-    lines = text.split("\n")
+    lines = [norm(l) for l in text.split("\n")]
     page_of = []
     page = 1
     for l in lines:
@@ -130,6 +178,11 @@ def parse(pdf):
                         bud_idx = start + k + 1
                         budget = ynums(block[k + 1][m2.end():])
                         break
+                    # or: label / amounts / "(І.1+ІІ.):" (Сметна палата)
+                    if k + 2 < len(block) and BUD_TAIL.match(block[k + 2]) and len(ynums(block[k + 1])) == 6:
+                        bud_idx = start + k + 1
+                        budget = ynums(block[k + 1])
+                        break
         if code is None or code in seen:
             continue  # ministry-level summary or a repeated block
         seen.add(code)
@@ -138,7 +191,8 @@ def parse(pdf):
                 "code": code,
                 "name": nm.get(code),
                 "page": page_of[i],
-                "complete": len(total) == 6 and len(budget) == 6,
+                # the reconciled column is "по бюджета"; a cut "Общо разходи (І.+ІІ.+ІІІ.)" row stays empty
+                "complete": len(budget) == 6,
                 "total": dict(zip(YEARS, total)) if len(total) == 6 else {},
                 "budget": dict(zip(YEARS, budget)) if len(budget) == 6 else {},
                 "printed": {"total": l.strip(), "budget": lines[bud_idx].strip() if bud_idx is not None else None},
@@ -154,7 +208,8 @@ def parse(pdf):
         u, a, b = c.split(".")
         if a == "00":
             return False
-        return b != "00" or not any(o != c and o.startswith(f"{u}.{a}.") for o in yt)
+        # children are matched by the middle number only: МИДТ prints the programmes of 7400.02.00 as 7500.02.xx
+        return b != "00" or not any(o != c and o.split(".")[1] == a and o.split(".")[2] != "00" for o in yt)
 
     by_code = {p["code"]: p for p in progs}
 
@@ -172,6 +227,22 @@ def parse(pdf):
         }
 
     alt = [from_tables(c) for c in yt if leaf(c) and "2027" in yt[c]]
+    if not progs and not alt:
+        nums_, nm2 = numbered_programs(lines, page_of)
+        progs = [
+            {
+                "code": f"Програма {k}",
+                "name": nm2.get(k),
+                "page": v["2027"][2],
+                "complete": True,
+                "method": "year-tables",
+                "total": {y: t[0] for y, t in sorted(v.items())},
+                "budget": {y: t[1] for y, t in sorted(v.items())},
+                "printed": {"total": None, "budget": None},
+            }
+            for k, v in sorted(nums_.items())
+            if "2027" in v
+        ]
     if alt and (not progs or not all(p["complete"] for p in progs)):
         # mixed: keep what the per-programme tables read completely, fill the rest from the yearly tables
         progs = [by_code[a["code"]] if by_code.get(a["code"], {}).get("complete") else a for a in alt]

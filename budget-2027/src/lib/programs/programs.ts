@@ -107,6 +107,8 @@ export interface UnitStatus {
   reason: string | null;
   /** which reading of the PDF is published */
   use: "programs" | "alt";
+  /** set when the unit has no row in Приложение № 4 and is reconciled with its article in the bill */
+  reference: string | null;
 }
 
 const bg = (v: string) => new Decimal(v).toFixed(1).replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, " ");
@@ -125,11 +127,19 @@ function evaluate(programs: Prog[], ceiling: string | null, unit: string | null,
   return { sum, reason };
 }
 
-export function reconcileUnits(x: ProgramExtract, ceilings: ExtractedTable, tolerance = "0.5"): UnitStatus[] {
+/** For units without a row in Приложение № 4: the expenditure the bill sets in its own article. */
+export interface UnitReference {
+  value: string;
+  /** e.g. "законопроект за ДБ 2027, чл. 3, ал. 1 (разходи)" */
+  locator: string;
+}
+
+export function reconcileUnits(x: ProgramExtract, ceilings: ExtractedTable, tolerance = "0.5", refs: Record<string, UnitReference> = {}): UnitStatus[] {
   return x.ministries.map((m) => {
     const unit = UNITS[m.code] ?? null;
     const ceilRow = unit ? ceilings.rows.find((r) => r.label.startsWith(unit)) : undefined;
-    const ceiling = ceilRow?.cells["2027"]?.value ?? null;
+    const ref = !ceilRow?.cells["2027"]?.value ? refs[m.code] : undefined;
+    const ceiling = ceilRow?.cells["2027"]?.value ?? ref?.value ?? null;
     let use: "programs" | "alt" = "programs";
     let r = evaluate(m.programs, ceiling, unit, tolerance);
     // the PDF prints the same programmes twice (per-programme table and yearly summaries); when the first
@@ -152,6 +162,7 @@ export function reconcileUnits(x: ProgramExtract, ceilings: ExtractedTable, tole
       ok: r.reason === null,
       reason: r.reason,
       use,
+      reference: ref?.locator ?? null,
     };
   });
 }
@@ -162,7 +173,7 @@ export function programChecks(status: UnitStatus[]): Check[] {
     kind: "total" as const,
     status: s.ok ? ("pass" as const) : ("warn" as const),
     description: s.ok
-      ? `Програмен бюджет ${s.code} (${s.unit}): сборът на ${s.programs} програми за 2027 г. = таван по Приложение № 4${s.use === "alt" ? " (по годишните таблици в PDF; таблицата по програми не съвпада с тавана)" : ""}`
+      ? `Програмен бюджет ${s.code} (${s.unit}): сборът на ${s.programs} програми за 2027 г. = ${s.reference ? `разходите по ${s.reference}` : "таван по Приложение № 4"}${s.use === "alt" ? " (по годишните таблици в PDF; таблицата по програми не съвпада с тавана)" : ""}`
       : `Програмен бюджет ${s.code} (${s.unit}): не е публикуван — ${s.reason}`,
     details: { sum: s.sum2027, ceiling: s.ceiling },
   }));
@@ -177,7 +188,7 @@ export function programTable(x: ProgramExtract, status: UnitStatus[], meta: { do
     rows.push({ label: st.unit, level: 0, kind: "group", group: null, cells: {}, texts: { unit: m.code }, rowIndex: n++ });
     for (const p of st.use === "alt" ? m.alt! : m.programs) {
       rows.push({
-        label: `${p.code} ${p.name ?? "(наименованието не е разчетено — виж PDF)"}`,
+        label: `${p.code} ${p.name ?? "(наименованието не е разчетено — виж PDF)"}${/^\d{4}\./.test(p.code) && !p.code.startsWith(m.code) ? " (кодът е както е отпечатан в PDF)" : ""}`,
         level: 1,
         kind: "data",
         group: st.unit,

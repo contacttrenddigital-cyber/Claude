@@ -16,7 +16,9 @@ test("програми: търсене и стойност на програма
   await page.getByRole("searchbox", { name: "Търси в таблицата" }).fill("въоръжените сили");
   const row = page.getByRole("row", { name: /1200\.01\.01/ });
   await expect(row).toContainText(/1[\s ]179[\s ]809,5/);
-  await expect(page.getByRole("heading", { name: /Не са публикувани/ })).toBeVisible();
+  // all 45 units reconcile: the special cases are explained, nothing is listed as unpublished
+  await expect(page.getByRole("heading", { name: "Особени случаи" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Не са публикувани/ })).toHaveCount(0);
 });
 
 test("профил на институция: програмите на МВР са показани", async ({ page }) => {

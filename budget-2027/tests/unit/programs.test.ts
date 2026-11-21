@@ -16,7 +16,10 @@ const snap = SnapshotSchema.parse(JSON.parse(readFileSync(join(ROOT, "data/snaps
 const ceilings = snap.tables.find((t) => t.id === "ceilings")!;
 
 describe("programme budgets", () => {
-  const st = reconcileUnits(x, ceilings);
+  const st = reconcileUnits(x, ceilings, "0.5", {
+    "0100": { value: "69657.0", locator: "чл. 3, ал. 1 от законопроекта за държавния бюджет" },
+    "0600": { value: "868105.3", locator: "чл. 2, ал. 1 от законопроекта за държавния бюджет" },
+  });
 
   it("МО: 11 programmes add up to the ceiling", () => {
     const mo = st.find((s) => s.code === "1200")!;
@@ -28,12 +31,21 @@ describe("programme budgets", () => {
     expect(p.page).toBe(16);
   });
 
-  it("units without a ceiling or with unread programmes are not published", () => {
-    expect(st.find((s) => s.code === "0100")).toMatchObject({ ok: false, reason: "няма отделен таван в Приложение № 4" });
-    // Сметна палата: the 2027 amounts are not in the PDF's text layer
-    expect(st.find((s) => s.code === "0500")!.ok).toBe(false);
+  it("all 45 units reconcile; the five without a usable ceiling row are handled explicitly", () => {
+    expect(st.filter((s) => !s.ok)).toEqual([]);
+    // НС and ВСС: no row in Приложение № 4 → the expenditure in their own article of the bill
+    // (чл. 3, ал. 1: 69 657,0 хил. €; чл. 2, ал. 1: 868 105,3 хил. €)
+    expect(st.find((s) => s.code === "0100")).toMatchObject({ ok: true, programs: 8, sum2027: "69657", reference: expect.stringMatching(/чл\. 3/) });
+    expect(st.find((s) => s.code === "0600")).toMatchObject({ ok: true, sum2027: "868105.3", reference: expect.stringMatching(/чл\. 2/) });
+    // МИДТ prints the programmes of 7400.02.00 as 7500.02.xx: kept as printed, the sum is the ceiling 45 787,1
+    expect(st.find((s) => s.code === "7400")).toMatchObject({ ok: true, sum2027: "45787.1", ceiling: "45787.1" });
     const t = programTable(x, st, { documentId: "d", file: "f" });
-    expect(t.rows.some((r) => r.group === "Сметна палата")).toBe(false);
+    expect(t.rows.some((r) => r.label.startsWith("7500.02.01") && r.label.includes("кодът е както е отпечатан"))).toBe(true);
+  });
+
+  it("a unit without a ceiling and without a reference is not published", () => {
+    const s = reconcileUnits(x, ceilings).find((u) => u.code === "0100")!; // no refs passed
+    expect(s).toMatchObject({ ok: false, reason: "няма отделен таван в Приложение № 4" });
   });
 
   // МОН prints no per-programme table: the yearly table „Проект за 2027 г.“ (PDF, с. 15) gives 12 programmes,
