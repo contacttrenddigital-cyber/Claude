@@ -71,3 +71,11 @@ test("изпълнение: месец по месец и същия месец 
   await expect(same.getByRole("row", { name: /Приходи, помощи и дарения/ })).toContainText(/33[\s ]898,46/);
   await expect(page.getByRole("img", { name: /Приходи и разходи на КФП, натрупано/ })).toBeVisible();
 });
+
+// Евростат gov_10a_exp (обновено 21.10.2026), 2024: социална защита 14,4% (BG) срещу 19,5% (ЕС-27) → −5,1 пр.п.
+test("сравнения: разходи по функции спрямо ЕС и история от 2015 г.", async ({ page }) => {
+  await page.goto("/sravnenia");
+  const t = page.getByRole("region", { name: "България и ЕС-27 по функции, 2024" });
+  await expect(t.getByRole("row", { name: /Социална защита/ })).toContainText(/14,4%.*19,5%.*[−-]5,1/);
+  await expect(page.getByRole("img", { name: /Общо разходи на сектор „Държавно управление“/ })).toBeVisible();
+});

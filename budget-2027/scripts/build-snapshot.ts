@@ -26,6 +26,7 @@ import { annex3AsTable, extractTable } from "../src/lib/tables/extract";
 import { RISK_TABLES, TABLES } from "../src/lib/tables/catalog";
 import { paragraphAmounts } from "../src/lib/tables/paragraphs";
 import { JsonStat, edptTable } from "../src/lib/eurostat/jsonstat";
+import { COFOG_YEARS, cofogChecks, cofogEuTable, cofogHistoryTable } from "../src/lib/eurostat/cofog";
 import { readdirSync } from "node:fs";
 import { socialFundTables } from "../src/lib/tables/social-funds";
 import { ProgramExtract, programChecks, programTable, reconcileUnits } from "../src/lib/programs/programs";
@@ -196,6 +197,35 @@ async function main() {
     description: "Евростат: салдо и дълг за 2025 г. за всички 27 държави и ЕС-27",
     details: { missing: missing.join(", ") || "—" },
   });
+
+  // ── Eurostat COFOG: expenditure by function, % of GDP (EU comparison and Bulgaria since 2015) ──
+  {
+    const file = readdirSync(esDir).filter((f) => /^gov_10a_exp-\d{4}-\d{2}-\d{2}\.json$/.test(f)).sort().at(-1);
+    if (!file) throw new Error("Eurostat COFOG file missing: npm run sources:eurostat");
+    const raw = readFileSync(join(esDir, file));
+    const ds = JsonStat.parse(JSON.parse(raw.toString("utf8")));
+    const id = `eurostat-gov_10a_exp-${ds.updated.slice(0, 10)}-${sha256(raw).slice(0, 8)}`;
+    documents.push({
+      id,
+      sha256: sha256(raw),
+      bytes: raw.length,
+      publisher: "Евростат",
+      title: `Евростат, gov_10a_exp: разходи на сектор „Държавно управление“ по функции (COFOG), 2015–2024, обновено ${ds.updated.slice(0, 10)}`,
+      url: readFileSync(join(esDir, "gov_10a_exp.url"), "utf8").trim(),
+      pageUrl: "https://ec.europa.eu/eurostat/databrowser/view/gov_10a_exp/default/table",
+      mime: "application/json",
+      retrievedOn: RETRIEVED,
+      publishedOn: ds.updated.slice(0, 10),
+      legalStatus: "официална статистика (отчет)",
+      versionId: null,
+    });
+    const euC = cofogEuTable(ds, "2024", { documentId: id, file });
+    const bgC = cofogHistoryTable(ds, "BG", COFOG_YEARS, { documentId: id, file });
+    tables.push(euC, bgC);
+    checks.push(...cofogChecks(euC, []), ...cofogChecks(bgC, COFOG_YEARS));
+    const gaps = euC.rows.filter((r) => r.cells.TOTAL?.value === null).map((r) => r.label);
+    checks.push({ id: "eurostat:cofog:complete-2024", kind: "total", status: gaps.length ? "warn" : "pass", description: "Евростат COFOG: общите разходи за 2024 г. за всички 27 държави и ЕС-27", details: { missing: gaps.join(", ") || "—" } });
+  }
 
   // ── ДОО and НЗОК bills (RTF → DOCX via LibreOffice; file/sha256 identify the RTF) ──
   const lawDoc = (name: string, id: string) => {
