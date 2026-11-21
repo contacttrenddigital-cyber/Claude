@@ -5,26 +5,25 @@ import { Icon } from "./Icon";
 
 type Theme = "light" | "dark" | "system";
 const LABEL: Record<Theme, string> = { light: "Светла", dark: "Тъмна", system: "Системна" };
-const NEXT: Record<Theme, Theme> = { system: "dark", dark: "light", light: "system" };
+const NEXT: Record<Theme, Theme> = { dark: "light", light: "system", system: "dark" };
 
 function read(): Theme {
   try {
     const t = localStorage.getItem("theme");
-    return t === "light" || t === "dark" ? t : "system";
+    return t === "light" || t === "dark" || t === "system" ? t : "dark";
   } catch {
-    return "system";
+    return "dark";
   }
 }
 
 export function ThemeToggle({ variant = "icon" }: { variant?: "icon" | "full" }) {
-  const [theme, setTheme] = useState<Theme>("system");
+  const [theme, setTheme] = useState<Theme>("dark");
   useEffect(() => setTheme(read()), []);
 
   function apply(t: Theme) {
     setTheme(t);
     try {
-      if (t === "system") localStorage.removeItem("theme");
-      else localStorage.setItem("theme", t);
+      localStorage.setItem("theme", t);
     } catch {
       /* storage unavailable: still apply for this page view */
     }

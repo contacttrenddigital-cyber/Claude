@@ -15,11 +15,11 @@ import { ThemeToggle } from "./ThemeToggle";
 export function Logo() {
   return (
     <Link href="/" className="group flex min-h-11 items-center gap-2.5" aria-label="Бюджет 2027 — начало">
-      <span aria-hidden className="grid h-8 w-8 place-items-center rounded-lg bg-accent-fill text-[13px] font-bold text-[#08111f] shadow-sm">
+      <span aria-hidden className="font-display grid h-9 w-9 place-items-center rounded-xl bg-card-coral text-[15px] font-bold text-on-card">
         27
       </span>
       <span className="flex flex-col leading-none">
-        <span className="text-[15px] font-semibold tracking-tight">Бюджет 2027</span>
+        <span className="font-display text-[17px] font-semibold tracking-wide uppercase">Бюджет 2027</span>
         <span className="mt-0.5 text-[11px] text-muted">под лупа</span>
       </span>
     </Link>
@@ -89,7 +89,7 @@ export function SiteHeader(props: { status?: string }) {
                 {open === g.id && (
                   <div
                     id={`menu-${g.id}`}
-                    className="absolute top-full right-4 left-4 mt-2 rounded-2xl border border-rule bg-surface p-3 shadow-2xl shadow-black/10 sm:right-6 sm:left-6"
+                    className="absolute top-full right-4 left-4 mt-2 rounded-3xl border border-rule bg-surface p-3 shadow-2xl shadow-black/30 sm:right-6 sm:left-6"
                   >
                     <ul className="grid gap-1 md:grid-cols-2 xl:grid-cols-3">
                       {g.items.map((i) => (
@@ -99,7 +99,7 @@ export function SiteHeader(props: { status?: string }) {
                             aria-current={active(i.href) ? "page" : undefined}
                             className="flex items-start gap-3 rounded-xl p-3 transition-colors hover:bg-surface-2"
                           >
-                            <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-surface-2 text-accent">
+                            <span className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-tile text-white">
                               <Icon name={i.icon} />
                             </span>
                             <span>
@@ -126,7 +126,7 @@ export function SiteHeader(props: { status?: string }) {
           </span>
           <Link
             href="/kalkulator"
-            className="inline-flex min-h-11 items-center gap-2 rounded-full bg-accent-fill px-4 text-[15px] font-semibold text-[#08111f] shadow-sm transition hover:brightness-105"
+            className="inline-flex min-h-11 items-center gap-2 rounded-full bg-card-coral px-4 text-[15px] font-semibold text-on-card transition hover:brightness-105"
           >
             <Icon name="calculator" className="h-4.5 w-4.5" />
             <span className="hidden sm:inline">Как ме засяга?</span>
@@ -162,7 +162,7 @@ export function SiteHeader(props: { status?: string }) {
                         aria-current={active(i.href) ? "page" : undefined}
                         className={`flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 ${active(i.href) ? "bg-surface-2" : "hover:bg-surface-2"}`}
                       >
-                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-surface text-accent ring-1 ring-rule">
+                        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-tile text-white">
                           <Icon name={i.icon} />
                         </span>
                         <span className="flex flex-col">

@@ -62,8 +62,8 @@ export default async function FullDashboard() {
         {/* ── Hero ─────────────────────────────────────────────── */}
         <section aria-labelledby="hero-title" className="grid gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end">
           <div className="flex flex-col gap-4">
-            <p className="inline-flex w-fit items-center rounded-full bg-surface-2 px-3 py-1 text-[13px] font-medium text-accent">Данни · за напреднали</p>
-            <h1 id="hero-title" className="text-[2.25rem] leading-[1.1] font-semibold tracking-tight sm:text-5xl">
+            <p className="inline-flex w-fit items-center rounded-full bg-card-mustard px-3 py-1 text-[13px] font-semibold text-on-card">Данни · за напреднали</p>
+            <h1 id="hero-title" className="font-display text-[2.6rem] leading-[1] font-semibold tracking-tight uppercase sm:text-6xl">
               Пълно табло
             </h1>
             <p className="max-w-2xl text-[17px] text-ink-2">Всички основни показатели, мерки и промени по законопроекта за 2027 г. на една страница. За кратко обяснение започни от <Link href="/" className="underline underline-offset-2">началото</Link>.</p>

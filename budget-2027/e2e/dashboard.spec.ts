@@ -69,10 +69,11 @@ test.describe("Пълно табло (/tablo)", () => {
   test("темата се помни след презареждане", async ({ page }) => {
     const menu = page.getByRole("button", { name: "Отвори менюто" });
     if (await menu.isVisible()) await menu.click(); // on phones the theme switch is in the menu
-    await page.getByRole("button", { name: /Смени темата/ }).filter({ visible: true }).first().click(); // system → dark
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark"); // default
+    await page.getByRole("button", { name: /Смени темата/ }).filter({ visible: true }).first().click(); // dark → light
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
     await page.reload();
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   });
 
   for (const scheme of ["light", "dark"] as const) {
