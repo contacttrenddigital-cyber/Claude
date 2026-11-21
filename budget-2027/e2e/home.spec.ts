@@ -1,7 +1,6 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
-const NB = "[\\s\\u00a0]";
 
 test.describe("Начална страница", () => {
   test("казва какво е платформата и води към трите входа", async ({ page }) => {
