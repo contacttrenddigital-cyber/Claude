@@ -49,6 +49,7 @@ function fileDoc(id: string, path: string, meta: Omit<Snapshot["documents"][numb
 }
 
 /** latest stored copy of each bill's API JSON (scripts/track-bills.ts) */
+if (!existsSync(join(RAW, "parliament/bills.json"))) throw new Error("Missing data/raw/parliament/bills.json: run npm run bills:track first.");
 const billManifest = JSON.parse(readFileSync(join(RAW, "parliament/bills.json"), "utf8")) as Record<string, { file: string; sha256: string; retrievedOn: string }>;
 /** a changed API copy gets a new document id (documents are immutable in the database) */
 const billDocId = (b: { apiId: string; docId: string }) => `${b.docId}-${billManifest[b.apiId]!.sha256.slice(0, 8)}`;

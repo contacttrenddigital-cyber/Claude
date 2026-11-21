@@ -1,6 +1,7 @@
 # Обновяване и преглед на данните
 
 ```
+0. npm run bills:track      # API на НС за трите законопроекта (създава data/raw/parliament/bills.json)
 1. npm run sources:fetch     # сваля отново първичните файлове; при нов SHA-256 пази новия файл отделно и спира с код 2
 2. npm run extract           # DOCX таблици + EMF Приложение № 3 → data/extracted/
 3. npm run snapshot:build    # извличане, кръстосани проверки, равенства, сравнение със СИГМА → data/snapshots/snap-<hash>.json
