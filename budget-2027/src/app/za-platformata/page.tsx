@@ -60,7 +60,6 @@ export default async function About() {
         <ul className="grid max-w-3xl gap-3 text-[15px] leading-relaxed text-ink-2">
           <li><strong className="text-ink">Без число без източник.</strong> Ако няма официален документ, пишем „няма данни“, а не оценка.</li>
           <li><strong className="text-ink">Сравняваме само сравнимото.</strong> Проект не е закон, а прогноза не е отчет. Държавният бюджет не е целият публичен сектор.</li>
-          <li><strong className="text-ink">Проверяваме твърдения, не хора.</strong> Прогнозите и мненията не обявяваме за верни или неверни.</li>
           <li><strong className="text-ink">Поправките остават видими.</strong> Всяка промяна на данните е нова версия; старите не се изтриват.</li>
         </ul>
       </Section>

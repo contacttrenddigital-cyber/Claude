@@ -33,7 +33,6 @@ const STATIC = [
   "/scenarii",
   "/moeto-tablo",
   "/vizualizatsii",
-  "/analizi/asen-vasilev",
   "/pod-lupa",
   "/pozitivni-merki",
   "/zakonodatelstvo",

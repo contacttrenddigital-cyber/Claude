@@ -6,6 +6,8 @@ import { PageShell } from "@/components/site/PageShell";
 import { ClaimsArchive } from "@/lib/claims/schema";
 import { getClaimsArchive } from "@/lib/data/claims";
 import { dateBg } from "@/lib/format";
+import { notFound } from "next/navigation";
+import { FEATURES } from "@/lib/features";
 
 export const revalidate = 3600;
 export const metadata: Metadata = {
@@ -16,6 +18,7 @@ export const metadata: Metadata = {
 };
 
 export default async function AsenVasilevPage() {
+  if (!FEATURES.claims) notFound();
   const archive = await getClaimsArchive("Асен Василев");
   // coverage metadata lives with the verified archive file
   const meta = ClaimsArchive.parse(JSON.parse(readFileSync(join(process.cwd(), "data/claims/asen-vasilev.json"), "utf8")));

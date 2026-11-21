@@ -7,7 +7,7 @@ test.describe("Начална страница", () => {
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toContainText("обяснен ясно");
     await expect(page.getByText(/още не е приет/)).toBeVisible();
-    for (const [name, href] of [["Как ме засяга?", "/kalkulator"], ["Къде отиват парите?", "/sektori"], ["Вярно ли е?", "/analizi/asen-vasilev"]] as const)
+    for (const [name, href] of [["Как ме засяга?", "/kalkulator"], ["Къде отиват парите?", "/sektori"], ["А моята община?", "/obshtini"]] as const)
       await expect(page.getByRole("link", { name: new RegExp(name.replace("?", "\\?")) }).filter({ hasText: name }).first()).toHaveAttribute("href", href);
   });
 
@@ -102,7 +102,3 @@ test("калкулатор: бързите примери сменят запл�
   await expect(page.getByRole("button", { name: "2 400 €" })).toHaveClass(/bg-tile/);
 });
 
-test("твърдения: накратко по оценки (8 потвърдени от 21)", async ({ page }) => {
-  await page.goto("/analizi/asen-vasilev");
-  await expect(page.getByRole("region", { name: "Накратко" })).toContainText(/Потвърдени\s*8\s*от 21/);
-});

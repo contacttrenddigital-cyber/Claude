@@ -13,7 +13,7 @@ test.describe("светла тема", () => {
     });
   });
 
-  for (const path of ["/", "/razhodi", "/defitsit", "/pensii", "/zdraveopazvane", "/sektori", "/obshtini", "/kalkulator", "/analizi/asen-vasilev", "/iztochnitsi", "/tablo"]) {
+  for (const path of ["/", "/razhodi", "/defitsit", "/pensii", "/zdraveopazvane", "/sektori", "/obshtini", "/kalkulator", "/iztochnitsi", "/tablo"]) {
     test(`${path}: достъпност и ширина`, async ({ page }) => {
       expect((await page.goto(path))?.status()).toBe(200);
       await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
