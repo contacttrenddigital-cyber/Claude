@@ -26,12 +26,14 @@ export default async function Deficit() {
           Двата не се сравняват ред по ред.
         </p>
       }
+      summary={
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <KpiTile tone="rose" size="lg" series={S("kfp.balance")} ratio={S("kfp.balance.pctGdp")} />
+          <KpiTile tone="rose" size="lg" series={S("esa.balance")} ratio={S("esa.balance.pctGdp")} />
+          <KpiTile tone="sky" series={S("kfp.financing")} note="Финансирането покрива дефицита: равно по стойност и с обратен знак." />
+        </div>
+      }
     >
-      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        <KpiTile size="lg" series={S("kfp.balance")} ratio={S("kfp.balance.pctGdp")} />
-        <KpiTile size="lg" series={S("esa.balance")} ratio={S("esa.balance.pctGdp")} />
-        <KpiTile series={S("kfp.financing")} note="Финансирането покрива дефицита: равно по стойност и с обратен знак." />
-      </div>
       <Section id="dinamika" title="2025–2029">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 [&>*]:min-w-0">
           <YearBars

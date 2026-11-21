@@ -45,28 +45,30 @@ export default async function Compare() {
           </p>
         </>
       }
+      summary={
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 [&>*]:min-w-0">
+          <StatTile tone="sky"
+            label="Дълг на България"
+            value={debt?.value ?? null}
+            unit="% от БВП"
+            show="% от БВП"
+            tag="2025 · отчет"
+            source={src}
+            note={debt ? `${debt.rank}-и най-нисък от ${debt.of} държави в ЕС. ЕС-27: ${eu.cells["GD:2025"]!.text}%.` : undefined}
+          />
+          <StatTile tone="mustard"
+            label="Салдо на България"
+            value={bal?.value ?? null}
+            unit="% от БВП"
+            show="% от БВП"
+            signed
+            tag="2025 · отчет"
+            source={src}
+            note={bal ? `${bal.rank}-о място от ${bal.of} (от най-голям излишък към най-голям дефицит). ЕС-27: ${eu.cells["B9:2025"]!.text}%.` : undefined}
+          />
+        </div>
+      }
     >
-      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 [&>*]:min-w-0">
-        <StatTile
-          label="Дълг на България"
-          value={debt?.value ?? null}
-          unit="% от БВП"
-          show="% от БВП"
-          tag="2025 · отчет"
-          source={src}
-          note={debt ? `${debt.rank}-и най-нисък от ${debt.of} държави в ЕС. ЕС-27: ${eu.cells["GD:2025"]!.text}%.` : undefined}
-        />
-        <StatTile
-          label="Салдо на България"
-          value={bal?.value ?? null}
-          unit="% от БВП"
-          show="% от БВП"
-          signed
-          tag="2025 · отчет"
-          source={src}
-          note={bal ? `${bal.rank}-о място от ${bal.of} (от най-голям излишък към най-голям дефицит). ЕС-27: ${eu.cells["B9:2025"]!.text}%.` : undefined}
-        />
-      </div>
 
       <p className="max-w-3xl text-sm text-ink-2">
         Референтните стойности в ЕС са 3% от БВП за дефицита и 60% от БВП за дълга (Протокол № 12 към Договора за функционирането на ЕС).

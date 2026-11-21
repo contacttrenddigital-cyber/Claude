@@ -212,6 +212,20 @@ details > summary::-webkit-details-marker {
   text-decoration-color: currentColor;
 }
 
+/* Tokens inside a candy card (KPI tiles in "Накратко"): dark text on a light colour in both
+   themes. Not for --card-violet (secondary text would drop below 4.5:1). */
+.on-card {
+  --ink: #141414;
+  --ink-2: #2e2b27;
+  --muted: #2e2b27;
+  --rule: rgb(20 20 20 / 0.18);
+  --rule-strong: rgb(20 20 20 / 0.45);
+  --beneficial: #0f4224;
+  --warning: #5c2a00;
+  --focus: #141414;
+  color: var(--ink);
+}
+
 /* Display face: Sofia Sans Condensed (Bulgarian letterforms via lang="bg" / locl).
    Only 800 and 900 are loaded; "semibold" headings render at 800, bold ones at 900. */
 .font-display {

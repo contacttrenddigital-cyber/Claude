@@ -2,6 +2,7 @@ import { SiteHeader } from "./SiteHeader";
 import { SiteFooter } from "./SiteFooter";
 import { getPublished } from "@/lib/data/published";
 import { dateBg, fmtNum } from "@/lib/format";
+import { CARD_BG, type CardTone } from "./tones";
 
 /** One headline number in the title band ("Накратко"). value is a printed decimal string. */
 export interface ShellFact {
@@ -10,17 +11,8 @@ export interface ShellFact {
   unit: string;
   decimals?: number;
   note?: string;
-  tone: "sky" | "mustard" | "violet" | "mint" | "rose" | "lilac";
+  tone: CardTone;
 }
-
-const TONE: Record<ShellFact["tone"], string> = {
-  sky: "bg-card-sky",
-  mustard: "bg-card-mustard",
-  violet: "bg-card-violet",
-  mint: "bg-card-mint",
-  rose: "bg-card-rose",
-  lilac: "bg-card-lilac",
-};
 
 /**
  * Common page frame. The title band is always dark (tokens are switched to their dark values
@@ -33,6 +25,7 @@ export async function PageShell({
   lead,
   facts,
   factsSource,
+  summary,
   children,
 }: {
   eyebrow: string;
@@ -41,6 +34,8 @@ export async function PageShell({
   facts?: ShellFact[];
   /** where the facts are printed (required with facts) */
   factsSource?: string;
+  /** richer headline tiles (KpiTile / StatTile with a tone) shown under "Накратко" instead of facts */
+  summary?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const data = await getPublished();
@@ -54,12 +49,18 @@ export async function PageShell({
             <p className="inline-flex w-fit items-center rounded-full bg-card-mustard px-3 py-1 text-[13px] font-semibold text-on-card">{eyebrow}</p>
             <h1 className="font-display max-w-4xl text-[2.6rem] leading-[0.95] font-semibold tracking-tight text-balance uppercase sm:text-[3.8rem]">{title}</h1>
             <div className="flex max-w-3xl flex-col gap-3 text-[17px] leading-relaxed text-ink-2">{lead}</div>
+            {summary && (
+              <section aria-label="Накратко" className="mt-2">
+                <h2 className="mb-3 text-[13px] font-semibold tracking-wide text-muted uppercase">Накратко</h2>
+                {summary}
+              </section>
+            )}
             {facts && facts.length > 0 && (
               <section aria-label="Накратко" className="mt-2">
                 <h2 className="mb-3 text-[13px] font-semibold tracking-wide text-muted uppercase">Накратко</h2>
                 <dl className={`grid gap-3 sm:gap-4 ${facts.length >= 3 ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
                   {facts.map((f) => (
-                    <div key={f.label} className={`flex flex-col gap-1 rounded-3xl p-4 text-on-card shadow-lg shadow-black/30 sm:p-5 ${TONE[f.tone]}`}>
+                    <div key={f.label} className={`flex flex-col gap-1 rounded-3xl p-4 text-on-card shadow-lg shadow-black/30 sm:p-5 ${CARD_BG[f.tone]}`}>
                       <dt className="text-sm font-semibold">{f.label}</dt>
                       <dd className="num font-display text-[2.35rem] leading-none font-semibold">
                         {fmtNum(f.value, f.decimals ?? 1)}

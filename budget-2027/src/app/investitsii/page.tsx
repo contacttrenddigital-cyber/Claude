@@ -30,29 +30,35 @@ export default async function Investment() {
           на проектите по Плана за възстановяване и устойчивост. Разчет в бюджета не означава извършена инвестиция.
         </p>
       }
+      summary={
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <KpiTile tone="sky" size="lg" series={S("kfp.expenditure.capital")} ratio={S("kfp.expenditure.capital.pctGdp")} />
+          {ex && (
+            <article className="on-card bg-card-mustard flex flex-col gap-2 rounded-3xl p-5 shadow-lg shadow-black/30">
+              <h3 className="text-[14px] font-semibold text-ink-2">Изпълнение 2026 към 30.09</h3>
+              <p className="num font-display text-[2.4rem] leading-none font-semibold">{fmtNum(ex.cells.pct!.value)}%</p>
+              <p className="num text-sm text-ink-2">
+                {fmtNum(ex.cells.actual!.value)} от {fmtNum(ex.cells.plan!.value)} млн. € по програмата за 2026 г. (капиталови разходи по КФП)
+              </p>
+              <p className="text-xs text-muted">Приложение № 1 към мотивите.</p>
+            </article>
+          )}
+          {diff && (
+            <article className="on-card bg-card-mint flex flex-col gap-2 rounded-3xl p-5 shadow-lg shadow-black/30">
+              <h3 className="text-[14px] font-semibold text-ink-2">Промяна 06.11 → 16.11</h3>
+              <p className="num font-display text-[2.4rem] leading-none font-semibold">
+                {fmtNum(diff.difference)}
+                <span className="ml-1.5 font-sans text-base font-normal">млн. €</span>
+              </p>
+              <p className="num text-sm text-ink-2">
+                {fmtNum(diff.before)} млн. € в проекта от 06.11 → {fmtNum(diff.after)} млн. € във внесения текст
+              </p>
+              <p className="text-xs text-muted">Двете версии на законопроекта; разликата е изчислена от отпечатаните стойности.</p>
+            </article>
+          )}
+        </div>
+      }
     >
-      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        <KpiTile size="lg" series={S("kfp.expenditure.capital")} ratio={S("kfp.expenditure.capital.pctGdp")} />
-        {ex && (
-          <article className="flex flex-col gap-2 border-t border-rule-strong pt-3">
-            <h3 className="text-[13px] font-medium tracking-wide text-ink-2 uppercase">Изпълнение 2026 към 30.09</h3>
-            <p className="num text-3xl font-semibold">{fmtNum(ex.cells.pct!.value)}%</p>
-            <p className="num text-sm text-ink-2">
-              {fmtNum(ex.cells.actual!.value)} от {fmtNum(ex.cells.plan!.value)} млн. € по програмата за 2026 г. (капиталови разходи по КФП)
-            </p>
-            <p className="text-xs text-muted">Приложение № 1 към мотивите.</p>
-          </article>
-        )}
-        {diff && (
-          <article className="flex flex-col gap-2 border-t border-rule-strong pt-3">
-            <h3 className="text-[13px] font-medium tracking-wide text-ink-2 uppercase">Промяна 06.11 → 16.11</h3>
-            <p className="num text-3xl font-semibold">{fmtNum(diff.difference)} млн. €</p>
-            <p className="num text-sm text-ink-2">
-              {fmtNum(diff.before)} млн. € в проекта от 06.11 → {fmtNum(diff.after)} млн. € във внесения текст
-            </p>
-          </article>
-        )}
-      </div>
       <Section id="dinamika" title="Капиталови разходи 2025–2029">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 [&>*]:min-w-0">
           <YearBars title="Капиталови разходи" subtitle="КФП, касова основа" unitLabel="млн. €" series={[bars("Капиталови разходи", "neutral", S("kfp.expenditure.capital"))]} />

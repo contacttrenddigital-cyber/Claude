@@ -41,21 +41,23 @@ export default async function Wages() {
           .
         </p>
       }
+      summary={
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3 [&>*]:min-w-0">
+          <StatTile tone="sky"
+            label="Минимална работна заплата"
+            value={mrz.cells["2027"]!.value}
+            unit="€"
+            show="€"
+            dp={2}
+            tag="от 1.01.2027"
+            source="Приложение № 2 към мотивите"
+            note={`При ${fmtNum(mrz.cells["2026"]!.value, 2)} € за 2026 г.`}
+          />
+          <StatTile tone="mustard" label="Разходи за персонал (КФП)" value={staff.cells["2027"]!.value} unit="млн. €" source="Приложение № 3, КФП" note="Заплати, други възнаграждения и осигурителни вноски на заетите в публичния сектор." />
+          <KpiTile tone="mint" series={seriesOf(data, "macro.compensation")} />
+        </div>
+      }
     >
-      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 [&>*]:min-w-0">
-        <StatTile
-          label="Минимална работна заплата"
-          value={mrz.cells["2027"]!.value}
-          unit="€"
-          show="€"
-          dp={2}
-          tag="от 1.01.2027"
-          source="Приложение № 2 към мотивите"
-          note={`При ${fmtNum(mrz.cells["2026"]!.value, 2)} € за 2026 г.`}
-        />
-        <StatTile label="Разходи за персонал (КФП)" value={staff.cells["2027"]!.value} unit="млн. €" source="Приложение № 3, КФП" note="Заплати, други възнаграждения и осигурителни вноски на заетите в публичния сектор." />
-        <KpiTile series={seriesOf(data, "macro.compensation")} />
-      </div>
 
       <Section id="dinamika" title="2025–2029">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 [&>*]:min-w-0">

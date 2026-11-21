@@ -37,25 +37,27 @@ export default async function Education() {
           събирай и не ги сравнявай пряко.
         </p>
       }
+      summary={
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-3 [&>*]:min-w-0">
+          <StatTile tone="sky"
+            label="Функция „Образование“"
+            value={edu.value}
+            unit="млн. €"
+            source="Табл. III-1, КФП"
+            note={`${fmtNum(eduRow.cells["2027%"]!.value, 1)}% от БВП. Спрямо очакваното за 2026 г.: ${fmtSigned(edu.delta, 1)} млн. € (${fmtSigned(edu.change, 1)}%).`}
+          />
+          <StatTile tone="mustard" label="Таван на МОН" value={mon.cells["2027"]!.value} unit="хил. €" source="Приложение № 4 към мотивите" note="Разходите на министерството, не на цялата система." />
+          <StatTile tone="mint"
+            label="Заплати на педагозите"
+            value={teachers.cells["2027"]!.value}
+            unit="млн. €"
+            tag="2027 · допълнително"
+            source={`мотиви, абзац ${teachers.rowIndex}`}
+            note="Допълнителни средства за увеличение на заплатите със 7,5%."
+          />
+        </div>
+      }
     >
-      <div className="grid grid-cols-1 gap-8 sm:grid-cols-3 [&>*]:min-w-0">
-        <StatTile
-          label="Функция „Образование“"
-          value={edu.value}
-          unit="млн. €"
-          source="Табл. III-1, КФП"
-          note={`${fmtNum(eduRow.cells["2027%"]!.value, 1)}% от БВП. Спрямо очакваното за 2026 г.: ${fmtSigned(edu.delta, 1)} млн. € (${fmtSigned(edu.change, 1)}%).`}
-        />
-        <StatTile label="Таван на МОН" value={mon.cells["2027"]!.value} unit="хил. €" source="Приложение № 4 към мотивите" note="Разходите на министерството, не на цялата система." />
-        <StatTile
-          label="Заплати на педагозите"
-          value={teachers.cells["2027"]!.value}
-          unit="млн. €"
-          tag="2027 · допълнително"
-          source={`мотиви, абзац ${teachers.rowIndex}`}
-          note="Допълнителни средства за увеличение на заплатите със 7,5%."
-        />
-      </div>
 
       <Section id="dinamika" title="2026–2029">
         <div className="max-w-2xl">

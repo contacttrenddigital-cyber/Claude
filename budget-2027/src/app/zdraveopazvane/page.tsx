@@ -38,28 +38,30 @@ export default async function Health() {
           вх. № 52-602-01-70).
         </p>
       }
+      summary={
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4 [&>*]:min-w-0">
+          <StatTile tone="sky" label="Бюджет на НЗОК" value={amount(rev, "total")} source={`${loc}, чл. 1, ал. 1 и 2`} />
+          <StatTile tone="mustard"
+            label="Здравноосигурителни вноски"
+            value={amount(rev, "1.1.")}
+            source={`${loc}, чл. 1, ал. 1, т. 1.1`}
+            note={`${pct(fund.contributions.value)} от приходите и трансферите.`}
+          />
+          <StatTile tone="mint"
+            label="Трансфери за здравно осигуряване"
+            value={amount(rev, "1.2.")}
+            source={`${loc}, чл. 1, ал. 1, т. 1.2`}
+            note={`${pct(fund.stateInsured.value)} от приходите и трансферите.`}
+          />
+          <StatTile tone="lilac"
+            label="Болнична помощ"
+            value={amount(exp, "1.1.3.7.")}
+            source={`${loc}, чл. 1, ал. 2, т. 1.1.3.7`}
+            note={`${pct(pay.hospital.value)} от бюджета на НЗОК. Лекарства, изделия и храни за домашно лечение: ${pct(pay.medicines.value)}.`}
+          />
+        </div>
+      }
     >
-      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4 [&>*]:min-w-0">
-        <StatTile label="Бюджет на НЗОК" value={amount(rev, "total")} source={`${loc}, чл. 1, ал. 1 и 2`} />
-        <StatTile
-          label="Здравноосигурителни вноски"
-          value={amount(rev, "1.1.")}
-          source={`${loc}, чл. 1, ал. 1, т. 1.1`}
-          note={`${pct(fund.contributions.value)} от приходите и трансферите.`}
-        />
-        <StatTile
-          label="Трансфери за здравно осигуряване"
-          value={amount(rev, "1.2.")}
-          source={`${loc}, чл. 1, ал. 1, т. 1.2`}
-          note={`${pct(fund.stateInsured.value)} от приходите и трансферите.`}
-        />
-        <StatTile
-          label="Болнична помощ"
-          value={amount(exp, "1.1.3.7.")}
-          source={`${loc}, чл. 1, ал. 2, т. 1.1.3.7`}
-          note={`${pct(pay.hospital.value)} от бюджета на НЗОК. Лекарства, изделия и храни за домашно лечение: ${pct(pay.medicines.value)}.`}
-        />
-      </div>
 
       <Section id="plashtania" title="За какво плаща касата" lead="Чл. 1, ал. 2, т. 1.1.3: здравноосигурителни плащания по вид, хил. €. Сравнение с 2026 г. по пера има само в мотивите (виж по-долу).">
         <RankedBars title="Здравноосигурителни плащания, 2027" subtitle="Законопроект, хил. €" items={payments} unit="хил. €" valueLabel="2027 (проект)" baseLabel="—" />

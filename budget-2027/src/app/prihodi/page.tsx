@@ -27,13 +27,15 @@ export default async function Revenue() {
       eyebrow="Приходи"
       title="Откъде идват парите"
       lead={<p>Приходи, помощи и дарения по консолидираната фискална програма (КФП), касова основа. 2027 г. е проект, сравнен с очакваното изпълнение за 2026 г. от същия документ.</p>}
+      summary={
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <KpiTile tone="sky" size="lg" series={S("kfp.revenue")} ratio={S("kfp.revenue.pctGdp")} />
+          <KpiTile tone="mustard" series={S("kfp.revenue.taxSocial")} />
+          <KpiTile tone="mint" series={S("kfp.revenue.nonTax")} />
+          <KpiTile tone="lilac" series={S("kfp.revenue.grants")} note="Основно средства от ЕС. Спадът през 2027 г. е свързан с края на Плана за възстановяване и устойчивост." />
+        </div>
+      }
     >
-      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiTile size="lg" series={S("kfp.revenue")} ratio={S("kfp.revenue.pctGdp")} />
-        <KpiTile series={S("kfp.revenue.taxSocial")} />
-        <KpiTile series={S("kfp.revenue.nonTax")} />
-        <KpiTile series={S("kfp.revenue.grants")} note="Основно средства от ЕС. Спадът през 2027 г. е свързан с края на Плана за възстановяване и устойчивост." />
-      </div>
       <Section id="struktura" title="Структура на приходите, 2027 срещу 2026">
         <RankedBars title="Приходи по видове" subtitle="КФП, млн. €. Маркерът показва очакваното изпълнение за 2026 г." items={items} unit="млн. €" valueLabel="2027 (проект)" baseLabel="2026 (очаквано)" />
       </Section>
@@ -46,7 +48,7 @@ export default async function Revenue() {
         </div>
       </Section>
       <Section id="tablitsa" title="Пълна таблица">
-        <TableView table={t} sourceUrl={src.url} sourceTitle={src.title} />
+        <TableView table={t} collapsed sourceUrl={src.url} sourceTitle={src.title} />
       </Section>
     </PageShell>
   );

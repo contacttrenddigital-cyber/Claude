@@ -45,22 +45,24 @@ export default async function Defense() {
           институции) и като % от БВП. За 2026 г. стойностите са по закона, за 2027 г. са проект, за 2028–2029 г. са прогноза.
         </p>
       }
+      summary={
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-3 [&>*]:min-w-0">
+          <StatTile tone="sky" label="Отбрана по НАТО" value={row(NATO).cells["2027"]!.value} unit="млн. €" show="млн. €" source={`${cap}, мотиви към ЗДБРБ 2027`} note={`${fmtNum(natoPct.cells["2027"]!.value, 2)}% от БВП.`} />
+          <StatTile tone="mustard" label="Бюджет на МО" value={row(MO).cells["2027"]!.value} unit="млн. €" show="млн. €" source={`${cap}, мотиви към ЗДБРБ 2027`} />
+          <StatTile tone="mint"
+            label="Спрямо националния план"
+            value={g27.gap === null ? null : g27.gap.toString()}
+            unit="пр.п."
+            show="пр.п."
+            dp={2}
+            signed
+            tag="2027 · % от БВП"
+            source={`${cap}, последните два реда (разлика)`}
+            note={`Разчет по НАТО ${fmtNum(g27.nato!, 2)}% срещу ${fmtNum(g27.plan!, 2)}% в реда за Националния план (РМС № 448/11.06.2026 г.).`}
+          />
+        </div>
+      }
     >
-      <div className="grid grid-cols-1 gap-8 sm:grid-cols-3 [&>*]:min-w-0">
-        <StatTile label="Отбрана по НАТО" value={row(NATO).cells["2027"]!.value} unit="млн. €" show="млн. €" source={`${cap}, мотиви към ЗДБРБ 2027`} note={`${fmtNum(natoPct.cells["2027"]!.value, 2)}% от БВП.`} />
-        <StatTile label="Бюджет на МО" value={row(MO).cells["2027"]!.value} unit="млн. €" show="млн. €" source={`${cap}, мотиви към ЗДБРБ 2027`} />
-        <StatTile
-          label="Спрямо националния план"
-          value={g27.gap === null ? null : g27.gap.toString()}
-          unit="пр.п."
-          show="пр.п."
-          dp={2}
-          signed
-          tag="2027 · % от БВП"
-          source={`${cap}, последните два реда (разлика)`}
-          note={`Разчет по НАТО ${fmtNum(g27.nato!, 2)}% срещу ${fmtNum(g27.plan!, 2)}% в реда за Националния план (РМС № 448/11.06.2026 г.).`}
-        />
-      </div>
 
       <Section id="dinamika" title="2026–2029">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 [&>*]:min-w-0">

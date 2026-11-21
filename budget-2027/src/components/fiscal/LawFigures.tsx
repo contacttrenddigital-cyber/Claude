@@ -5,6 +5,7 @@
 import Decimal from "decimal.js";
 import { fmtNum, fmtSigned, rescale } from "@/lib/format";
 import type { Quote } from "@/lib/social/quotes";
+import { tileClass, type TileTone } from "@/components/site/tones";
 
 export function StatTile({
   label,
@@ -16,6 +17,7 @@ export function StatTile({
   source,
   dp = 1,
   signed = false,
+  tone,
 }: {
   label: string;
   value: string | null;
@@ -26,10 +28,11 @@ export function StatTile({
   source: string;
   dp?: number;
   signed?: boolean;
+  tone?: TileTone;
 }) {
   const v = value === null ? null : show === unit ? value : rescale(value, unit, show);
   return (
-    <article className="flex flex-col gap-2 rounded-3xl border border-rule bg-surface p-5">
+    <article className={`flex flex-col gap-2 ${tileClass(tone)}`}>
       <header className="flex items-baseline justify-between gap-2">
         <h3 className="text-[14px] font-semibold text-ink-2">{label}</h3>
         <span className="text-[11px] text-muted">{tag}</span>

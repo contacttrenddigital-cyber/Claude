@@ -27,13 +27,15 @@ export default async function Debt() {
           рефинансиране. Лихвите са годишен разход.
         </p>
       }
+      summary={
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <KpiTile tone="lilac" size="lg" series={S("debt.government")} ratio={S("debt.government.pctGdp")} />
+          <KpiTile tone="sky" series={S("esa.debt")} ratio={S("esa.debt.pctGdp")} />
+          <KpiTile tone="mustard" series={S("kfp.expenditure.interest")} />
+          <KpiTile tone="mint" series={S("debt.newDebtLimit")} base={null} />
+        </div>
+      }
     >
-      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiTile size="lg" series={S("debt.government")} ratio={S("debt.government.pctGdp")} />
-        <KpiTile series={S("esa.debt")} ratio={S("esa.debt.pctGdp")} />
-        <KpiTile series={S("kfp.expenditure.interest")} />
-        <KpiTile series={S("debt.newDebtLimit")} base={null} />
-      </div>
       <Section id="dinamika" title="2025–2029">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 [&>*]:min-w-0">
           <YearBars title="Дълг, % от БВП" unitLabel="% от БВП" series={[bars("Държавен дълг", "series-1", S("debt.government.pctGdp")), bars("Дълг по ЕСС 2010", "series-2", S("esa.debt.pctGdp"))]} />

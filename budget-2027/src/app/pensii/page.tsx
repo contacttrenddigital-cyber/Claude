@@ -56,7 +56,7 @@ export default async function Pensions() {
     >
       <Section id="razhodi" title="За какво харчи ДОО" lead="Чл. 1, ал. 2: разходи по основни пера, хил. €. Сравнение с 2026 г. в този законопроект няма.">
         <RankedBars title="Разходи на ДОО, 2027" subtitle="Законопроект, хил. €" items={composition} unit="хил. €" valueLabel="2027 (проект)" baseLabel="—" />
-        <TableView table={exp} sourceUrl={src.url} sourceTitle={src.title} />
+        <TableView table={exp} collapsed sourceUrl={src.url} sourceTitle={src.title} />
       </Section>
 
       <Section id="prihodi" title="Откъде идват парите" lead="Чл. 1, ал. 1. Осигурителните вноски покриват малко над половината; останалото са основно трансфери от централния бюджет.">

@@ -2,6 +2,7 @@ import { change, deficitChange, point } from "@/lib/data/derive";
 import type { SeriesView } from "@/lib/data/types";
 import { VINTAGE_LONG, VINTAGE_SHORT, decimalsFor, fmtNum, fmtSigned, rescale, unitOf } from "@/lib/format";
 import { SourceNote } from "./SourceNote";
+import { tileClass, type TileTone } from "@/components/site/tones";
 
 interface Props {
   series: SeriesView;
@@ -12,13 +13,15 @@ interface Props {
   displayUnit?: string;
   size?: "lg" | "md";
   note?: string;
+  /** candy card (title band "Накратко") */
+  tone?: TileTone;
 }
 
 /**
  * One headline figure with its baseline, definition and source. Changes are shown neutrally:
  * the platform does not colour a higher number as "good" or "bad".
  */
-export function KpiTile({ series, period = "2027", base = "2026", ratio, displayUnit, size = "md", note }: Props) {
+export function KpiTile({ series, period = "2027", base = "2026", ratio, displayUnit, size = "md", note, tone }: Props) {
   const p = point(series, period);
   if (!p) return null;
   const unit = displayUnit ?? series.metric.unit;
@@ -36,7 +39,7 @@ export function KpiTile({ series, period = "2027", base = "2026", ratio, display
   const dch = isBalance && base ? deficitChange(series, period, base) : null;
 
   return (
-    <article className="flex flex-col gap-2 rounded-3xl border border-rule bg-surface p-5" aria-labelledby={`kpi-${series.metric.key}`}>
+    <article className={`flex flex-col gap-2 ${tileClass(tone)}`} aria-labelledby={`kpi-${series.metric.key}`}>
       <header className="flex items-baseline justify-between gap-2">
         <h3 id={`kpi-${series.metric.key}`} className="text-[14px] font-semibold text-ink-2">
           {series.metric.short}
@@ -45,9 +48,9 @@ export function KpiTile({ series, period = "2027", base = "2026", ratio, display
           {period} · {VINTAGE_SHORT[p.vintage]}
         </span>
       </header>
-      <p className={`num font-display font-semibold leading-none ${size === "lg" ? "text-6xl sm:text-7xl" : "text-[2.4rem]"}`}>
+      <p className={`num font-display font-semibold leading-none ${size === "lg" ? "text-[3rem] lg:text-[3.3rem]" : "text-[2.4rem]"}`}>
         {num}
-        <span className="ml-1.5 text-base font-normal text-muted">{unitLabel}</span>
+        <span className="ml-1.5 text-base font-normal whitespace-nowrap text-muted">{unitLabel}</span>
       </p>
       {rp && rp.value !== null && (
         <p className="num text-sm text-ink-2">

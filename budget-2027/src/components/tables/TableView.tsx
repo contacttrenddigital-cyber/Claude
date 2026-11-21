@@ -23,6 +23,8 @@ interface Props {
   links?: Record<string, string>;
   /** row indexes to show (default: all) */
   only?: number[];
+  /** hide the table behind a toggle (use when a chart above already shows the same rows) */
+  collapsed?: boolean;
 }
 
 function show(c: { value: string | null; text: string } | undefined, unit: string) {
@@ -34,7 +36,7 @@ function show(c: { value: string | null; text: string } | undefined, unit: strin
   return fmtNum(c.value, Math.max(1, Math.min(2, dp)));
 }
 
-export function TableView({ table, columns, sourceUrl, sourceTitle, searchable, maxHeight, highlightChanges, links, only }: Props) {
+export function TableView({ table, columns, sourceUrl, sourceTitle, searchable, maxHeight, highlightChanges, links, only, collapsed }: Props) {
   const [q, setQ] = useState("");
   const cols = table.columns.filter((c) => !columns || columns.includes(c.key));
   const textCols = table.textColumns.filter((c) => c.key !== "no");
@@ -49,7 +51,7 @@ export function TableView({ table, columns, sourceUrl, sourceTitle, searchable, 
   const units = [...new Set(cols.map((c) => c.unit).filter(Boolean))];
   const shown = rows.filter((r) => r.kind !== "group").length;
 
-  return (
+  const body = (
     <figure className="flex flex-col gap-2">
       {searchable && (
         <div className="flex flex-wrap items-end gap-3">
@@ -173,5 +175,17 @@ export function TableView({ table, columns, sourceUrl, sourceTitle, searchable, 
         </a>
       </figcaption>
     </figure>
+  );
+  if (!collapsed) return body;
+  return (
+    <details className="group flex flex-col gap-3">
+      <summary className="inline-flex min-h-11 w-fit cursor-pointer list-none items-center gap-2 rounded-full border border-rule-strong bg-surface px-4 text-sm font-semibold text-ink hover:bg-surface-2 [&::-webkit-details-marker]:hidden">
+        <span aria-hidden className="transition-transform group-open:rotate-90">›</span>
+        <span className="group-open:hidden">Покажи таблицата</span>
+        <span className="hidden group-open:inline">Скрий таблицата</span>
+        <span className="num font-normal text-muted">· {shown} реда</span>
+      </summary>
+      <div className="mt-3">{body}</div>
+    </details>
   );
 }
