@@ -20,9 +20,9 @@ export const metadata: Metadata = {
     locale: "bg_BG",
     type: "website",
     siteName: "Бюджет 2027 — под лупа",
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Бюджет 2027, обяснен ясно" }],
+    // images: app/opengraph-image.tsx (and the per-page ones) — generated from the published snapshot
   },
-  twitter: { card: "summary_large_image", images: ["/og.png"] },
+  twitter: { card: "summary_large_image" },
 };
 
 export const viewport: Viewport = {

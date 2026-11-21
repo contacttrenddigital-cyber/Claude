@@ -14,6 +14,9 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/dokumenti": ["./data/extracted/*.json", "./data/extracted/*.txt"],
     "/prognozi": ["./data/extracted/*.tables.json"],
+    // Open Graph images read their fonts from disk
+    "/**/opengraph-image*": ["./assets/fonts/*.ttf"],
+    "/opengraph-image*": ["./assets/fonts/*.ttf"],
   },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];

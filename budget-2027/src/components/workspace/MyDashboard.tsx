@@ -47,10 +47,10 @@ export function MyDashboard({ metrics }: { metrics: MetricCard[] }) {
       <div className="flex flex-col gap-3">
         <label className="flex flex-col gap-1 text-xs text-muted">
           Търси показател
-          <input type="search" value={q} onChange={(e) => setQ(e.target.value)} className="min-h-11 rounded-sm border border-rule-strong bg-surface px-3 text-sm text-ink" />
+          <input type="search" value={q} onChange={(e) => setQ(e.target.value)} className="min-h-11 rounded-full border border-rule-strong bg-surface px-4 text-sm text-ink" />
         </label>
         <p className="num text-xs text-muted">Избрани {sel.length} от максимум 12</p>
-        <ul className="max-h-[32rem] overflow-auto rounded-sm border border-rule" aria-label="Показатели">
+        <ul className="max-h-[32rem] overflow-auto rounded-3xl border border-rule bg-surface" aria-label="Показатели">
           {metrics
             .filter((m) => !q || `${m.short} ${m.label}`.toLowerCase().includes(q.toLowerCase()))
             .map((m) => (
@@ -65,14 +65,14 @@ export function MyDashboard({ metrics }: { metrics: MetricCard[] }) {
             ))}
         </ul>
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={share} className="min-h-11 rounded-sm border border-rule-strong px-3 text-sm">
-            {copied ? "Връзката е копирана" : "Копирай връзка към таблото"}
+          <button type="button" onClick={share} className="min-h-11 rounded-full bg-ink px-4 text-sm font-semibold text-bg">
+            {copied ? "Връзката е копирана" : "Копирай връзка (отваря се и на друго устройство)"}
           </button>
-          <button type="button" onClick={() => save(DEFAULT)} className="min-h-11 rounded-sm border border-rule-strong px-3 text-sm">
+          <button type="button" onClick={() => save(DEFAULT)} className="min-h-11 rounded-full border border-rule-strong px-4 text-sm font-semibold">
             По подразбиране
           </button>
         </div>
-        <p className="text-xs text-muted">Изборът се пази само в този браузър. Връзката съдържа само ключовете на показателите.</p>
+        <p className="text-[13px] text-ink-2">Изборът се пази в този браузър. За друго устройство копирай връзката: тя съдържа само ключовете на показателите, без лични данни.</p>
       </div>
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2" aria-live="polite">
         {sel.length === 0 && <p className="text-sm text-muted">Изберете показатели от списъка.</p>}

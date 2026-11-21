@@ -58,11 +58,11 @@ test.describe("Начална страница", () => {
     });
   }
 
-  test("картинка за споделяне", async ({ page, request }) => {
-    await page.goto("/");
-    const og = await page.locator('meta[property="og:image"]').getAttribute("content");
-    expect(og).toMatch(/\/og\.png$/);
-    expect((await request.get("/og.png")).status()).toBe(200);
+  test("картинка за споделяне: страниците без своя ползват общата от началото", async ({ page }) => {
+    await page.goto("/rechnik");
+    const og = await page.locator('meta[property="og:image"]').first().getAttribute("content");
+    expect(new URL(og!).pathname).toBe("/opengraph-image");
+    expect(await page.locator('meta[name="twitter:image"]').first().getAttribute("content")).toContain("opengraph-image");
   });
 });
 
