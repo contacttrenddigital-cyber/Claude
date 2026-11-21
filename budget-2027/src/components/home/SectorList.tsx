@@ -19,7 +19,7 @@ export function SectorList({ years, initial, top = 6 }: { years: SectorYear[]; i
   return (
     <figure className="rounded-[2rem] bg-card-violet p-5 text-on-card shadow-xl shadow-black/20 sm:p-7">
       <figcaption className="flex flex-wrap items-center justify-between gap-3">
-        <span className="font-display text-[1.9rem] font-semibold">Разходи по сектори</span>
+        <span className="font-display text-[1.65rem] font-semibold">Разходи по сектори</span>
         <span className="num rounded-full bg-tile px-3 py-1 font-mono text-xs text-white">общо {fmtNum(d.total, 1)} млрд. €</span>
       </figcaption>
       <div className="mt-4">

@@ -69,7 +69,7 @@ export default async function AsenVasilevPage() {
         </section>
 
         <section aria-labelledby="statements" className="flex flex-col gap-3">
-          <h2 id="statements" className="font-display text-[2.2rem] font-semibold tracking-tight">
+          <h2 id="statements" className="font-display text-[1.9rem] font-semibold tracking-tight">
             Изказвания
           </h2>
           <ol className="flex flex-col">
@@ -91,7 +91,7 @@ export default async function AsenVasilevPage() {
         </section>
 
         <section aria-labelledby="claims" className="flex flex-col gap-4">
-          <h2 id="claims" className="font-display text-[2.2rem] font-semibold tracking-tight">
+          <h2 id="claims" className="font-display text-[1.9rem] font-semibold tracking-tight">
             Твърдения и проверка
           </h2>
           <ClaimsExplorer archive={archive} />

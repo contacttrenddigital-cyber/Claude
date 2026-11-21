@@ -45,7 +45,7 @@ export function KpiTile({ series, period = "2027", base = "2026", ratio, display
           {period} · {VINTAGE_SHORT[p.vintage]}
         </span>
       </header>
-      <p className={`num font-display font-semibold leading-none ${size === "lg" ? "text-6xl sm:text-7xl" : "text-[2.8rem]"}`}>
+      <p className={`num font-display font-semibold leading-none ${size === "lg" ? "text-6xl sm:text-7xl" : "text-[2.4rem]"}`}>
         {num}
         <span className="ml-1.5 text-base font-normal text-muted">{unitLabel}</span>
       </p>

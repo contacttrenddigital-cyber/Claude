@@ -45,7 +45,7 @@ export function BudgetCard({ years, initial }: { years: YearFacts[]; initial: st
         {CARDS.map((c) => (
           <div key={c.key} className={`flex flex-col gap-1 rounded-3xl p-4 text-on-card shadow-lg shadow-black/30 transition hover:rotate-0 sm:p-5 ${c.bg} ${c.tilt}`}>
             <dt className="font-display text-sm font-semibold tracking-wide uppercase">{c.label}</dt>
-            <dd className="num font-display text-[2.9rem] leading-none font-semibold sm:text-6xl">{fmtNum(f[c.key], 1)}</dd>
+            <dd className="num font-display text-[2.5rem] leading-none font-semibold sm:text-6xl">{fmtNum(f[c.key], 1)}</dd>
             {pct[c.key] && <dd className="num mt-1 w-fit rounded-full bg-tile px-2.5 py-0.5 font-mono text-xs text-white">{fmtNum(pct[c.key]!.replace("-", ""), 1)}% от БВП</dd>}
           </div>
         ))}

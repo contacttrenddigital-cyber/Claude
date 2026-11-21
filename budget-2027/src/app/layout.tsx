@@ -1,10 +1,10 @@
 import { siteUrl } from "@/lib/site-url";
 import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/inter";
-import "@fontsource/sofia-sans-extra-condensed/cyrillic-800.css";
-import "@fontsource/sofia-sans-extra-condensed/latin-800.css";
-import "@fontsource/sofia-sans-extra-condensed/cyrillic-900.css";
-import "@fontsource/sofia-sans-extra-condensed/latin-900.css";
+import "@fontsource/sofia-sans-condensed/cyrillic-800.css";
+import "@fontsource/sofia-sans-condensed/latin-800.css";
+import "@fontsource/sofia-sans-condensed/cyrillic-900.css";
+import "@fontsource/sofia-sans-condensed/latin-900.css";
 import "@fontsource/ibm-plex-mono/cyrillic-400.css";
 import "@fontsource/ibm-plex-mono/latin-400.css";
 import "./globals.css";

@@ -121,7 +121,7 @@ export default async function Home() {
                 <span className="h-2 w-2 rounded-full bg-card-rose" aria-hidden />
                 Законопроект, внесен на {dateBg(bill.date)} · още не е приет
               </p>
-              <h1 id="hero-title" className="font-display text-[3.6rem] leading-[0.92] font-semibold tracking-tight uppercase sm:text-[5.2rem] lg:text-[6.6rem]">
+              <h1 id="hero-title" className="font-display text-[3.1rem] leading-[0.92] font-semibold tracking-tight uppercase sm:text-[4.5rem] lg:text-[5.6rem]">
                 Бюджет 2027,
                 <br />
                 <span className="text-card-mustard">обяснен ясно.</span>
@@ -159,7 +159,7 @@ export default async function Home() {
 
         {/* ── Entry points ───────────────────────────────────── */}
         <section aria-labelledby="start-title" className="mx-auto max-w-7xl px-4 pt-14 sm:px-6 sm:pt-20">
-          <h2 id="start-title" className="font-display text-[2.6rem] leading-[1] font-semibold tracking-tight sm:text-[3.4rem]">
+          <h2 id="start-title" className="font-display text-[2.25rem] leading-[1] font-semibold tracking-tight sm:text-[3rem]">
             С какво да започнеш?
           </h2>
           <ul className="mt-8 grid gap-5 md:grid-cols-3">
@@ -167,7 +167,7 @@ export default async function Home() {
               <li key={e.href}>
                 <Link href={e.href} className={`group relative flex h-full flex-col gap-4 rounded-[2rem] p-6 text-on-card shadow-xl shadow-black/10 transition duration-300 hover:-translate-y-1 sm:p-7 ${ENTRY_BG[i]}`}>
                   <span className="flex items-start justify-between gap-4">
-                    <span className="font-display text-[2.4rem] leading-[0.95] font-semibold tracking-tight">{e.title}</span>
+                    <span className="font-display text-[2.1rem] leading-[0.95] font-semibold tracking-tight">{e.title}</span>
                     <span aria-hidden className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white text-[#141414] shadow-md transition group-hover:rotate-45">
                       <Icon name="arrow" className="h-5 w-5 -rotate-45" />
                     </span>
@@ -190,7 +190,7 @@ export default async function Home() {
           <div className="grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-start [&>*]:min-w-0">
             <div className="flex flex-col gap-4">
               <p className="inline-flex w-fit rounded-full bg-card-mustard px-3 py-1 text-[13px] font-semibold text-on-card">Къде отиват парите</p>
-              <h2 id="kade-title" className="font-display text-[2.6rem] leading-[1] font-semibold tracking-tight text-balance sm:text-[3.4rem]">
+              <h2 id="kade-title" className="font-display text-[2.25rem] leading-[1] font-semibold tracking-tight text-balance sm:text-[3rem]">
                 {fmtNum(top[0]!.share, 0)}% от разходите отиват за {top[0]!.label.toLowerCase().replace(", подпомагане и грижи", ", помощи и грижи")}
               </h2>
               <p className="text-[17px] leading-relaxed text-ink-2">
@@ -212,7 +212,7 @@ export default async function Home() {
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
                 <p className="inline-flex w-fit rounded-full bg-card-rose px-3 py-1 text-[13px] font-semibold text-on-card">Дефицит</p>
-                <h2 id="def-title" className="font-display mt-3 text-[2.2rem] leading-[1] font-semibold tracking-tight sm:text-[2.8rem]">
+                <h2 id="def-title" className="font-display mt-3 text-[1.9rem] leading-[1] font-semibold tracking-tight sm:text-[2.4rem]">
                   Колко не достига всяка година
                 </h2>
               </div>
@@ -244,7 +244,7 @@ export default async function Home() {
         {/* ── Three things to know ───────────────────────────── */}
         <section aria-labelledby="know-title" className="mx-auto max-w-7xl px-4 pt-16 sm:px-6 sm:pt-24">
           <div className="flex flex-wrap items-end justify-between gap-4">
-            <h2 id="know-title" className="font-display text-[2.6rem] leading-[1] font-semibold tracking-tight sm:text-[3.4rem]">
+            <h2 id="know-title" className="font-display text-[2.25rem] leading-[1] font-semibold tracking-tight sm:text-[3rem]">
               3 неща, които да знаеш
             </h2>
             <Link href="/pod-lupa" className="inline-flex items-center gap-2 text-[15px] font-semibold text-accent">
@@ -261,7 +261,7 @@ export default async function Home() {
                       {f.tone === "positive" ? "Подобрение" : f.tone === "risk" ? "Риск" : "Данни"}
                     </span>
                   </span>
-                  <span className="font-display text-[1.8rem] leading-[1.05] font-semibold tracking-tight text-balance">{f.title}</span>
+                  <span className="font-display text-[1.6rem] leading-[1.05] font-semibold tracking-tight text-balance">{f.title}</span>
                   <span className="text-[16px] leading-relaxed text-ink-2">{bgText(f.conclusion)}</span>
                   <span className="mt-auto flex items-center justify-between pt-2 text-sm font-semibold">
                     <span className="text-muted">Как го изчислихме</span>
@@ -277,7 +277,7 @@ export default async function Home() {
 
         {/* ── Topics ─────────────────────────────────────────── */}
         <section aria-labelledby="topics-title" className="mx-auto max-w-7xl px-4 pt-16 sm:px-6 sm:pt-24">
-          <h2 id="topics-title" className="font-display text-[2.6rem] leading-[1] font-semibold tracking-tight sm:text-[3.4rem]">
+          <h2 id="topics-title" className="font-display text-[2.25rem] leading-[1] font-semibold tracking-tight sm:text-[3rem]">
             Разгледай по тема
           </h2>
           <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -300,7 +300,7 @@ export default async function Home() {
         {/* ── Trust ──────────────────────────────────────────── */}
         <section aria-labelledby="trust-title" className="mx-auto max-w-7xl px-4 pt-16 pb-6 sm:px-6 sm:pt-24">
           <div className="rounded-[2rem] bg-card-mustard p-6 text-on-card sm:p-10">
-            <h2 id="trust-title" className="font-display text-[2.6rem] leading-[1] font-semibold tracking-tight sm:text-[3.4rem]">
+            <h2 id="trust-title" className="font-display text-[2.25rem] leading-[1] font-semibold tracking-tight sm:text-[3rem]">
               Защо да ни вярваш?
             </h2>
             <ul className="mt-8 grid gap-8 md:grid-cols-3">
