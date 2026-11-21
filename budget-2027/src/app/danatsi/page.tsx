@@ -6,6 +6,7 @@ import { YearBars } from "@/components/charts/YearBars";
 import { changedRows, rowsInRange } from "@/lib/data/assumptions";
 import { getPublished, seriesOf, tableOf } from "@/lib/data/published";
 import { bars, billSource } from "@/lib/data/view";
+import { KpiTile } from "@/components/fiscal/KpiTile";
 
 export const revalidate = 3600;
 export const metadata: Metadata = {
@@ -31,6 +32,13 @@ export default async function Taxes() {
           върху тютюна и колите над 250 kW, данъкът върху разходите в натура (3% → 7%), облагането на ваучерите за храна (нов окончателен данък 7%) и мерките в областта на хазарта.
           Числата са от Приложение № 2 и Табл. II-7 на мотивите; законопроектът не е приет.
         </p>
+      }
+      summary={
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 [&>*]:min-w-0">
+          <KpiTile tone="sky" series={S("kfp.revenue.vat")} />
+          <KpiTile tone="mustard" series={S("kfp.revenue.pit")} />
+          <KpiTile tone="mint" series={S("kfp.revenue.cit")} />
+        </div>
       }
     >
       <Section id="promeni" title={`Какво се променя (${changed.length} реда)`} lead="Редове от Приложение № 2, в които стойността за 2027 г. е различна от 2026 г.">

@@ -4,9 +4,10 @@ import { MeasuresExplorer } from "@/components/dashboard/MeasuresExplorer";
 import { QuoteBlock } from "@/components/fiscal/LawFigures";
 import { PageShell, Section } from "@/components/site/PageShell";
 import { TableView } from "@/components/tables/TableView";
-import { getPublished, tableOf } from "@/lib/data/published";
+import { getPublished, seriesOf, tableOf } from "@/lib/data/published";
 import { billSource } from "@/lib/data/view";
 import { QUOTES } from "@/lib/social/quotes";
+import { KpiTile } from "@/components/fiscal/KpiTile";
 
 export const revalidate = 3600;
 export const metadata: Metadata = {
@@ -27,6 +28,7 @@ export default async function Business() {
   const a = tableOf(data, "assumptions");
   const src = billSource(data);
   const measures = data.measures.filter((m) => BUSINESS.test(m.title));
+  const S = (k: string) => seriesOf(data, k);
   return (
     <PageShell
       eyebrow="Бизнес"
@@ -41,6 +43,12 @@ export default async function Business() {
           </Link>
           .
         </p>
+      }
+      summary={
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 [&>*]:min-w-0">
+          <KpiTile tone="sky" series={S("kfp.revenue.cit")} />
+          <KpiTile tone="mustard" series={S("kfp.revenue.excise")} />
+        </div>
       }
     >
       <Section id="stavki" title="Данъци и прагове, 2026 срещу 2027" lead="Приложение № 2 към мотивите. Маркирани са редовете с различна стойност за 2027 г.">

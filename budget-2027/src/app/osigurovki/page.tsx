@@ -3,8 +3,12 @@ import Link from "next/link";
 import { PageShell, Section } from "@/components/site/PageShell";
 import { TableView } from "@/components/tables/TableView";
 import { changedRows, rowsInRange } from "@/lib/data/assumptions";
-import { getPublished, tableOf } from "@/lib/data/published";
+import { getPublished, seriesOf, tableOf } from "@/lib/data/published";
 import { billSource } from "@/lib/data/view";
+import { KpiTile } from "@/components/fiscal/KpiTile";
+import { StatTile } from "@/components/fiscal/LawFigures";
+import { rowByLabel } from "@/lib/data/pick";
+import { fmtNum } from "@/lib/format";
 
 export const revalidate = 3600;
 export const metadata: Metadata = {
@@ -20,6 +24,8 @@ export default async function Insurance() {
   const social = rowsInRange(a, 21, 99);
   const src = billSource(data);
   const ch = (rows: number[]) => changedRows(a).filter((r) => rows.includes(r.rowIndex)).length;
+  const mrz = rowByLabel(a, /^Размер на минималната работна заплата/);
+  const dete = rowByLabel(a, /^Размер на месечната помощ за дете без право/);
   return (
     <PageShell
       eyebrow="Осигуровки и социални плащания"
@@ -33,6 +39,13 @@ export default async function Insurance() {
           </Link>
           .
         </p>
+      }
+      summary={
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 [&>*]:min-w-0">
+          <KpiTile tone="sky" series={seriesOf(data, "kfp.revenue.social")} />
+          <StatTile tone="mustard" label="Минимална работна заплата" value={mrz.cells["2027"]!.value} unit="€" show="€" dp={2} note={`2026: ${fmtNum(mrz.cells["2026"]!.value!, 2)} €.`} source="Приложение № 2 към мотивите" />
+          <StatTile tone="mint" label="Помощ за дете без наследствена пенсия" value={dete.cells["2027"]!.value} unit="€" show="€" dp={2} note={`Месечно. 2026: ${fmtNum(dete.cells["2026"]!.value!, 2)} €.`} source="Приложение № 2 към мотивите" />
+        </div>
       }
     >
       <Section id="trud" title={`Труд и осигуровки (${ch(labour)} промени)`} lead="Приложение № 2, редове 10–20. Маркирани са редовете с различна стойност за 2027 г.">

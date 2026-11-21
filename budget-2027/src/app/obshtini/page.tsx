@@ -6,7 +6,8 @@ import { TableView } from "@/components/tables/TableView";
 import { getPublished, tableOf } from "@/lib/data/published";
 import { billSource } from "@/lib/data/view";
 import { municipalitySlug } from "@/lib/municipal/slug";
-import { fmtNum, fmtSigned } from "@/lib/format";
+import { fmtNum, fmtSigned, rescale } from "@/lib/format";
+import { printed } from "@/lib/data/pick";
 
 export const revalidate = 3600;
 export const metadata: Metadata = {
@@ -34,6 +35,8 @@ export default async function Municipalities() {
   const t27 = sum("y2027");
   const t26 = sum("y2026");
   const sigmaDoc = data.documents.find((d) => d.id.startsWith("sigma-municipalities"));
+  const mt = tableOf(data, "municipalTotals");
+  const mln = (re: RegExp) => rescale(printed(mt, re, "2027"), "хил. €", "млн. €");
   return (
     <PageShell
       eyebrow="Общини"
@@ -44,6 +47,12 @@ export default async function Municipalities() {
           трансферът от държавата, не целият бюджет на общината: собствените приходи и средствата от ЕС не са включени.
         </p>
       }
+      facts={[
+        { label: "Трансфери към общините, 2027", value: mln(/^Основни бюджетни взаимоотношения/), unit: "млн. €", tone: "sky", note: "Основните бюджетни взаимоотношения общо." },
+        { label: "За делегираните от държавата дейности", value: mln(/^Обща субсидия за делегираните/), unit: "млн. €", tone: "mustard", note: "Субсидия от държавата за дейности като образование и социални услуги." },
+        { label: "Целева субсидия за капиталови разходи", value: mln(/^Целева субсидия за капиталови/), unit: "млн. €", tone: "mint", note: "Същата сума е заложена и за 2028–2029 г." },
+      ]}
+      factsSource="Приложение № 9 към мотивите (бюджетни взаимоотношения с общините, 2027–2029 г.), в хил. €, показано в млн. €."
     >
       <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
         <article className="flex flex-col gap-1 border-t border-rule-strong pt-3">

@@ -6,6 +6,7 @@ import { TableView } from "@/components/tables/TableView";
 import { getPublished, tableOf } from "@/lib/data/published";
 import { billSource } from "@/lib/data/view";
 import { QUOTES } from "@/lib/social/quotes";
+import { printed } from "@/lib/data/pick";
 
 export const revalidate = 3600;
 export const metadata: Metadata = {
@@ -18,6 +19,8 @@ export const metadata: Metadata = {
 export default async function Risks() {
   const data = await getPublished();
   const src = billSource(data);
+  const sus = tableOf(data, "sustainability");
+  const alt = tableOf(data, "altScenario");
   return (
     <PageShell
       eyebrow="Рискове"
@@ -36,6 +39,12 @@ export default async function Risks() {
           .
         </p>
       }
+      facts={[
+        { label: "Индикатор S2 по оценка на МФ", value: printed(sus, /^Стойност/, "mfS2"), unit: "% от БВП", tone: "rose", note: "Дългосрочен риск за устойчивостта на публичните финанси." },
+        { label: "Индикатор S2 по оценка на ЕК", value: printed(sus, /^Стойност/, "ecS2"), unit: "% от БВП", tone: "lilac", note: "Комисията оценява същия риск по-ниско." },
+        { label: "Инфлация при по-скъпи петрол и газ", value: printed(alt, /^Средногодишна инфлация/, "2027"), unit: "пр.п.", tone: "mustard", note: "Отклонение спрямо базовия сценарий, 2027 г. Симулация на МФ, не прогноза." },
+      ]}
+      factsSource="мотиви към законопроекта, Табл. VII-1 (индикатори за устойчивост) и Табл. VII-3 (алтернативен сценарий)."
     >
       <Section id="prognoza" title="Рискове пред прогнозата" lead="Мотиви, раздел „Рискове пред прогнозата“. Дословни откъси.">
         <div className="flex max-w-3xl flex-col gap-5">

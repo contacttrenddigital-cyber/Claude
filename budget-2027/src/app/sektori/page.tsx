@@ -32,6 +32,8 @@ export default async function Sectors() {
   const src = billSource(data);
   const s = sectorRows(f);
   const sorted = [...s.rows].sort((a, b) => b.share.comparedTo(a.share));
+  const top = sorted[0]!;
+  const grow = [...s.rows].sort((a, b) => b.delta.comparedTo(a.delta))[0]!;
   return (
     <PageShell
       eyebrow="Сектори"
@@ -42,6 +44,12 @@ export default async function Sectors() {
           деветте основни функции за 2027 г. ({fmtNum(s.total, 1)} млн. €). Сравнението е с очакваното изпълнение за 2026 г. от същия документ.
         </p>
       }
+      facts={[
+        { label: "Разходи по основните функции", value: s.total.toString(), unit: "млн. €", tone: "sky", note: "Сборът на деветте функции, 2027 г. (проект)." },
+        { label: `Най-голям дял: ${top.label}`, value: top.share.toString(), unit: "%", tone: "mustard", note: `${fmtNum(top.value, 1)} млн. € от общото.` },
+        { label: `Най-голям ръст: ${grow.label}`, value: grow.delta.toString(), unit: "млн. €", tone: "mint", note: `${fmtSigned(grow.change, 1)}% спрямо очакваното за 2026 г.` },
+      ]}
+      factsSource="Табл. III-1 от мотивите към законопроекта (КФП по функции). Дяловете и промените са изчислени от отпечатаните стойности."
     >
       <Section id="dyalove" title="Дял и промяна по функции">
         <RankedBars

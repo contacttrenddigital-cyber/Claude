@@ -40,6 +40,12 @@ export default async function Programs() {
           </p>
         </>
       }
+      facts={[
+        { label: "Програми", value: String(progs.length), unit: "", decimals: 0, tone: "sky", note: "Разходи по програми, 2024–2029 г." },
+        { label: "Институции", value: String(units.length), unit: "", decimals: 0, tone: "mustard", note: "Сборът на програмите им е равен на тавана в Приложение № 4." },
+        { label: "Изключени институции", value: String(skipped.length), unit: "", decimals: 0, tone: "lilac", note: "Сборът не съвпада с тавана; причините са по-долу." },
+      ]}
+      factsSource="програмните бюджети към законопроекта (архив 52-602-01-71.zip) и проверката им срещу Приложение № 4."
     >
       <Section id="programi" title="Разходи по програми" lead="„Общо разходи по бюджета“ на програмата, хил. €. Последната колона включва и средствата по други бюджети и от ЕС. Търси по име на институция или програма.">
         <TableView table={t} sourceUrl={zip.pageUrl ?? zip.url} sourceTitle={zip.title} searchable maxHeight="48rem" />
