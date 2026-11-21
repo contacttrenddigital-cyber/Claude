@@ -43,8 +43,32 @@ function fromQuery(q: URLSearchParams): Partial<PayrollInput> {
   return out;
 }
 
-export function Calculator({ docUrls }: { docUrls: Record<string, { url: string; title: string }> }) {
+/** Minimum insurable income of one activity (€ per month, 9 occupation groups; null = not set in the law). */
+export interface ModActivity {
+  name: string;
+  code: string;
+  y2026until: (string | null)[];
+  y2026from: (string | null)[];
+  y2027: (string | null)[];
+}
+export const MOD_GROUP_LABELS = [
+  "Ръководители",
+  "Специалисти",
+  "Техници и приложни специалисти",
+  "Помощен административен персонал",
+  "Услуги за населението, търговия и охрана",
+  "Квалифицирани работници в селското, горското и рибното стопанство",
+  "Квалифицирани работници и занаятчии",
+  "Машинни оператори и монтажници",
+  "Професии без специална квалификация",
+];
+
+export function Calculator({ docUrls, mod = [] }: { docUrls: Record<string, { url: string; title: string }>; mod?: ModActivity[] }) {
   const [form, setForm] = useState({ ...DEFAULTS, grossText: "1500", devText: "0" });
+  const [modAct, setModAct] = useState<number>(-1);
+  const [modGroup, setModGroup] = useState<number>(8);
+  const act = modAct >= 0 ? mod[modAct] : undefined;
+  const minInsurable = act ? { "2026-01-01": act.y2026until[modGroup] ?? null, "2026-08-01": act.y2026from[modGroup] ?? null, "2027-01-01": act.y2027[modGroup] ?? null } : undefined;
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -58,6 +82,7 @@ export function Calculator({ docUrls }: { docUrls: Record<string, { url: string;
         ...form,
         grossMonthly: normalizeAmount(form.grossText) || "0",
         childDevelopmentExpenses: normalizeAmount(form.devText) || "0",
+        minInsurable,
       };
       if (!/^\d+(\.\d+)?$/.test(input.grossMonthly)) throw new PayrollInputError("Въведи брутна заплата в евро, напр. 1500 или 1500,50");
       if (!/^\d+(\.\d+)?$/.test(input.childDevelopmentExpenses)) throw new PayrollInputError("Въведи сума в евро");
@@ -66,7 +91,7 @@ export function Calculator({ docUrls }: { docUrls: Record<string, { url: string;
       if (e instanceof PayrollInputError) return { result: null, error: e.message };
       throw e;
     }
-  }, [form]);
+  }, [form, modAct, modGroup]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function share() {
     const q = new URLSearchParams({ bruto: normalizeAmount(form.grossText), detsa: String(form.children), tzpb: form.tzpbPct });
@@ -143,6 +168,46 @@ export function Calculator({ docUrls }: { docUrls: Record<string, { url: string;
               <option value={3}>3 или повече</option>
             </select>
           </label>
+          {mod.length > 0 && (
+            <div className="flex flex-col gap-2 rounded-2xl bg-surface-2 p-3">
+              <label className="flex flex-col gap-1 text-sm">
+                Икономическа дейност на работодателя (по избор)
+                <select
+                  value={modAct}
+                  onChange={(e) => {
+                    setCopied(false);
+                    setModAct(Number(e.target.value));
+                  }}
+                  className="min-h-12 w-full min-w-0 rounded-xl border border-rule-strong bg-surface px-3 text-ink"
+                >
+                  <option value={-1}>не е избрана (без минимален осигурителен доход)</option>
+                  {mod.map((a, i) => (
+                    <option key={i} value={i}>
+                      {a.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {act && (
+                <label className="flex flex-col gap-1 text-sm">
+                  Група професии
+                  <select value={modGroup} onChange={(e) => setModGroup(Number(e.target.value))} className="min-h-12 w-full min-w-0 rounded-xl border border-rule-strong bg-surface px-3 text-ink">
+                    {MOD_GROUP_LABELS.map((g, i) => (
+                      <option key={i} value={i} disabled={act.y2027[i] === null}>
+                        {g}
+                        {act.y2027[i] !== null ? ` — ${fmtNum(act.y2027[i]!, 0)} € (2027)` : " — няма размер"}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+              <p className="text-[13px] text-ink-2">
+                {act && act.y2027[modGroup] !== null
+                  ? `Минимален осигурителен доход: ${act.y2026from[modGroup] !== null ? `${fmtNum(act.y2026from[modGroup]!, 2)} € от 01.08.2026 → ` : ""}${fmtNum(act.y2027[modGroup]!, 2)} € за 2027 г. (законопроект за ДОО, Приложение № 1). Ако заплатата е по-ниска, осигуровките се дължат върху него.`
+                  : "Ако заплатата е под минималния осигурителен доход за дейността и професията, осигуровките се дължат върху него."}
+              </p>
+            </div>
+          )}
           <label className="flex min-h-11 items-center gap-2 text-sm">
             <input
               type="checkbox"

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Calculator } from "@/components/calc/Calculator";
+import { CalcModes } from "@/components/calc/CalcModes";
+import type { ModActivity } from "@/components/calc/Calculator";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { NoPublishedSnapshotError, getPublished } from "@/lib/data/published";
@@ -9,18 +10,24 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Калкулатор: колко ще получаваш през 2027 г.",
   description:
-    "Калкулатор за нетна заплата, осигуровки и разход на работодателя по трудов договор: 2026 г. срещу предложенията за 2027 г., с източник за всяко правило. Изчислява се в браузъра.",
+    "Калкулатор за нетна заплата, осигуровки и разход на работодателя по трудов договор (с минималния осигурителен доход по дейности) и за осигуровките на самоосигуряващите се: 2026 г. срещу предложенията за 2027 г., с източник за всяко правило. Изчислява се в браузъра.",
   alternates: { canonical: "/kalkulator" },
 };
 
 export default async function CalculatorPage() {
   let status = "законопроект — не е приет";
   let docUrls: Record<string, { url: string; title: string }> = {};
+  let mod: ModActivity[] = [];
   try {
     const data = await getPublished();
     const bill = data.versions.find((v) => v.id === "bill-2026-11-16")!;
     status = `${bill.legalStatus} · внесен ${dateBg(bill.date)}`;
     docUrls = Object.fromEntries(data.documents.map((d) => [d.id, { url: d.pageUrl ?? d.url, title: d.title }]));
+    const t = data.tables["minInsurable"];
+    if (t) {
+      const g = (r: (typeof t.rows)[number], p: string) => Array.from({ length: 9 }, (_, i) => r.cells[`${p}:${i + 1}`]?.value ?? null);
+      mod = t.rows.map((r) => ({ name: r.label, code: r.texts?.code ?? "", y2026until: g(r, "2026u"), y2026from: g(r, "2026f"), y2027: g(r, "2027") }));
+    }
   } catch (e) {
     if (!(e instanceof NoPublishedSnapshotError)) throw e;
   }
@@ -38,7 +45,7 @@ export default async function CalculatorPage() {
           </div>
         </header>
         <div className="mx-auto max-w-7xl px-4 pt-8 pb-28 sm:px-6 sm:pt-10 lg:pb-20">
-          <Calculator docUrls={docUrls} />
+          <CalcModes docUrls={docUrls} mod={mod} />
         </div>
       </main>
       <SiteFooter />

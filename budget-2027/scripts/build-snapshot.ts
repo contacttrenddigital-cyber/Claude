@@ -35,6 +35,8 @@ import { joinByName } from "../src/lib/municipal/join";
 import { locatorOf } from "../src/lib/tables/extract";
 import { BILLS } from "../src/lib/legislation/bills";
 import { billStatus } from "../src/lib/legislation/parliament";
+import { SigmaModSchema, modChecks, modRows, modTable } from "../src/lib/calc/min-insurable";
+import { SELF_RATES } from "../src/lib/calc/self-employed";
 import { ExecutionProvenanceSchema, ExecutionSchema, monthlyChecks, monthlyTable, sameMonthTable } from "../src/lib/execution/monthly";
 
 const ROOT = join(__dirname, "..");
@@ -320,6 +322,45 @@ async function main() {
       publishedOn: r.meta.asOf,
       legalStatus: "производен набор; първичният документ на МФ от 06.11.2026 не е достъпен за автоматично изтегляне",
       versionId: "mf-draft-2026-11-06",
+    });
+  }
+
+  // ── Minimum insurable income by activity: 2027 from the ДОО bill, 2026 from ЗБДОО 2026 (SIGMA rates.json) ──
+  {
+    const rr = await sigma.dataset("rates");
+    writeFileSync(join(sigmaDir, "rates.json"), rr.raw);
+    const ratesId = `sigma-rates-${cat.meta.asOf}-${sha256(rr.raw).slice(0, 8)}`;
+    documents.push({
+      id: ratesId,
+      sha256: sha256(rr.raw),
+      bytes: Buffer.byteLength(rr.raw),
+      publisher: "СИГМА Бюджет (вторичен източник)",
+      title: `СИГМА: ${rr.meta.title} (данни към ${rr.meta.asOf}; ${rr.meta.sourceNote ?? ""})`,
+      url: rr.fileUrl,
+      pageUrl: "https://sigma-budget.midt.bg/danni/rates",
+      mime: "application/json",
+      retrievedOn: RETRIEVED,
+      publishedOn: rr.meta.asOf,
+      legalStatus: "производен набор от ЗБДОО и ЗБНЗОК за 2026 г. и таблицата на НАП",
+      versionId: null,
+    });
+    const sig = SigmaModSchema.parse((rr.data as { minInsurableIncome: unknown }).minInsurableIncome);
+    const doo = lawDoc("52-602-01-68", "ns-52-602-01-68-rtf");
+    const rows = modRows(doo.tables[3]!.rows, sig);
+    tables.push(modTable(rows, "ns-52-602-01-68-rtf"));
+    checks.push(...modChecks(rows));
+    // the calculator's self-insured rates must equal the НАП table as published by SIGMA (ред 10.1.2 / 10.2.2)
+    type Scn = { id: string; split: { employee: { doo: number; upf: number; health: number } }; variants?: { id: string; split: { employee: { doo: number } } }[] };
+    const se = (rr.data as { scenarios: Scn[] }).scenarios.find((x) => x.id === "self-employed");
+    const sick = se?.variants?.find((v) => v.id === "with-sickness-maternity");
+    const got = se ? [se.split.employee.doo, sick?.split.employee.doo ?? null, se.split.employee.upf, se.split.employee.health].map((v) => (v === null ? null : new Decimal(v).toString())) : [];
+    const want = [SELF_RATES.doo, SELF_RATES.dooWithSickness, SELF_RATES.upf, SELF_RATES.health];
+    checks.push({
+      id: "calc:self-employed:rates",
+      kind: "cross-source",
+      status: JSON.stringify(got) === JSON.stringify(want) ? "pass" : "fail",
+      description: "Калкулатор, самоосигуряващ се: ставките (ДОО, ДОО с ОЗМ, УПФ, здравно) = таблицата на НАП по СИГМА",
+      details: { calculator: want.join(" / "), nap: got.join(" / ") },
     });
   }
 

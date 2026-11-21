@@ -46,3 +46,24 @@ test.describe("Калкулатор", () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
   });
 });
+
+// Законопроект за ДОО 2027, Приложение № 1, ред 1, „Ръководители“: 996 €; брутно 700 € → нето 506,48 € (src/lib/calc/self-employed.test.ts)
+test("калкулатор: минимален осигурителен доход по дейност и група професии", async ({ page }) => {
+  await page.goto("/kalkulator");
+  await page.getByLabel("Брутна заплата на месец, €").fill("700");
+  await page.getByLabel(/Икономическа дейност на работодателя/).selectOption({ index: 1 });
+  await page.getByLabel("Група професии").selectOption({ index: 0 });
+  await expect(page.getByText(/506,48/).filter({ visible: true }).first()).toBeVisible();
+  await expect(page.getByText(/върху минималния осигурителен доход 996,00 €/)).toBeVisible();
+});
+
+// НАП, ред 10.1.2: 27,8 % от 1 000 € = 278,00 € на месец; 2027: 3 336,00 € за годината
+test("калкулатор: самоосигуряващ се и случаите, които не изчисляваме", async ({ page }) => {
+  await page.goto("/kalkulator");
+  await page.getByRole("tab", { name: "Самоосигуряващ се" }).click();
+  await expect(page.getByRole("tabpanel")).toContainText("278,00 €");
+  await expect(page.getByRole("tabpanel")).toContainText("3 336,00 €");
+  await expect(page.getByText("Данъкът не се изчислява.")).toBeVisible();
+  await page.getByRole("tab", { name: /Пенсионер/ }).click();
+  await expect(page.getByText("Тези случаи още не изчисляваме")).toBeVisible();
+});

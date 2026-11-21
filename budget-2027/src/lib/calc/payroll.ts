@@ -7,8 +7,10 @@
  *   monthly tax base  = gross − employee contributions − monthly advance child relief (2027 only)
  *   monthly tax       = round2(max(0, tax base) × 10 %)
  *   annual tax        = round2(max(0, Σ(gross − employee contr.) − child reliefs) × 10 %)
- * Not modelled (flagged in the result): minimum insurable income by activity/profession,
- * other employment categories, other incomes, other tax reliefs, sick leave.
+ *   minimum insurable income (optional, by activity and occupation group, full-time work):
+ *     base = max(base, МОД of the period)  — ЗБДОО 2026 Прил. № 1/1А; законопроект за ДОО 2027, чл. 9, т. 1
+ * Not modelled (flagged in the result): part-time work, other employment categories, other incomes,
+ * other tax reliefs, sick leave.
  * Pure function, decimal arithmetic only; runs in the browser — inputs never leave the device.
  */
 import Decimal from "decimal.js";
@@ -24,6 +26,8 @@ export interface PayrollInput {
   childDevelopmentExpenses: string;
   /** take the child relief monthly through the employer (2027 proposal) instead of annually */
   monthlyAdvanceRelief: boolean;
+  /** minimum insurable income per period start date (YYYY-MM-DD), € per month; null/absent = not applied */
+  minInsurable?: Record<string, string | null>;
 }
 
 export interface ContributionLine {
@@ -42,6 +46,8 @@ export interface PeriodResult {
   gross: string;
   insurableBase: string;
   capped: boolean;
+  /** the base was raised to the minimum insurable income of the activity and occupation group */
+  raisedToMin: boolean;
   lines: ContributionLine[];
   employeeContributions: string;
   employerContributions: string;
@@ -120,7 +126,14 @@ export function calculateYear(input: PayrollInput, rules: YearRules): YearResult
 
   const periods: PeriodResult[] = rules.periods.map((p) => {
     const max = D(p.maxInsurable.value);
-    const base = Decimal.min(gross, max);
+    const mod = input.minInsurable?.[p.from] ?? null;
+    const raisedToMin = mod !== null && gross.gt(0) && Decimal.min(gross, max).lt(mod);
+    const base = raisedToMin ? D(mod!) : Decimal.min(gross, max);
+    if (raisedToMin) {
+      warnings.push(
+        `Осигуровките за периода от ${p.from} са върху минималния осигурителен доход ${D(mod!).toFixed(2).replace(".", ",")} € за избраната дейност и група професии. При непълно работно време той се намалява пропорционално (бележка 1 към приложението), което тук не е отчетено.`,
+      );
+    }
     if (gross.lt(p.minWage.value) && gross.gt(0)) {
       warnings.push(
         `Брутната заплата е под минималната работна заплата (${p.minWage.value} € от ${p.from}). При пълно работно време това не е допустимо; осигуровките се дължат поне върху минималния осигурителен доход.`,
@@ -155,6 +168,7 @@ export function calculateYear(input: PayrollInput, rules: YearRules): YearResult
       gross: gross.toFixed(2),
       insurableBase: base.toFixed(2),
       capped: gross.gt(max),
+      raisedToMin,
       lines,
       employeeContributions: emp.toFixed(2),
       employerContributions: er.toFixed(2),
