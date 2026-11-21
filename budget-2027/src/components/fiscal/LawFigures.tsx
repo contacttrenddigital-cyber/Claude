@@ -29,12 +29,12 @@ export function StatTile({
 }) {
   const v = value === null ? null : show === unit ? value : rescale(value, unit, show);
   return (
-    <article className="flex flex-col gap-2 border-t border-rule-strong pt-3">
+    <article className="flex flex-col gap-2 rounded-3xl border border-rule bg-surface p-5">
       <header className="flex items-baseline justify-between gap-2">
-        <h3 className="text-[13px] font-medium tracking-wide text-ink-2 uppercase">{label}</h3>
+        <h3 className="text-[14px] font-semibold text-ink-2">{label}</h3>
         <span className="text-[11px] text-muted">{tag}</span>
       </header>
-      <p className="num text-3xl leading-none font-semibold">
+      <p className="num font-display text-[2.4rem] leading-none font-semibold">
         {v === null ? "няма данни" : signed ? fmtSigned(v, dp) : fmtNum(v, dp)}
         {v !== null && <span className="ml-1.5 text-base font-normal text-muted">{show}</span>}
       </p>
@@ -51,7 +51,7 @@ export function pct(d: Decimal, dp = 1) {
 
 export function QuoteBlock({ quote, url }: { quote: Quote; url: string }) {
   return (
-    <figure className="flex flex-col gap-1 border-l-2 border-rule-strong pl-4">
+    <figure className="flex flex-col gap-2 rounded-3xl border border-rule bg-surface p-5">
       <blockquote className="text-ink-2">„{quote.text}“</blockquote>
       <figcaption className="text-xs text-muted">
         <a href={url} rel="noreferrer" className="underline underline-offset-2">

@@ -67,7 +67,7 @@ export function TableView({ table, columns, sourceUrl, sourceTitle, searchable, 
           </p>
         </div>
       )}
-      <div className="overflow-auto rounded-sm border border-rule" style={{ maxHeight }} tabIndex={0} role="region" aria-label={table.title}>
+      <div className="overflow-auto rounded-2xl border border-rule bg-surface" style={{ maxHeight }} tabIndex={0} role="region" aria-label={table.title}>
         <table className="num w-full text-sm">
           <caption className="sr-only">{table.title}</caption>
           <thead className="sticky top-0 z-10 bg-surface">

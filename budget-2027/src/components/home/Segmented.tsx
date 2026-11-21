@@ -12,20 +12,24 @@ export function Segmented<T extends string>({
   options: { value: T; label: string; hint?: string }[];
   value: T;
   onChange: (v: T) => void;
-  tone?: "light" | "dark";
+  tone?: "light" | "dark" | "card";
 }) {
-  const track = tone === "dark" ? "bg-white/10" : "bg-surface-2";
+  const track = tone === "dark" ? "bg-white/10" : tone === "card" ? "bg-white/45" : "bg-surface-2";
   return (
     <div role="radiogroup" aria-label={label} className={`inline-flex w-full rounded-full p-1 sm:w-auto ${track}`}>
       {options.map((o) => {
         const on = o.value === value;
         const cls = on
           ? tone === "dark"
-            ? "bg-white text-[#111216] shadow-sm"
-            : "bg-surface text-ink shadow-sm"
+            ? "bg-[#f5f2ea] text-[#141414] shadow-sm"
+            : tone === "card"
+              ? "bg-tile text-white shadow-sm"
+              : "bg-surface text-ink shadow-sm"
           : tone === "dark"
-            ? "text-white/75 hover:text-white"
-            : "text-muted hover:text-ink";
+            ? "text-white/80 hover:text-white"
+            : tone === "card"
+              ? "text-on-card hover:bg-white/40"
+              : "text-muted hover:text-ink";
         return (
           <button
             key={o.value}

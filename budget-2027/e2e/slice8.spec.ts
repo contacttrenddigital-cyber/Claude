@@ -19,8 +19,9 @@ for (const [path, h1] of [
 // законопроект за бюджета на ДОО 2027, чл. 1: 16 527 469,0 хил. €; пенсии 14 669 530,1 хил. € (88,8%)
 test("пенсии: бюджет на ДОО, дял на пенсиите и таблица на фондовете", async ({ page }) => {
   await page.goto("/pensii");
-  await expect(page.getByRole("article").filter({ hasText: "Бюджет на ДОО" })).toContainText(/16[\s ]527,5/);
-  await expect(page.getByRole("article").filter({ hasText: /^Пенсии/ })).toContainText("88,8%");
+  const facts = page.getByRole("region", { name: "Накратко" });
+  await expect(facts.locator("div").filter({ hasText: "Бюджет на ДОО" })).toContainText(/16[\s ]527,5/);
+  await expect(facts.locator("div").filter({ hasText: /^Пенсии/ })).toContainText("88,8%");
   const funds = page.getByRole("region", { name: "Бюджет на ДОО по фондове, 2027" });
   await expect(funds.getByRole("row", { name: /Пенсии \(чл\. 2\)/ })).toContainText(/−6[\s ]838[\s ]070,4|-6[\s ]838[\s ]070,4/);
   await expect(page.getByText(/нарастват с 1 164,3 млн\. евро/)).toBeVisible();

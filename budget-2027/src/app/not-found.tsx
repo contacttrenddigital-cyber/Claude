@@ -8,8 +8,8 @@ export default function NotFound() {
     <>
       <SiteHeader />
       <main id="main" className="mx-auto flex max-w-2xl flex-col items-start gap-5 px-4 py-24 sm:px-6">
-        <p className="num rounded-full bg-tint-orange px-3 py-1 text-[13px] font-semibold text-tint-orange-ink">404</p>
-        <h1 className="font-display text-5xl font-semibold tracking-tight">Тази страница не съществува</h1>
+        <p className="num rounded-full bg-card-coral px-3 py-1 text-[13px] font-semibold text-on-card">404</p>
+        <h1 className="font-display text-5xl font-semibold tracking-tight uppercase">Тази страница не съществува</h1>
         <p className="text-[17px] text-ink-2">Може адресът да е сгрешен или страницата да е преместена. Ето откъде да продължиш:</p>
         <div className="flex flex-wrap gap-3">
           <Link href="/" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-ink px-5 text-[15px] font-semibold text-bg">

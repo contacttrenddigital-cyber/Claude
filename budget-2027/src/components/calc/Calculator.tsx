@@ -105,6 +105,28 @@ export function Calculator({ docUrls }: { docUrls: Record<string, { url: string;
               className="num min-h-14 w-full min-w-0 rounded-xl border border-rule-strong bg-surface px-4 text-2xl font-semibold text-ink focus:border-accent-fill"
             />
           </label>
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Бързи примери">
+            {[
+              { label: "1 500 €", gross: "1500", children: 0 },
+              { label: "2 400 €", gross: "2400", children: 0 },
+              { label: "3 000 €", gross: "3000", children: 0 },
+              { label: "1 800 € и 2 деца", gross: "1800", children: 2 },
+            ].map((x) => (
+              <button
+                key={x.label}
+                type="button"
+                onClick={() => {
+                  setCopied(false);
+                  setForm((f) => ({ ...f, grossText: x.gross, children: x.children as PayrollInput["children"], disabledChild: x.children === 0 ? false : f.disabledChild }));
+                }}
+                className={`min-h-10 rounded-full px-3.5 text-sm font-medium transition ${
+                  normalizeAmount(form.grossText) === x.gross && form.children === x.children ? "bg-tile text-white" : "bg-surface-2 text-ink hover:bg-rule"
+                }`}
+              >
+                {x.label}
+              </button>
+            ))}
+          </div>
           <label className="flex flex-col gap-1 text-sm">
             Брой ненавършили пълнолетие деца
             <select
@@ -194,16 +216,16 @@ export function Calculator({ docUrls }: { docUrls: Record<string, { url: string;
       {result && (
         <a
           href="#sum-title"
-          className="fixed inset-x-3 bottom-3 z-30 flex items-center justify-between gap-3 rounded-3xl bg-card-dark px-4 py-3 text-white shadow-2xl shadow-black/30 lg:hidden"
+          className="fixed inset-x-3 bottom-3 z-30 flex items-center justify-between gap-3 rounded-3xl bg-card-mustard px-4 py-3 text-on-card shadow-2xl shadow-black/40 lg:hidden"
           aria-label={`Нетна заплата 2027: ${eur(result.y2027.periods[0]!.net)}, разлика ${sEur(result.monthlyDelta.net)} на месец. Към подробностите.`}
         >
           <span className="flex flex-col leading-tight">
             <span className="text-xs font-medium">Нето на месец, 2027</span>
-            <span className="num text-2xl font-semibold tracking-tight">{eur(result.y2027.periods[0]!.net)}</span>
+            <span className="num font-display text-3xl font-semibold">{eur(result.y2027.periods[0]!.net)}</span>
           </span>
           <span className="flex flex-col items-end leading-tight">
-            <span className="text-xs font-medium">спрямо 2026</span>
-            <span className="num rounded-full bg-white/15 px-2.5 py-0.5 text-base font-semibold text-white">{sEur(result.monthlyDelta.net)}</span>
+            <span className="text-xs font-medium">{/^-?0(\.0+)?$/.test(result.monthlyDelta.net) ? "без промяна спрямо 2026" : "спрямо 2026"}</span>
+            <span className="num rounded-full bg-tile px-2.5 py-0.5 text-base font-semibold text-white">{sEur(result.monthlyDelta.net)}</span>
           </span>
         </a>
       )}

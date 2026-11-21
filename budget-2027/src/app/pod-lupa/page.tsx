@@ -46,17 +46,17 @@ export default async function UnderTheLens() {
               </ul>
             </div>
             <dl className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-[9rem_minmax(0,1fr)]">
-              <dt className="text-xs font-semibold tracking-wide text-ink-2 uppercase">Източник</dt>
+              <dt className="text-sm font-semibold text-ink">Източник</dt>
               <dd>{f.sources.join("; ")}</dd>
-              <dt className="text-xs font-semibold tracking-wide text-ink-2 uppercase">Методология</dt>
+              <dt className="text-sm font-semibold text-ink">Методология</dt>
               <dd>{f.method}</dd>
-              <dt className="text-xs font-semibold tracking-wide text-ink-2 uppercase">Пресмятане</dt>
+              <dt className="text-sm font-semibold text-ink">Пресмятане</dt>
               <dd className="num">{bgText(f.calculation)}</dd>
-              <dt className="text-xs font-semibold tracking-wide text-ink-2 uppercase">Извод</dt>
+              <dt className="text-sm font-semibold text-ink">Извод</dt>
               <dd className="text-ink">{bgText(f.conclusion)}</dd>
-              <dt className="text-xs font-semibold tracking-wide text-ink-2 uppercase">Ограничения</dt>
+              <dt className="text-sm font-semibold text-ink">Ограничения</dt>
               <dd className="text-ink-2">{f.limitations}</dd>
-              <dt className="text-xs font-semibold tracking-wide text-ink-2 uppercase">Право на отговор</dt>
+              <dt className="text-sm font-semibold text-ink">Право на отговор</dt>
               <dd className="text-ink-2">{f.response}</dd>
             </dl>
           </li>

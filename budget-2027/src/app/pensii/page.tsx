@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { RankedBars } from "@/components/charts/RankedBars";
-import { QuoteBlock, StatTile, pct } from "@/components/fiscal/LawFigures";
+import { QuoteBlock, pct } from "@/components/fiscal/LawFigures";
 import { PageShell, Section } from "@/components/site/PageShell";
 import { TableView } from "@/components/tables/TableView";
 import { getPublished, tableOf } from "@/lib/data/published";
 import { billSource, lawSource } from "@/lib/data/view";
-import { fmtNum } from "@/lib/format";
+import { rescale } from "@/lib/format";
 import { amount, dooFunding, dooPensionsShare } from "@/lib/social/derived";
 import { QUOTES } from "@/lib/social/quotes";
 
@@ -28,7 +28,6 @@ export default async function Pensions() {
   const bill = billSource(data);
   const fund = dooFunding(rev);
   const ps = dooPensionsShare(exp);
-  const loc = "законопроект за бюджета на ДОО 2027";
   const composition = exp.rows
     .filter((r) => r.level === 1 && /^1\.\d+\. /.test(r.label))
     .map((r) => ({ label: r.label.replace(/^\S+ /, ""), value: r.cells["2027"]?.value ?? null, base: null }));
@@ -37,36 +36,24 @@ export default async function Pensions() {
       eyebrow="Пенсии и ДОО"
       title="Пенсии и общественото осигуряване"
       lead={
-        <>
-          <p>
-            Пенсиите и обезщетенията се плащат от бюджета на държавното обществено осигуряване (ДОО). Той се приема с отделен закон, не е част от
-            държавния бюджет, но влиза в консолидираната фискална програма. Числата тук са от внесения в Народното събрание законопроект (вх. №
-            52-602-01-68, 16.11.2026 г.), в хиляди евро, както са отпечатани.
-          </p>
-          <p>
-            Консолидираният бюджет на ДОО е със салдо 0,0. Сред приходите му има ред „Получени допълнителни трансфери от централния/държавния
-            бюджет за покриване на недостига от средства“.
-          </p>
-        </>
+        <p>
+          Пенсиите и обезщетенията се плащат от бюджета на държавното обществено осигуряване (ДОО). Той се приема с отделен закон. Числата са от
+          внесения законопроект (НС, вх. № 52-602-01-68).
+        </p>
       }
+      facts={[
+        { label: "Бюджет на ДОО", value: rescale(amount(rev, "total"), "хил. €", "млн. €"), unit: "млн. €", tone: "mustard", note: "Приходите и разходите са равни." },
+        { label: "Пенсии", value: rescale(amount(exp, "1.1."), "хил. €", "млн. €"), unit: "млн. €", tone: "sky", note: `${pct(ps.value)} от всички разходи на ДОО.` },
+        {
+          label: "Трансфери от централния бюджет",
+          value: rescale(fund.central.part, "хил. €", "млн. €"),
+          unit: "млн. €",
+          tone: "violet",
+          note: `${pct(fund.central.value)} от приходите; осигурителните вноски покриват ${pct(fund.contributions.value)}.`,
+        },
+      ]}
+      factsSource="законопроект за бюджета на ДОО 2027, чл. 1, ал. 1 и 2 (т. 1.1; т. 4 и 5 — сбор). Дяловете са изчислени от отпечатаните стойности."
     >
-      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4 [&>*]:min-w-0">
-        <StatTile label="Бюджет на ДОО" value={amount(rev, "total")} source={`${loc}, чл. 1, ал. 1 и 2`} note="Приходите и разходите са равни (салдо 0,0)." />
-        <StatTile label="Пенсии" value={amount(exp, "1.1.")} source={`${loc}, чл. 1, ал. 2, т. 1.1`} note={`${pct(ps.value)} от разходите и трансферите на ДОО.`} />
-        <StatTile
-          label="Осигурителни приходи"
-          value={amount(rev, "1.")}
-          source={`${loc}, чл. 1, ал. 1, т. 1`}
-          note={`${pct(fund.contributions.value)} от приходите и трансферите.`}
-        />
-        <StatTile
-          label="Трансфери от централния бюджет"
-          value={fund.central.part}
-          source={`${loc}, чл. 1, ал. 1, т. 4 и 5 (сбор)`}
-          note={`${pct(fund.central.value)} от приходите и трансферите. От тях ${fmtNum(amount(rev, "5."), 1)} хил. € са „за покриване на недостига“.`}
-        />
-      </div>
-
       <Section id="razhodi" title="За какво харчи ДОО" lead="Чл. 1, ал. 2: разходи по основни пера, хил. €. Сравнение с 2026 г. в този законопроект няма.">
         <RankedBars title="Разходи на ДОО, 2027" subtitle="Законопроект, хил. €" items={composition} unit="хил. €" valueLabel="2027 (проект)" baseLabel="—" />
         <TableView table={exp} sourceUrl={src.url} sourceTitle={src.title} />

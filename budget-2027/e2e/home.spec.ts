@@ -13,19 +13,19 @@ test.describe("Начална страница", () => {
   });
 
   // Приложение № 3 / Табл. VI-1, проект 2027: 51 065,2; 55 972,1; −4 907,0; 44 343,9 млн. €
-  test("четирите числа в млрд. € и изречението под тях; смяна на годината", async ({ page }) => {
+  test("четирите числа в млрд. €, изречението под тях и смяна на годината", async ({ page }) => {
     await page.goto("/");
     const card = page.locator("[aria-labelledby=facts-title]");
     for (const v of ["51,1", "56,0", "4,9", "44,3"]) await expect(card).toContainText(v);
     await expect(page.locator("main")).toContainText(/Разликата от 4,9 млрд\. € е дефицитът/);
-    // 2026 (очаквано): разходи 56 807,2 млн. € → 56,8; дефицит −7 191,9 → 7,2
+    // 2026 (очаквано): разходи 56 807,2 → 56,8; дефицит −7 191,9 → 7,2
     await card.getByRole("radio", { name: /2026/ }).click();
     await expect(card.getByRole("radio", { name: /2026/ })).toHaveAttribute("aria-checked", "true");
-    await expect(card).toContainText("7,2");
     await expect(card).toContainText("56,8");
+    await expect(card).toContainText("7,2");
   });
 
-  // Табл. III-1, 2026: 19 240,7 / 55 525,2 = 34,7% → „35%“ в списъка
+  // Табл. III-1, 2026: 19 240,7 / 55 525,2 = 34,7% → „35%“
   test("секторите сменят годината", async ({ page }) => {
     await page.goto("/");
     const kade = page.locator("#kade");
@@ -38,7 +38,7 @@ test.describe("Начална страница", () => {
   test("къде отиват парите: най-голямото перо и връзка към секторите", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator("#kade-title")).toContainText("37% от разходите");
-    await expect(page.locator("#kade")).toContainText(new RegExp(`общо 54,5${NB}?млрд|общо 54,5 млрд`));
+    await expect(page.locator("#kade")).toContainText("общо 54,5 млрд. €");
     await page.locator("#kade").getByRole("link", { name: /Всички сектори/ }).click();
     await expect(page).toHaveURL(/\/sektori$/);
   });
@@ -94,4 +94,16 @@ test("страници: за платформата и 404", async ({ page }) =>
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Тази страница не съществува");
   await page.getByRole("link", { name: "Към началото" }).click();
   await expect(page).toHaveURL(/\/$/);
+});
+
+test("калкулатор: бързите примери сменят заплатата", async ({ page }) => {
+  await page.goto("/kalkulator");
+  await page.getByRole("button", { name: "2 400 €" }).click();
+  await expect(page.getByLabel("Брутна заплата на месец, €")).toHaveValue("2400");
+  await expect(page.getByRole("button", { name: "2 400 €" })).toHaveClass(/bg-tile/);
+});
+
+test("твърдения: накратко по оценки (8 потвърдени от 21)", async ({ page }) => {
+  await page.goto("/analizi/asen-vasilev");
+  await expect(page.getByRole("region", { name: "Накратко" })).toContainText(/Потвърдени\s*8\s*от 21/);
 });

@@ -36,16 +36,16 @@ export function KpiTile({ series, period = "2027", base = "2026", ratio, display
   const dch = isBalance && base ? deficitChange(series, period, base) : null;
 
   return (
-    <article className="flex flex-col gap-2 border-t border-rule-strong pt-3" aria-labelledby={`kpi-${series.metric.key}`}>
+    <article className="flex flex-col gap-2 rounded-3xl border border-rule bg-surface p-5" aria-labelledby={`kpi-${series.metric.key}`}>
       <header className="flex items-baseline justify-between gap-2">
-        <h3 id={`kpi-${series.metric.key}`} className="text-[13px] font-medium tracking-wide text-ink-2 uppercase">
+        <h3 id={`kpi-${series.metric.key}`} className="text-[14px] font-semibold text-ink-2">
           {series.metric.short}
         </h3>
         <span className="text-[11px] text-muted">
           {period} · {VINTAGE_SHORT[p.vintage]}
         </span>
       </header>
-      <p className={`num font-semibold leading-none ${size === "lg" ? "text-4xl sm:text-5xl" : "text-3xl"}`}>
+      <p className={`num font-display font-semibold leading-none ${size === "lg" ? "text-5xl sm:text-6xl" : "text-[2.4rem]"}`}>
         {num}
         <span className="ml-1.5 text-base font-normal text-muted">{unitLabel}</span>
       </p>

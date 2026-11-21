@@ -129,7 +129,7 @@ function ClaimCard({
       <div className="flex flex-col gap-3 text-sm">
         {c.figures.length > 0 && (
           <section>
-            <h3 className="text-xs font-semibold tracking-wide text-ink-2 uppercase">Официални числа</h3>
+            <h3 className="text-sm font-semibold text-ink">Официални числа</h3>
             <ul className="mt-1 flex flex-col gap-1">
               {c.figures.map((f) => (
                 <li key={f.id} className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-3">
@@ -153,24 +153,24 @@ function ClaimCard({
         )}
         {c.calculation && (
           <section>
-            <h3 className="text-xs font-semibold tracking-wide text-ink-2 uppercase">Пресмятане</h3>
+            <h3 className="text-sm font-semibold text-ink">Пресмятане</h3>
             <p className="num text-ink">
               {c.calculation.formula} = <strong>{fmtNum(c.calculation.result, c.calculation.result.includes(".") ? c.calculation.result.split(".")[1]!.length : 0)} {c.calculation.unit}</strong>
             </p>
           </section>
         )}
         <section>
-          <h3 className="text-xs font-semibold tracking-wide text-ink-2 uppercase">Оценка</h3>
+          <h3 className="text-sm font-semibold text-ink">Оценка</h3>
           <p className="text-ink">{c.reasoning}</p>
         </section>
         {c.context && (
           <section>
-            <h3 className="text-xs font-semibold tracking-wide text-ink-2 uppercase">Контекст</h3>
+            <h3 className="text-sm font-semibold text-ink">Контекст</h3>
             <p className="text-ink-2">{c.context}</p>
           </section>
         )}
         <section>
-          <h3 className="text-xs font-semibold tracking-wide text-ink-2 uppercase">Позиция на правителството</h3>
+          <h3 className="text-sm font-semibold text-ink">Позиция на правителството</h3>
           <p className="text-ink-2">{c.governmentPosition ?? "Не е намерен конкретен отговор в официалните документи."}</p>
         </section>
       </div>
