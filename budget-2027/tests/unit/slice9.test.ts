@@ -7,7 +7,7 @@ import { join } from "node:path";
 import Decimal from "decimal.js";
 import { describe, expect, it } from "vitest";
 import { SnapshotSchema } from "@/lib/ingest/snapshot-schema";
-import { sectorRows } from "@/lib/analysis/sectors";
+import { sectorRows, sectorShares } from "@/lib/analysis/sectors";
 import { rankOf } from "@/lib/eurostat/rank";
 import { JsonStat, cell, edptTable, edptUrl } from "@/lib/eurostat/jsonstat";
 import { paragraphAmounts } from "@/lib/tables/paragraphs";
@@ -42,6 +42,21 @@ describe("sectors (Табл. III-1, КФП, млн. €)", () => {
   });
   it("shares add up to 100", () => {
     expect(s.rows.reduce((a, r) => a.plus(r.share), new Decimal(0)).toFixed(6)).toBe("100.000000");
+  });
+});
+
+describe("sector shares by year (Табл. III-1)", () => {
+  it("2026: total 55 525,2; social protection 34,7% (19 240,7); 2029 sorted, sums to 100", () => {
+    const y26 = sectorShares(T("functions"), "2026");
+    expect(y26.total.toFixed(1)).toBe("55525.2");
+    expect(y26.rows[0]!.label).toMatch(/^Социално/);
+    expect(y26.rows[0]!.share.toFixed(1)).toBe("34.7");
+    const y29 = sectorShares(T("functions"), "2029");
+    expect(y29.rows.reduce((a, r) => a.plus(r.share), new Decimal(0)).toFixed(6)).toBe("100.000000");
+    for (let i = 1; i < y29.rows.length; i++) expect(y29.rows[i - 1]!.share.gte(y29.rows[i]!.share)).toBe(true);
+  });
+  it("a missing column throws", () => {
+    expect(() => sectorShares(T("functions"), "2030")).toThrow(/has no 2030/);
   });
 });
 

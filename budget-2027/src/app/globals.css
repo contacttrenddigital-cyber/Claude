@@ -8,96 +8,124 @@
    ─────────────────────────────────────────────────────────────────────────── */
 :root {
   color-scheme: light;
-  --bg: #f4f1ea; /* warm paper */
+  --bg: #f2f3f5;
   --surface: #ffffff;
-  --surface-2: #ebe6db;
-  --ink: #141414;
-  --ink-2: #3b3833;
-  --muted: #66615a; /* 5.3:1 on --bg */
-  --rule: #ddd6c8;
-  --rule-strong: #c2b9a7;
-  --accent: #b23a1c; /* text-safe coral */
-  --accent-fill: #ef7b62; /* coral fill, dark text on top */
-  --adverse: #b8321b;
-  --beneficial: #1d7650;
+  --surface-2: #eceef1;
+  --ink: #111216;
+  --ink-2: #3a3d45;
+  --muted: #61656e; /* 5.3:1 on --bg */
+  --rule: #e3e5e9;
+  --rule-strong: #c9cdd3;
+  --accent: #3342d6; /* links, text-safe blue */
+  --accent-fill: #3b5bfd;
+  --adverse: #c2341d;
+  --beneficial: #157a52;
   --warning: #8a5a00;
-  --series-1: #2c6db2;
-  --series-2: #e0573c;
-  --neutral-mark: #6f6a62;
-  --focus: #2c6db2;
+  --series-1: #3b5bfd;
+  --series-2: #f0632a;
+  --neutral-mark: #7b8089;
+  --focus: #3b5bfd;
   --seq-1: #86b6ef;
   --seq-2: #5598e7;
   --seq-3: #2a78d6;
   --seq-4: #1c5cab;
   --seq-5: #104281;
-  /* candy cards (same in both themes; text on them is always --on-card) */
-  --card-coral: #ef7b62;
-  --card-mustard: #efc66b;
-  --card-sky: #bfe6f5;
-  --card-mint: #bfe5cc;
-  --card-lilac: #d9cdf4;
-  --card-violet: #7b79f3; /* periwinkle; dark text on top (4.9:1) */
-  --on-card: #141414;
-  --on-card-2: #2e2b27;
-  --tile: #141414;
-  --hero: #141414;
+  /* brand accents (Vaulta-like): orange and violet; category tints for icon tiles */
+  --brand-orange: #f0632a;
+  --brand-violet: #7b5cfa;
+  --tint-blue: #e6ebff;   --tint-blue-ink: #3342d6;
+  --tint-orange: #ffeadf; --tint-orange-ink: #b8451a;
+  --tint-violet: #efeaff; --tint-violet-ink: #5b3fd6;
+  --tint-pink: #ffe5f2;   --tint-pink-ink: #b8306f;
+  --tint-green: #e1f6ec;  --tint-green-ink: #157a52;
+  --tint-amber: #fff2d6;  --tint-amber-ink: #8a5a00;
+  --card-dark: #15161a;   /* headline cards, white text */
+  --card-dark-2: #24262c;
+  --hero: #15161a;
+  --tile: #15161a;
+  --on-card: #111216;
+  --on-card-2: #3a3d45;
+  --card-coral: #ffeadf;
+  --card-mustard: #fff2d6;
+  --card-sky: #e6ebff;
+  --card-mint: #e1f6ec;
+  --card-lilac: #efeaff;
+  --card-violet: #efeaff;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:where(:not([data-theme="light"])) {
     color-scheme: dark;
-    --bg: #161616;
-    --surface: #202020;
-    --surface-2: #2a2a2a;
-    --ink: #f5f2ea;
-    --ink-2: #d2cdc3;
-    --muted: #a19b90;
-    --rule: #2f2f2f;
-    --rule-strong: #474747;
-    --accent: #efc66b; /* mustard links on dark */
-    --accent-fill: #ef7b62;
+    --bg: #0e0f12;
+    --surface: #17181d;
+    --surface-2: #202228;
+    --ink: #f3f4f6;
+    --ink-2: #c9ccd2;
+    --muted: #979ba4;
+    --rule: #262830;
+    --rule-strong: #3a3d47;
+    --accent: #8ea2ff;
+    --accent-fill: #5b75ff;
     --adverse: #f2836b;
-    --beneficial: #6fcf97;
-    --warning: #efc66b;
-    --series-1: #3a9ad6;
-    --series-2: #e8674b;
-    --neutral-mark: #8f8a80;
-    --focus: #7cc4e6;
-    --seq-1: #1c5cab;
-    --seq-2: #2a78d6;
-    --seq-3: #5598e7;
-    --seq-4: #86b6ef;
-    --seq-5: #b7d3f6;
-    --tile: #141414;
-    --hero: #0e0e0e;
+    --beneficial: #5fd39b;
+    --warning: #f4b942;
+    --series-1: #5b75ff;
+    --series-2: #f0632a;
+    --neutral-mark: #7f838d;
+    --focus: #8ea2ff;
+    --tint-blue: #1d2340;   --tint-blue-ink: #a9b7ff;
+    --tint-orange: #3a2218; --tint-orange-ink: #ffab84;
+    --tint-violet: #2a2245; --tint-violet-ink: #c3b2ff;
+    --tint-pink: #3a1d2c;   --tint-pink-ink: #ff9fcd;
+    --tint-green: #15302a;  --tint-green-ink: #7fe0b4;
+    --tint-amber: #362b12;  --tint-amber-ink: #f4c96b;
+    --card-dark: #1f2127;
+    --card-dark-2: #2b2e35;
+    --card-coral: #3a2218;
+    --card-mustard: #362b12;
+    --card-sky: #1d2340;
+    --card-mint: #15302a;
+    --card-lilac: #2a2245;
+    --card-violet: #2a2245;
+    --on-card: #f3f4f6;
+    --on-card-2: #c9ccd2;
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #161616;
-  --surface: #202020;
-  --surface-2: #2a2a2a;
-  --ink: #f5f2ea;
-  --ink-2: #d2cdc3;
-  --muted: #a19b90;
-  --rule: #2f2f2f;
-  --rule-strong: #474747;
-  --accent: #efc66b;
-  --accent-fill: #ef7b62;
+  --bg: #0e0f12;
+  --surface: #17181d;
+  --surface-2: #202228;
+  --ink: #f3f4f6;
+  --ink-2: #c9ccd2;
+  --muted: #979ba4;
+  --rule: #262830;
+  --rule-strong: #3a3d47;
+  --accent: #8ea2ff;
+  --accent-fill: #5b75ff;
   --adverse: #f2836b;
-  --beneficial: #6fcf97;
-  --warning: #efc66b;
-  --series-1: #3a9ad6;
-  --series-2: #e8674b;
-  --neutral-mark: #8f8a80;
-  --focus: #7cc4e6;
-  --seq-1: #1c5cab;
-  --seq-2: #2a78d6;
-  --seq-3: #5598e7;
-  --seq-4: #86b6ef;
-  --seq-5: #b7d3f6;
-  --tile: #141414;
-  --hero: #0e0e0e;
+  --beneficial: #5fd39b;
+  --warning: #f4b942;
+  --series-1: #5b75ff;
+  --series-2: #f0632a;
+  --neutral-mark: #7f838d;
+  --focus: #8ea2ff;
+  --tint-blue: #1d2340;   --tint-blue-ink: #a9b7ff;
+  --tint-orange: #3a2218; --tint-orange-ink: #ffab84;
+  --tint-violet: #2a2245; --tint-violet-ink: #c3b2ff;
+  --tint-pink: #3a1d2c;   --tint-pink-ink: #ff9fcd;
+  --tint-green: #15302a;  --tint-green-ink: #7fe0b4;
+  --tint-amber: #362b12;  --tint-amber-ink: #f4c96b;
+  --card-dark: #1f2127;
+  --card-dark-2: #2b2e35;
+  --card-coral: #3a2218;
+  --card-mustard: #362b12;
+  --card-sky: #1d2340;
+  --card-mint: #15302a;
+  --card-lilac: #2a2245;
+  --card-violet: #2a2245;
+  --on-card: #f3f4f6;
+  --on-card-2: #c9ccd2;
 }
 
 @theme inline {
@@ -122,11 +150,27 @@
   --color-card-mint: var(--card-mint);
   --color-card-lilac: var(--card-lilac);
   --color-card-violet: var(--card-violet);
+  --color-card-dark: var(--card-dark);
+  --color-card-dark-2: var(--card-dark-2);
+  --color-brand-orange: var(--brand-orange);
+  --color-brand-violet: var(--brand-violet);
+  --color-tint-blue: var(--tint-blue);
+  --color-tint-blue-ink: var(--tint-blue-ink);
+  --color-tint-orange: var(--tint-orange);
+  --color-tint-orange-ink: var(--tint-orange-ink);
+  --color-tint-violet: var(--tint-violet);
+  --color-tint-violet-ink: var(--tint-violet-ink);
+  --color-tint-pink: var(--tint-pink);
+  --color-tint-pink-ink: var(--tint-pink-ink);
+  --color-tint-green: var(--tint-green);
+  --color-tint-green-ink: var(--tint-green-ink);
+  --color-tint-amber: var(--tint-amber);
+  --color-tint-amber-ink: var(--tint-amber-ink);
   --color-on-card: var(--on-card);
   --color-on-card-2: var(--on-card-2);
   --color-tile: var(--tile);
   --color-hero: var(--hero);
-  --font-display: "Oswald Variable", "Oswald", "Inter Variable", system-ui, sans-serif;
+  --font-display: "Inter Variable", "Inter", system-ui, sans-serif;
   --font-sans: "Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 }

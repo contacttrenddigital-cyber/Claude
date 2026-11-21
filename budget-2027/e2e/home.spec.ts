@@ -13,11 +13,25 @@ test.describe("Начална страница", () => {
   });
 
   // Приложение № 3 / Табл. VI-1, проект 2027: 51 065,2; 55 972,1; −4 907,0; 44 343,9 млн. €
-  test("четирите числа в млрд. € и изречението под тях", async ({ page }) => {
+  test("четирите числа в млрд. € и изречението под тях; смяна на годината", async ({ page }) => {
     await page.goto("/");
     const card = page.locator("[aria-labelledby=facts-title]");
     for (const v of ["51,1", "56,0", "4,9", "44,3"]) await expect(card).toContainText(v);
-    await expect(card).toContainText(/Разликата от 4,9 млрд\. € е дефицитът/);
+    await expect(page.locator("main")).toContainText(/Разликата от 4,9 млрд\. € е дефицитът/);
+    // 2026 (очаквано): разходи 56 807,2 млн. € → 56,8; дефицит −7 191,9 → 7,2
+    await card.getByRole("radio", { name: /2026/ }).click();
+    await expect(card.getByRole("radio", { name: /2026/ })).toHaveAttribute("aria-checked", "true");
+    await expect(card).toContainText("7,2");
+    await expect(card).toContainText("56,8");
+  });
+
+  // Табл. III-1, 2026: 19 240,7 / 55 525,2 = 34,7% → „35%“ в списъка
+  test("секторите сменят годината", async ({ page }) => {
+    await page.goto("/");
+    const kade = page.locator("#kade");
+    await kade.getByRole("radio", { name: /2026/ }).click();
+    await expect(kade).toContainText("общо 55,5 млрд. €");
+    await expect(kade.getByRole("listitem").filter({ hasText: "Социално" })).toContainText("35%");
   });
 
   // Табл. III-1: 20 394,3 / 54 465,4 = 37,4%

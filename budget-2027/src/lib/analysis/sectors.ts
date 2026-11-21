@@ -38,3 +38,15 @@ export function sectorRows(functions: TableData, year = "2027", baseYear = "2026
     })),
   };
 }
+
+/** Shares of the main functions for one year (any column of Табл. III-1), sorted by size. */
+export function sectorShares(functions: TableData, year: string): { total: Decimal; rows: { label: string; value: string; share: Decimal }[] } {
+  const main = functions.rows.filter((r) => r.kind === "data" && r.level === 0);
+  const vals = main.map((r) => {
+    const v = r.cells[year]?.value;
+    if (v === null || v === undefined) throw new Error(`${functions.id}: ${r.label} has no ${year}`);
+    return { label: r.label, value: v };
+  });
+  const total = vals.reduce((s, r) => s.plus(r.value), new Decimal(0));
+  return { total, rows: vals.map((r) => ({ ...r, share: share(r.value, total)! })).sort((a, b) => b.share.comparedTo(a.share)) };
+}

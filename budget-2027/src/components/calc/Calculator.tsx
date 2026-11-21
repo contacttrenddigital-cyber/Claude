@@ -194,16 +194,16 @@ export function Calculator({ docUrls }: { docUrls: Record<string, { url: string;
       {result && (
         <a
           href="#sum-title"
-          className="fixed inset-x-3 bottom-3 z-30 flex items-center justify-between gap-3 rounded-3xl bg-card-mustard px-4 py-3 text-on-card shadow-2xl shadow-black/40 lg:hidden"
+          className="fixed inset-x-3 bottom-3 z-30 flex items-center justify-between gap-3 rounded-3xl bg-card-dark px-4 py-3 text-white shadow-2xl shadow-black/30 lg:hidden"
           aria-label={`Нетна заплата 2027: ${eur(result.y2027.periods[0]!.net)}, разлика ${sEur(result.monthlyDelta.net)} на месец. Към подробностите.`}
         >
           <span className="flex flex-col leading-tight">
             <span className="text-xs font-medium">Нето на месец, 2027</span>
-            <span className="num font-display text-3xl font-semibold">{eur(result.y2027.periods[0]!.net)}</span>
+            <span className="num text-2xl font-semibold tracking-tight">{eur(result.y2027.periods[0]!.net)}</span>
           </span>
           <span className="flex flex-col items-end leading-tight">
             <span className="text-xs font-medium">спрямо 2026</span>
-            <span className="num rounded-full bg-tile px-2.5 py-0.5 text-base font-semibold text-white">{sEur(result.monthlyDelta.net)}</span>
+            <span className="num rounded-full bg-white/15 px-2.5 py-0.5 text-base font-semibold text-white">{sEur(result.monthlyDelta.net)}</span>
           </span>
         </a>
       )}

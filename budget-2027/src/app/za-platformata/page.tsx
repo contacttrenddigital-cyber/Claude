@@ -36,7 +36,7 @@ export default async function About() {
         <ol className="grid gap-4 md:grid-cols-2">
           {STEPS.map((s, i) => (
             <li key={s.title} className="flex gap-4 rounded-3xl border border-rule bg-surface p-6">
-              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-tile text-white">
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-tint-blue text-tint-blue-ink">
                 <Icon name={s.icon} />
               </span>
               <span className="flex flex-col gap-1.5">

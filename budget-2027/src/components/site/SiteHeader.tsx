@@ -15,11 +15,11 @@ import { ThemeToggle } from "./ThemeToggle";
 export function Logo() {
   return (
     <Link href="/" className="group flex min-h-11 items-center gap-2.5" aria-label="Бюджет 2027 — начало">
-      <span aria-hidden className="font-display grid h-9 w-9 place-items-center rounded-xl bg-card-coral text-[15px] font-bold text-on-card">
+      <span aria-hidden className="grid h-9 w-9 place-items-center rounded-xl bg-card-dark text-[14px] font-bold text-white">
         27
       </span>
       <span className="flex flex-col leading-none">
-        <span className="font-display text-[17px] font-semibold tracking-wide uppercase">Бюджет 2027</span>
+        <span className="text-[15px] font-semibold tracking-tight">Бюджет 2027</span>
         <span className="mt-0.5 text-[11px] text-muted">под лупа</span>
       </span>
     </Link>
@@ -99,7 +99,7 @@ export function SiteHeader(props: { status?: string }) {
                             aria-current={active(i.href) ? "page" : undefined}
                             className="flex items-start gap-3 rounded-xl p-3 transition-colors hover:bg-surface-2"
                           >
-                            <span className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-tile text-white">
+                            <span className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-tint-blue text-tint-blue-ink">
                               <Icon name={i.icon} />
                             </span>
                             <span>
@@ -126,7 +126,7 @@ export function SiteHeader(props: { status?: string }) {
           </span>
           <Link
             href="/kalkulator"
-            className="inline-flex min-h-11 items-center gap-2 rounded-full bg-card-coral px-4 text-[15px] font-semibold text-on-card transition hover:brightness-105"
+            className="inline-flex min-h-11 items-center gap-2 rounded-full bg-card-dark px-4 text-[15px] font-semibold text-white transition hover:opacity-90"
           >
             <Icon name="calculator" className="h-4.5 w-4.5" />
             <span className="hidden sm:inline">Как ме засяга?</span>
@@ -162,7 +162,7 @@ export function SiteHeader(props: { status?: string }) {
                         aria-current={active(i.href) ? "page" : undefined}
                         className={`flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 ${active(i.href) ? "bg-surface-2" : "hover:bg-surface-2"}`}
                       >
-                        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-tile text-white">
+                        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-tint-blue text-tint-blue-ink">
                           <Icon name={i.icon} />
                         </span>
                         <span className="flex flex-col">
