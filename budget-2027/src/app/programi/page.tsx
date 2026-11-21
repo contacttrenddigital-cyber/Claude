@@ -86,12 +86,11 @@ export default async function Programs() {
 
       <Section id="pokazateli" title="Показатели за резултати">
         <p className="max-w-3xl text-sm text-ink-2">
-          Програмните бюджети съдържат и показатели за изпълнение с целеви стойности. Те още не са извлечени: таблиците им са с различно
-          оформление във всеки документ, а при Министерството на отбраната са класифицирана информация. Виж{" "}
-          <Link href="/metodologia" className="underline underline-offset-2">
-            методологията
+          Целите на всяка програма (показатели за изпълнение и целеви стойности за 2027–2029 г.) са в{" "}
+          <Link href="/pari-sreshtu-rezultati" className="underline underline-offset-2">
+            Пари срещу резултати
           </Link>
-          .
+          . При Министерството на отбраната те са класифицирана информация.
         </p>
       </Section>
     </PageShell>

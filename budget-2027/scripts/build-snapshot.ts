@@ -30,6 +30,7 @@ import { COFOG_YEARS, cofogChecks, cofogEuTable, cofogHistoryTable } from "../sr
 import { readdirSync } from "node:fs";
 import { socialFundTables } from "../src/lib/tables/social-funds";
 import { ProgramExtract, programChecks, programTable, reconcileUnits } from "../src/lib/programs/programs";
+import { IndicatorExtract, indicatorChecks, indicatorTable } from "../src/lib/programs/indicators";
 import { childSumChecks, crossCheck, grandTotalChecks, sumTopLevel } from "../src/lib/tables/checks";
 import { joinByName } from "../src/lib/municipal/join";
 import { locatorOf } from "../src/lib/tables/extract";
@@ -291,6 +292,17 @@ async function main() {
   });
   checks.push(...programChecks(progStatus));
   tables.push(programTable(progX, progStatus, { documentId: "ns-52-602-01-71-zip", file: "52-602-01-71.zip" }));
+  // performance indicators of the same PDFs (scripts/extract/indicators.py, pdfplumber)
+  {
+    const ix = IndicatorExtract.parse(JSON.parse(readFileSync(join(ROOT, "data/extracted/indicators.json"), "utf8")));
+    for (const u of ix.units) {
+      const m = progX.ministries.find((x) => x.code === u.code);
+      if (m && m.sha256 !== u.sha256) throw new Error(`indicators.json: ${u.code} was read from a different PDF`);
+    }
+    tables.push(indicatorTable(ix, { documentId: "ns-52-602-01-71-zip", file: "52-602-01-71.zip" }));
+    const codes = new Set(progX.ministries.flatMap((m) => [...m.programs, ...(m.alt ?? [])].map((p) => p.code)));
+    checks.push(...indicatorChecks(ix, codes));
+  }
 
   // Табл. III-2: the NATO-classified total = МО + ДВВУ + централен бюджет + other spending units
   const def = T("defense");

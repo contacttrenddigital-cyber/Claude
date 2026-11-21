@@ -34,6 +34,7 @@ const STATIC = [
   "/moeto-tablo",
   "/vizualizatsii",
   "/pod-lupa",
+  "/pari-sreshtu-rezultati",
   "/pozitivni-merki",
   "/zakonodatelstvo",
   "/dokumenti",
