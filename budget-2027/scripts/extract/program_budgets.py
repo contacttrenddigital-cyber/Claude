@@ -11,6 +11,12 @@ Every programme has a standard table "Бюджетна прогноза по в�
 Only rows with all six numbers are kept as complete. The programme code is the last code printed in
 the block before the row; the name is taken from where the document prints "<code> Бюджетна програма „…“".
 Nothing is summed here: reconciliation with the ceilings happens in TypeScript.
+
+Some spending units (e.g. МОН, Администрация на президента) print no such per-programme table. For them
+we read the yearly summary tables instead ("Отчет 2024 г.", …, "Проект за 2027 г.", "Прогноза за 2029 г."):
+one row per programme code with the columns "Общо разходи", "По бюджета на ПРБ", "По други бюджети и
+сметки за средства от ЕС", … — the first two numbers are taken as total and budget. These rows are
+marked "method": "year-tables" and go through the same ceiling reconciliation.
 """
 import hashlib
 import json
@@ -23,12 +29,42 @@ NUM = re.compile(r"(?<![\d.,])-?\d{1,3}(?: \d{3})*[,.]\d(?!\d)")
 CODE = re.compile(r"(\d{4}\.\d{2}\.\d{2})")
 TOT = re.compile(r"Общо разходи\s*\((?:І|I)\.\s*\+\s*(?:II|ІІ)\.\s*\+\s*(?:ІІІ|III)\.\)")
 BUD = re.compile(r"Общо разходи по бюджета\s*\((?:І|I)\.\s*1\s*\+\s*(?:ІІ|II)\.\)")
+BUD_TAIL = re.compile(r"^\s*\((?:І|I)\.\s*1\s*\+\s*(?:ІІ|II)\.\):?")
 YEARS = ["2024", "2025", "2026", "2027", "2028", "2029"]
 QUOTED = re.compile(r"[„\"“'”]\s*([^„“”\"]{3,}?)\s*[“”\"]")
 
 
-def nums(line):
-    return [n.replace(" ", "").replace(",", ".") for n in NUM.findall(line or "")]
+YEAR_LABEL = re.compile(r"(Отчет|Закон|Проект|Прогноза)\s*(?:за\s*)?(20\d\d)\s*г")
+ROW = re.compile(r"^\s*(\d{4}\.\d{2}\.\d{2})\b(.*)$")
+# numbers in the yearly tables: "1 191 389,8", "5173.8", "0,0" or a bare "0"
+YNUM = re.compile(r"(?<![\d.,])-?\d{1,3}(?:[ \u00a0]\d{3})+(?:[,.]\d+)?(?![\d])|(?<![\d.,])-?\d+(?:[,.]\d+)?(?![\d.,])")
+
+
+def ynums(text):
+    return [n.replace(" ", "").replace("\u00a0", "").replace(",", ".") for n in YNUM.findall(text)]
+
+
+def year_tables(lines, page_of):
+    """code → {year: (total, budget)} from the yearly summary tables; only lines inside a year's table."""
+    out, year = {}, None
+    for i, l in enumerate(lines):
+        labels = YEAR_LABEL.findall(l)
+        if len(labels) == 1:
+            year = labels[0][1]
+        elif len(labels) > 1:
+            year = None  # a header of a multi-year table: not a yearly summary
+        if year is None or year not in YEARS:
+            continue
+        m = ROW.match(l)
+        if not m:
+            continue
+        # some PDFs print a space after the decimal point: "1 489. 9" → "1 489.9"
+        n = ynums(re.sub(r"(\d)\.\s(\d)(?!\d)", r"\1.\2", m.group(2)))
+        if len(n) < 3:
+            continue
+        out.setdefault(m.group(1), {})
+        out[m.group(1)].setdefault(year, (n[0], n[1], page_of[i]))
+    return out
 
 
 def names(lines):
@@ -82,8 +118,18 @@ def parse(pdf):
                 if not m.group(1).endswith(".00.00"):
                     code = m.group(1)
         bud_idx = next((start + k for k, b in enumerate(block) if BUD.search(b)), None)
-        total = nums(l)
-        budget = nums(lines[bud_idx]) if bud_idx is not None else []
+        # amounts are read after the row label (the label itself has digits: "(І.1+ІІ.)")
+        total = ynums(l[TOT.search(l).end():])
+        budget = ynums(lines[bud_idx][BUD.search(lines[bud_idx]).end():]) if bud_idx is not None else []
+        if bud_idx is None:
+            # the label can wrap: "Общо разходи по бюджета" / "(І.1+ІІ.):   98 602,6 …"
+            for k in range(len(block) - 1):
+                if re.search(r"Общо разходи по бюджета\s*$", block[k]):
+                    m2 = BUD_TAIL.match(block[k + 1])
+                    if m2:
+                        bud_idx = start + k + 1
+                        budget = ynums(block[k + 1][m2.end():])
+                        break
         if code is None or code in seen:
             continue  # ministry-level summary or a repeated block
         seen.add(code)
@@ -98,7 +144,39 @@ def parse(pdf):
                 "printed": {"total": l.strip(), "budget": lines[bud_idx].strip() if bud_idx is not None else None},
             }
         )
-    return progs
+    # second reading from the yearly summary tables (used for units without the per-programme table, for
+    # programmes it could not read, and — in TypeScript — when the first reading does not match the ceiling)
+    yt = year_tables(lines, page_of)
+
+    # a programme is a leaf code: "XXXX.YY.ZZ", or "XXXX.YY.00" when nothing is printed under it
+    # (e.g. "1700.03.00 Бюджетна програма „Администрация“"); "XXXX.00.00" is the unit total
+    def leaf(c):
+        u, a, b = c.split(".")
+        if a == "00":
+            return False
+        return b != "00" or not any(o != c and o.startswith(f"{u}.{a}.") for o in yt)
+
+    by_code = {p["code"]: p for p in progs}
+
+    def from_tables(c):
+        ys = yt[c]
+        return {
+            "code": c,
+            "name": (by_code.get(c) or {}).get("name") or nm.get(c),
+            "page": ys["2027"][2],
+            "complete": True,
+            "method": "year-tables",
+            "total": {y: v[0] for y, v in sorted(ys.items())},
+            "budget": {y: v[1] for y, v in sorted(ys.items())},
+            "printed": {"total": None, "budget": None},
+        }
+
+    alt = [from_tables(c) for c in yt if leaf(c) and "2027" in yt[c]]
+    if alt and (not progs or not all(p["complete"] for p in progs)):
+        # mixed: keep what the per-programme tables read completely, fill the rest from the yearly tables
+        progs = [by_code[a["code"]] if by_code.get(a["code"], {}).get("complete") else a for a in alt]
+        alt = []
+    return progs, alt
 
 
 def main(src, dst):
@@ -107,8 +185,11 @@ def main(src, dst):
         if not re.match(r"^\d{4}.*\.pdf$", name, re.I):
             continue
         path = os.path.join(src, name)
-        progs = parse(path)
-        out.append({"code": name[:4], "file": name, "sha256": hashlib.sha256(open(path, "rb").read()).hexdigest(), "programs": progs})
+        progs, alt = parse(path)
+        entry = {"code": name[:4], "file": name, "sha256": hashlib.sha256(open(path, "rb").read()).hexdigest(), "programs": progs}
+        if alt:
+            entry["alt"] = alt
+        out.append(entry)
         print(f"{name[:4]}: {len(progs)} programmes, {sum(p['complete'] for p in progs)} complete", file=sys.stderr)
     json.dump({"source": "52-602-01-71.zip", "ministries": out}, open(dst, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 

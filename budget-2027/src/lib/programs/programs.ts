@@ -12,6 +12,17 @@ import type { Check } from "@/lib/ingest/snapshot";
 import type { ExtractedTable, TableRow } from "@/lib/tables/extract";
 
 const Years = z.record(z.string(), z.string());
+const Program = z.object({
+  code: z.string(),
+  name: z.string().nullable(),
+  page: z.number(),
+  complete: z.boolean(),
+  /** "year-tables": read from the yearly summary tables instead of the per-programme table */
+  method: z.literal("year-tables").optional(),
+  total: Years,
+  budget: Years,
+});
+
 export const ProgramExtract = z.object({
   source: z.string(),
   ministries: z.array(
@@ -19,16 +30,9 @@ export const ProgramExtract = z.object({
       code: z.string(),
       file: z.string(),
       sha256: z.string().regex(/^[a-f0-9]{64}$/),
-      programs: z.array(
-        z.object({
-          code: z.string(),
-          name: z.string().nullable(),
-          page: z.number(),
-          complete: z.boolean(),
-          total: Years,
-          budget: Years,
-        }),
-      ),
+      programs: z.array(Program),
+      /** second reading of the same PDF from the yearly summary tables (see program_budgets.py) */
+      alt: z.array(Program).optional(),
     }),
   ),
 });
@@ -101,31 +105,53 @@ export interface UnitStatus {
   ceiling: string | null;
   ok: boolean;
   reason: string | null;
+  /** which reading of the PDF is published */
+  use: "programs" | "alt";
 }
 
 const bg = (v: string) => new Decimal(v).toFixed(1).replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+
+type Prog = z.infer<typeof Program>;
+
+/** Sum of the 2027 budget column and the reason it cannot be published (null = reconciles). */
+function evaluate(programs: Prog[], ceiling: string | null, unit: string | null, tolerance: string) {
+  const complete = programs.filter((p) => p.complete);
+  const sum = programs.length && complete.length === programs.length ? complete.reduce((s, p) => s.plus(p.budget["2027"]!), new Decimal(0)) : null;
+  let reason: string | null = null;
+  if (!unit || ceiling === null) reason = "няма отделен таван в Приложение № 4";
+  else if (programs.length === 0) reason = "таблиците по програми не бяха разчетени от PDF файла";
+  else if (complete.length < programs.length) reason = `${programs.length - complete.length} от ${programs.length} програми не бяха разчетени изцяло`;
+  else if (sum!.minus(ceiling).abs().gt(tolerance)) reason = `сборът на програмите (${bg(sum!.toString())}) не е равен на тавана (${bg(ceiling)})`;
+  return { sum, reason };
+}
 
 export function reconcileUnits(x: ProgramExtract, ceilings: ExtractedTable, tolerance = "0.5"): UnitStatus[] {
   return x.ministries.map((m) => {
     const unit = UNITS[m.code] ?? null;
     const ceilRow = unit ? ceilings.rows.find((r) => r.label.startsWith(unit)) : undefined;
     const ceiling = ceilRow?.cells["2027"]?.value ?? null;
-    const complete = m.programs.filter((p) => p.complete);
-    const sum = m.programs.length && complete.length === m.programs.length ? complete.reduce((s, p) => s.plus(p.budget["2027"]!), new Decimal(0)) : null;
-    let reason: string | null = null;
-    if (!unit || ceiling === null) reason = "няма отделен таван в Приложение № 4";
-    else if (m.programs.length === 0) reason = "таблиците по програми не бяха разчетени от PDF файла";
-    else if (complete.length < m.programs.length) reason = `${m.programs.length - complete.length} от ${m.programs.length} програми не бяха разчетени изцяло`;
-    else if (sum!.minus(ceiling).abs().gt(tolerance)) reason = `сборът на програмите (${bg(sum!.toString())}) не е равен на тавана (${bg(ceiling)})`;
+    let use: "programs" | "alt" = "programs";
+    let r = evaluate(m.programs, ceiling, unit, tolerance);
+    // the PDF prints the same programmes twice (per-programme table and yearly summaries); when the first
+    // reading does not match the ceiling and the second does, the second is published and says so
+    if (r.reason && m.alt?.length) {
+      const a = evaluate(m.alt, ceiling, unit, tolerance);
+      if (!a.reason) {
+        r = a;
+        use = "alt";
+      }
+    }
+    const list = use === "alt" ? m.alt! : m.programs;
     return {
       code: m.code,
       unit: unit ?? m.file,
       file: m.file,
-      programs: m.programs.length,
-      sum2027: sum?.toString() ?? null,
+      programs: list.length,
+      sum2027: r.sum?.toString() ?? null,
       ceiling,
-      ok: reason === null,
-      reason,
+      ok: r.reason === null,
+      reason: r.reason,
+      use,
     };
   });
 }
@@ -136,7 +162,7 @@ export function programChecks(status: UnitStatus[]): Check[] {
     kind: "total" as const,
     status: s.ok ? ("pass" as const) : ("warn" as const),
     description: s.ok
-      ? `Програмен бюджет ${s.code} (${s.unit}): сборът на ${s.programs} програми за 2027 г. = таван по Приложение № 4`
+      ? `Програмен бюджет ${s.code} (${s.unit}): сборът на ${s.programs} програми за 2027 г. = таван по Приложение № 4${s.use === "alt" ? " (по годишните таблици в PDF; таблицата по програми не съвпада с тавана)" : ""}`
       : `Програмен бюджет ${s.code} (${s.unit}): не е публикуван — ${s.reason}`,
     details: { sum: s.sum2027, ceiling: s.ceiling },
   }));
@@ -149,7 +175,7 @@ export function programTable(x: ProgramExtract, status: UnitStatus[], meta: { do
     const st = status.find((s) => s.code === m.code)!;
     if (!st.ok) continue;
     rows.push({ label: st.unit, level: 0, kind: "group", group: null, cells: {}, texts: { unit: m.code }, rowIndex: n++ });
-    for (const p of m.programs) {
+    for (const p of st.use === "alt" ? m.alt! : m.programs) {
       rows.push({
         label: `${p.code} ${p.name ?? "(наименованието не е разчетено — виж PDF)"}`,
         level: 1,
@@ -159,7 +185,7 @@ export function programTable(x: ProgramExtract, status: UnitStatus[], meta: { do
           ...Object.fromEntries(YEARS.map(([y]) => [y, { value: p.budget[y] ?? null, text: p.budget[y] ? bg(p.budget[y]) : "" }])),
           all2027: { value: p.total["2027"] ?? null, text: p.total["2027"] ? bg(p.total["2027"]) : "" },
         },
-        texts: { unit: m.code, page: `${m.file}, с. ${p.page}` },
+        texts: { unit: m.code, page: `${m.file}, с. ${p.page}${p.method === "year-tables" ? " (годишна таблица)" : ""}` },
         rowIndex: n++,
       });
     }

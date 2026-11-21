@@ -30,9 +30,23 @@ describe("programme budgets", () => {
 
   it("units without a ceiling or with unread programmes are not published", () => {
     expect(st.find((s) => s.code === "0100")).toMatchObject({ ok: false, reason: "няма отделен таван в Приложение № 4" });
-    expect(st.find((s) => s.code === "1700")!.ok).toBe(false);
+    // Сметна палата: the 2027 amounts are not in the PDF's text layer
+    expect(st.find((s) => s.code === "0500")!.ok).toBe(false);
     const t = programTable(x, st, { documentId: "d", file: "f" });
-    expect(t.rows.some((r) => r.group === "Министерство на образованието и науката")).toBe(false);
+    expect(t.rows.some((r) => r.group === "Сметна палата")).toBe(false);
+  });
+
+  // МОН prints no per-programme table: the yearly table „Проект за 2027 г.“ (PDF, с. 15) gives 12 programmes,
+  // incl. 1700.03.00 „Администрация“ 6 955,7, which add up to the МОН ceiling 918 253,4 хил. € (Приложение № 4)
+  it("МОН: read from the yearly tables, adds up to the ceiling", () => {
+    expect(st.find((s) => s.code === "1700")).toMatchObject({ ok: true, programs: 12, sum2027: "918253.4", ceiling: "918253.4" });
+  });
+
+  // КЗД: the per-programme table prints 0,0 in „Общо разходи по бюджета“; the yearly table gives 2 468,3 = ceiling
+  it("КЗД: the second reading is used only because the first does not match the ceiling", () => {
+    const s = st.find((u) => u.code === "3300")!;
+    expect(s).toMatchObject({ ok: true, use: "alt", sum2027: "2468.3" });
+    expect(programChecks([s])[0]!.description).toMatch(/по годишните таблици/);
   });
 
   it("every published unit reconciles exactly and every check is consistent with the status", () => {
@@ -47,6 +61,7 @@ describe("programme budgets", () => {
     const broken = structuredClone(x);
     const mo = broken.ministries.find((m) => m.code === "1200")!;
     mo.programs[0]!.budget["2027"] = "1179808.5"; // −1,0: beyond the 0,5 rounding tolerance
+    for (const p of mo.alt ?? []) p.budget["2027"] = "0"; // and the second reading does not rescue it
     const s = reconcileUnits(broken, ceilings).find((u) => u.code === "1200")!;
     expect(s.ok).toBe(false);
     expect(s.reason).toMatch(/не е равен на тавана/);
@@ -54,7 +69,9 @@ describe("programme budgets", () => {
 
   it("incomplete rows are never published", () => {
     const broken = structuredClone(x);
-    broken.ministries.find((m) => m.code === "1300")!.programs[0]!.complete = false;
+    const u = broken.ministries.find((m) => m.code === "1300")!;
+    u.programs[0]!.complete = false;
+    delete u.alt; // no second reading that matches the ceiling
     expect(reconcileUnits(broken, ceilings).find((u) => u.code === "1300")!.reason).toMatch(/не бяха разчетени изцяло/);
   });
 });
