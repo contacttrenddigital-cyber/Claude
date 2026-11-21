@@ -5,7 +5,7 @@
  *
  * A changed hash means the publisher replaced the file: the script reports it and stores the new
  * bytes next to the old ones (never overwrites), so a new version can be reviewed and imported.
- * SIGMA files are refreshed by build-snapshot.ts instead.
+ * SIGMA files are refreshed by build-snapshot.ts, the bills' API JSON by track-bills.ts.
  */
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -18,7 +18,6 @@ const LOCAL: Record<string, string> = {
   "ns-52-602-01-71-zip": "parliament/52-602-01-71.zip",
   "ns-52-602-01-68-rtf": "parliament/52-602-01-68.rtf",
   "ns-52-602-01-70-rtf": "parliament/52-602-01-70.rtf",
-  "ns-api-bill-167645": "parliament/bill_167645.json",
   "ms-2026-11-16": "government/ms-2026-11-16.html",
 };
 

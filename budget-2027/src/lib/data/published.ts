@@ -167,6 +167,7 @@ export const getPublished = cache(async () => {
       type: e.type,
       title: e.title,
       note: e.note,
+      documentId: e.documentId,
       documentTitle: e.document.title,
       url: e.document.pageUrl ?? e.document.url,
     })),

@@ -44,6 +44,15 @@ test("законодателство: хронология, 24 комисии, �
   await expect(page.locator("#versii")).toContainText("Капиталови разходи");
 });
 
+// API на НС, 21.11.2026: доклади на 14 от 23 участващи комисии по 52-602-01-71; по 52-602-01-70 още няма доклади
+test("законодателство: етапите на трите законопроекта", async ({ page }) => {
+  await page.goto("/zakonodatelstvo");
+  const state = page.getByRole("list", { name: "Етапи: Държавен бюджет" });
+  await expect(state.locator('[aria-current="step"]')).toHaveText(/Доклади на комисиите/);
+  await expect(page.getByRole("list", { name: "Етапи: Бюджет на НЗОК" }).locator('[aria-current="step"]')).toHaveText(/Внесен в НС/);
+  await expect(page.getByText(/14 от 23 участващи комисии/).first()).toBeVisible();
+});
+
 test("речник: термини от СИГМА без примери с условни числа", async ({ page }) => {
   await page.goto("/rechnik");
   expect(await page.locator("dt").count()).toBeGreaterThan(60);

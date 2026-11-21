@@ -32,6 +32,8 @@ import { ProgramExtract, programChecks, programTable, reconcileUnits } from "../
 import { childSumChecks, crossCheck, grandTotalChecks, sumTopLevel } from "../src/lib/tables/checks";
 import { joinByName } from "../src/lib/municipal/join";
 import { locatorOf } from "../src/lib/tables/extract";
+import { BILLS } from "../src/lib/legislation/bills";
+import { billStatus } from "../src/lib/legislation/parliament";
 
 const ROOT = join(__dirname, "..");
 const RAW = join(ROOT, "data/raw");
@@ -45,6 +47,12 @@ function fileDoc(id: string, path: string, meta: Omit<Snapshot["documents"][numb
   const buf = readFileSync(full);
   return { id, sha256: sha256(buf), bytes: buf.length, ...meta };
 }
+
+/** latest stored copy of each bill's API JSON (scripts/track-bills.ts) */
+const billManifest = JSON.parse(readFileSync(join(RAW, "parliament/bills.json"), "utf8")) as Record<string, { file: string; sha256: string; retrievedOn: string }>;
+/** a changed API copy gets a new document id (documents are immutable in the database) */
+const billDocId = (b: { apiId: string; docId: string }) => `${b.docId}-${billManifest[b.apiId]!.sha256.slice(0, 8)}`;
+const billJson = (apiId: string) => JSON.parse(readFileSync(join(RAW, "parliament", billManifest[apiId]!.file), "utf8"));
 
 async function main() {
   const versionId = "bill-2026-11-16";
@@ -93,17 +101,19 @@ async function main() {
       legalStatus: "законопроект",
       versionId,
     }),
-    fileDoc("ns-api-bill-167645", "parliament/bill_167645.json", {
-      publisher: "Народно събрание",
-      title: "Публично API на НС: метаданни за законопроект 52-602-01-71 (дата, комисии, файлове)",
-      url: "https://www.parliament.bg/api/v1/bill/167645",
-      pageUrl: "https://www.parliament.bg/bg/bills/ID/167645",
-      mime: "application/json",
-      retrievedOn: RETRIEVED,
-      publishedOn: null,
-      legalStatus: null,
-      versionId,
-    }),
+    ...BILLS.map((b) =>
+      fileDoc(billDocId(b), `parliament/${billManifest[b.apiId]!.file}`, {
+        publisher: "Народно събрание",
+        title: `Публично API на НС: законопроект ${b.sign} (${b.short}) — етапи, комисии, доклади, гласувания`,
+        url: `https://www.parliament.bg/api/v1/bill/${b.apiId}`,
+        pageUrl: `https://www.parliament.bg/bg/bills/ID/${b.apiId}`,
+        mime: "application/json",
+        retrievedOn: billManifest[b.apiId]!.retrievedOn,
+        publishedOn: null,
+        legalStatus: null,
+        versionId,
+      }),
+    ),
     fileDoc("ms-2026-11-16", "government/ms-2026-11-16.html", {
       publisher: "Министерски съвет",
       title: "Заседание на Министерския съвет на 16.11.2026 г. — одобряване на проекта на ЗДБРБ 2027",
@@ -422,10 +432,10 @@ async function main() {
     documentId: glId,
   }));
   // ── Committees the bill is assigned to (Parliament API) ──
-  const billApi = JSON.parse(readFileSync(join(RAW, "parliament/bill_167645.json"), "utf8")) as {
+  const billApi = billJson("167645") as {
     dist_list: { A_ns_CL_value: string; L_Act_DTL_value: string }[];
   };
-  const committees = billApi.dist_list.map((d) => ({ name: d.A_ns_CL_value, role: d.L_Act_DTL_value, documentId: "ns-api-bill-167645" }));
+  const committees = billApi.dist_list.map((d) => ({ name: d.A_ns_CL_value, role: d.L_Act_DTL_value, documentId: billDocId(BILLS[0]) }));
 
   const failed = checks.filter((c) => c.status === "fail");
   const content = {
@@ -505,9 +515,22 @@ async function main() {
         date: "2026-11-16",
         type: "SUBMITTED",
         title: "Законопроектът е внесен в Народното събрание, вх. № 52-602-01-71",
-        documentId: "ns-api-bill-167645",
+        documentId: billDocId(BILLS[0]),
         note: "Водеща: Комисия по бюджет и финанси. Разпределен общо на 24 комисии.",
       },
+      // stages after submission, derived from the stored API JSON of each bill
+      ...BILLS.flatMap((b) =>
+        billStatus(billJson(b.apiId))
+          .events.filter((e) => e.type !== "SUBMITTED")
+          .map((e) => ({
+            id: `ns-${b.apiId}-${e.type.toLowerCase()}`,
+            date: e.date,
+            type: e.type,
+            title: `${b.short}: ${e.title.charAt(0).toLowerCase()}${e.title.slice(1)}`,
+            documentId: billDocId(b),
+            note: null,
+          })),
+      ),
     ],
   };
 
