@@ -52,3 +52,4 @@ next-env.d.ts
 /data/extracted/emf/
 /data/extracted/rtf/
 __pycache__/
+/data/snapshots/published.json

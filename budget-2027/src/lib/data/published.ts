@@ -24,7 +24,14 @@ export class NoPublishedSnapshotError extends Error {
   override name = "NoPublishedSnapshotError";
 }
 
-export const getPublished = cache(async () => {
+/**
+ * SNAPSHOT_SOURCE=file: read the snapshot committed in git (data/snapshots/published.json, written by
+ * scripts/vercel-build.sh) instead of the database. Used when the database cannot be reached at build
+ * time; the content is the same snapshot the database would publish. Admin features are off in this mode.
+ */
+export const getPublished = cache(async () => (process.env.SNAPSHOT_SOURCE === "file" ? fromFile() : fromDb()));
+
+async function fromDb() {
   const snapshot = await db.dataSnapshot.findFirst({
     where: { publishedAt: { not: null }, supersededAt: null },
     orderBy: { publishedAt: "desc" },
@@ -187,7 +194,105 @@ export const getPublished = cache(async () => {
       versionId: d.versionId,
     })),
   };
-});
+}
+
+async function fromFile(): Promise<Awaited<ReturnType<typeof fromDb>>> {
+  const { readFile } = await import("node:fs/promises");
+  const { join } = await import("node:path");
+  const { SnapshotSchema } = await import("@/lib/ingest/snapshot-schema");
+  const root = process.cwd();
+  const snap = SnapshotSchema.parse(JSON.parse(await readFile(join(root, "data/snapshots/published.json"), "utf8")));
+  const extra = JSON.parse(await readFile(join(root, "data/events/legislative.json"), "utf8")) as {
+    documents: { id: string; publisher: string; title: string; url: string; publishedAt?: string | null }[];
+    events: { id: string; date: string; type: string; title: string; documentId: string; note: string | null }[];
+  };
+  const docs = new Map(snap.documents.map((d) => [d.id, d]));
+  const metrics = new Map(snap.metrics.map((m) => [m.key, m]));
+  const str = (v: unknown) => (v === null || v === undefined ? null : String(v));
+
+  const series: Record<string, SeriesView> = {};
+  for (const o of snap.observations) {
+    const key = `${o.metricKey}@${o.versionId}`;
+    const metric = metrics.get(o.metricKey)!;
+    const value = str(o.value);
+    const first = docs.get(o.sources[0]!.documentId)!;
+    assertPublishable({
+      id: `${key}:${o.period}`,
+      label: metric.label,
+      value,
+      unit: o.unit,
+      scope: metric.scope,
+      status: value === null ? "pending" : STATUS_OF[o.vintage],
+      period: o.period,
+      asOf: first.publishedOn ?? first.retrievedOn,
+      source: { publisher: first.publisher, title: first.title, url: first.url, retrieved: first.retrievedOn, locator: o.sources[0]!.locator, sha256: first.sha256 },
+    });
+    const s = (series[key] ??= { metric: { ...metric, changeIn: metric.changeIn }, versionId: o.versionId, points: [] });
+    s.points.push({
+      period: o.period,
+      vintage: o.vintage,
+      value,
+      review: o.review,
+      sources: o.sources.map((x) => {
+        const d = docs.get(x.documentId)!;
+        return { locator: x.locator, value: str(x.value), documentId: x.documentId, documentTitle: d.title, publisher: d.publisher, url: d.url, pageUrl: d.pageUrl, sha256: d.sha256, retrievedOn: d.retrievedOn };
+      }),
+    });
+  }
+  for (const s of Object.values(series)) s.points.sort((a, b) => a.period.localeCompare(b.period));
+
+  const allDocs = [...snap.documents, ...extra.documents.map((d) => ({ ...d, pageUrl: null }))];
+  const docOf = (id: string) => allDocs.find((d) => d.id === id);
+  const events = [...snap.legislativeEvents, ...extra.events].sort((a, b) => a.date.localeCompare(b.date));
+  return {
+    glossary: snap.glossary,
+    committees: snap.committees,
+    municipalities: [...snap.municipalities]
+      .sort((a, b) => a.name.localeCompare(b.name, "bg"))
+      .map((m) => ({
+        ...m,
+        y2027: Object.fromEntries(Object.entries(m.y2027).map(([k, v]) => [k, str(v)])),
+        y2026: Object.fromEntries(Object.entries(m.y2026).map(([k, v]) => [k, str(v)])),
+        perCapita2027: String(m.perCapita2027),
+        perCapita2026: String(m.perCapita2026),
+      })),
+    tables: Object.fromEntries(snap.tables.map((t) => [t.id, t])) as Record<string, TableData>,
+    snapshot: {
+      id: snap.id,
+      createdAt: snap.createdAt,
+      publishedAt: snap.createdAt,
+      publishedBy: process.env.PUBLISHED_BY ?? "Claude (автоматична проверка)",
+      retrievedOn: snap.retrievedOn,
+      sigmaVersion: snap.sigma.dataVersion,
+    },
+    series,
+    measures: snap.measures.map((m) => {
+      const d = docs.get(m.documentId)!;
+      return {
+        id: m.id,
+        direction: m.direction,
+        title: m.title,
+        effect2027: str(m.effects["2027"]),
+        effect2028: str(m.effects["2028"]),
+        effect2029: str(m.effects["2029"]),
+        locator: m.locator,
+        documentTitle: d.title,
+        url: d.url,
+      };
+    }),
+    checks: snap.checks.map((c) => ({ id: c.id, kind: c.kind, status: c.status, description: c.description, details: c.details ?? null })),
+    versionDiffs: snap.versionDiffs.map((d) => ({ label: d.label, period: d.period, before: str(d.before), after: str(d.after), difference: str(d.difference), fromId: "mf-draft-2026-11-06", toId: "bill-2026-11-16" })),
+    events: events.map((e) => {
+      const d = docOf(e.documentId);
+      return { id: e.id, date: e.date, type: e.type, title: e.title, note: e.note, documentId: e.documentId, documentTitle: d?.title ?? "", url: d?.pageUrl ?? d?.url ?? "" };
+    }),
+    versions: [...snap.versions].sort((a, b) => a.date.localeCompare(b.date)),
+    // same order as the database query: versionId desc (nulls first, as in PostgreSQL), then id
+    documents: snap.documents
+      .map((d) => ({ ...d, versionId: d.versionId ?? null }))
+      .sort((a, b) => (a.versionId === b.versionId ? a.id.localeCompare(b.id) : a.versionId === null ? -1 : b.versionId === null ? 1 : b.versionId.localeCompare(a.versionId))),
+  };
+}
 
 export type Published = Awaited<ReturnType<typeof getPublished>>;
 

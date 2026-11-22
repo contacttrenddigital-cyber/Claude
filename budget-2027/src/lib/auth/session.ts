@@ -6,7 +6,8 @@ import { hasRole, verifySession, type Role } from "./core";
 
 export const COOKIE = "b27_session";
 export const secret = () => process.env.SESSION_SECRET ?? "";
-export const adminEnabled = () => secret().length >= 32;
+// off when the site is built from the committed snapshot (no database): see getPublished
+export const adminEnabled = () => secret().length >= 32 && process.env.SNAPSHOT_SOURCE !== "file";
 
 export async function currentUser() {
   if (!adminEnabled()) return null;
