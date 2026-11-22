@@ -7,8 +7,8 @@ test.describe("Начална страница", () => {
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toContainText("обяснен ясно");
     await expect(page.getByText(/още не е приет/)).toBeVisible();
-    for (const [name, href] of [["Как ме засяга?", "/kalkulator"], ["Къде отиват парите?", "/sektori"], ["А моята община?", "/obshtini"]] as const)
-      await expect(page.getByRole("link", { name: new RegExp(name.replace("?", "\\?")) }).filter({ hasText: name }).first()).toHaveAttribute("href", href);
+    for (const [name, href] of [["Работя на заплата", "/za-men/zaplata"], ["Пенсионер съм", "/za-men/pensioner"], ["Имам фирма", "/za-men/firma"], ["Моята община", "/za-men/obshtina"]] as const)
+      await expect(page.locator('section[aria-labelledby="start-title"]').getByRole("link", { name: new RegExp(name) })).toHaveAttribute("href", href);
   });
 
   // Приложение № 3 / Табл. VI-1, проект 2027: 51 065,2; 55 972,1; −4 907,0; 44 343,9 млн. €
@@ -39,7 +39,7 @@ test.describe("Начална страница", () => {
     await expect(page.locator("#kade-title")).toContainText("37% от разходите");
     await expect(page.locator("#kade")).toContainText("общо 54,5 млрд. €");
     await page.locator("#kade").getByRole("link", { name: /Всички сектори/ }).click();
-    await expect(page).toHaveURL(/\/sektori$/);
+    await expect(page).toHaveURL(/\/razhodi#funktsii$/);
   });
 
   test("находките са с български формат на числата", async ({ page }) => {

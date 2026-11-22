@@ -19,11 +19,11 @@ export const NAV: NavGroup[] = [
     label: "За мен",
     items: [
       { href: "/kalkulator", label: "Калкулатор на заплатата", hint: "Нетна заплата и осигуровки: 2026 срещу 2027", icon: "calculator" },
-      { href: "/zaplati", label: "Заплати", hint: "Минимална заплата и заплати в държавата", icon: "wallet" },
-      { href: "/pensii", label: "Пенсии", hint: "Колко струват пенсиите и откъде идват парите", icon: "users" },
+      { href: "/za-men/zaplata", label: "Работя на заплата", hint: "Какво се променя за мен през 2027", icon: "wallet" },
+      { href: "/za-men/pensioner", label: "Пенсионер съм", hint: "Пенсиите през 2027 г.", icon: "users" },
+      { href: "/za-men/firma", label: "Имам фирма", hint: "Данъци, такси, разход за служител", icon: "briefcase" },
+      { href: "/za-men/obshtina", label: "Моята община", hint: "Колко получава моята община", icon: "map" },
       { href: "/osigurovki", label: "Помощи и обезщетения", hint: "Майчинство, детски, безработица", icon: "heart" },
-      { href: "/biznes", label: "За фирмите", hint: "Данъци и нови мерки за бизнеса", icon: "briefcase" },
-      { href: "/obshtini", label: "Моята община", hint: "Колко получава всяка от 265-те общини", icon: "map" },
     ],
   },
   {
@@ -32,7 +32,10 @@ export const NAV: NavGroup[] = [
     items: [
       { href: "/prihodi", label: "Приходи", hint: "Откъде идват парите", icon: "coins" },
       { href: "/danatsi", label: "Данъци", hint: "Ставки и промени", icon: "receipt" },
-      { href: "/sektori", label: "Къде отиват парите", hint: "Разходите по сектори", icon: "pie" },
+      { href: "/razhodi", label: "Къде отиват парите", hint: "Разходите по сектори и видове", icon: "pie" },
+      { href: "/pensii", label: "Пенсии", hint: "Бюджетът на ДОО", icon: "users" },
+      { href: "/zaplati", label: "Заплати", hint: "Минимална заплата и заплати в държавата", icon: "wallet" },
+      { href: "/biznes", label: "Бизнес", hint: "Данъци и мерки за фирмите", icon: "briefcase" },
       { href: "/defitsit", label: "Дефицит", hint: "Колко не достига", icon: "scale" },
       { href: "/dalg", label: "Дълг", hint: "Колко дължим и колко ни струва", icon: "trend" },
       { href: "/zdraveopazvane", label: "Здравеопазване", hint: "Бюджетът на здравната каса", icon: "cross" },

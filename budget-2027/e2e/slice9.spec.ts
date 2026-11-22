@@ -2,7 +2,6 @@ import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
 for (const [path, h1] of [
-  ["/sektori", /Разходите по сектори/],
   ["/obrazovanie", /Образованието в бюджета/],
   ["/zaplati", /Заплатите в бюджета/],
   ["/biznes", /Какво променя бюджетът за фирмите/],
@@ -20,9 +19,10 @@ for (const [path, h1] of [
 }
 
 // Табл. III-1: 20 394,3 / 54 465,4 = 37,4%
-test("сектори: дял на социалната функция и връзка към пенсиите", async ({ page }) => {
+test("сектори: старият адрес води към „Разходи“, дял на социалната функция и връзка към пенсиите", async ({ page }) => {
   await page.goto("/sektori");
-  const row = page.getByRole("row", { name: /Социално осигуряване/ });
+  await expect(page).toHaveURL(/\/razhodi/);
+  const row = page.getByRole("region", { name: /Функции: дял от общото/ }).getByRole("row", { name: /Социално осигуряване/ });
   await expect(row).toContainText("37,4%");
   await row.getByRole("link", { name: "Пенсии и ДОО" }).click();
   await expect(page).toHaveURL(/\/pensii$/);

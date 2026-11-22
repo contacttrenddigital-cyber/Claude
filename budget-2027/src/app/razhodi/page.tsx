@@ -4,6 +4,7 @@ import { PageShell, Section } from "@/components/site/PageShell";
 import { TableView } from "@/components/tables/TableView";
 import { RankedBars } from "@/components/charts/RankedBars";
 import { KpiTile } from "@/components/fiscal/KpiTile";
+import { SectorShares } from "@/components/fiscal/SectorShares";
 import { getPublished, seriesOf, tableOf } from "@/lib/data/published";
 import { billSource } from "@/lib/data/view";
 
@@ -45,8 +46,9 @@ export default async function Spending() {
         </div>
       }
     >
-      <Section id="funktsii" title="По функции, 2027 срещу 2026">
+      <Section id="funktsii" title="По сектори (функции), 2027 срещу 2026" lead="Дял на всеки сектор в разходите по основните функции и промяна спрямо очакваното за 2026 г.">
         <RankedBars title="Основни функции" subtitle="Табл. III-1, КФП, млн. €. Маркерът е очакваното изпълнение за 2026 г." items={fx(0)} unit="млн. €" valueLabel="2027 (проект)" baseLabel="2026 (очаквано)" />
+        <SectorShares functions={f} src={src} />
         <RankedBars title="Подфункции" subtitle="Табл. III-1, КФП, млн. €" items={fx(1)} unit="млн. €" valueLabel="2027 (проект)" baseLabel="2026 (очаквано)" />
         <TableView table={f} collapsed sourceUrl={src.url} sourceTitle={src.title} />
       </Section>

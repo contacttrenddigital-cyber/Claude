@@ -16,25 +16,32 @@ export const revalidate = 3600;
 
 const ENTRIES: { href: string; icon: IconName; title: string; text: string; cta: string }[] = [
   {
-    href: "/kalkulator",
+    href: "/za-men/zaplata",
     icon: "calculator",
-    title: "Как ме засяга?",
-    text: "Въведи брутната си заплата и виж колко ще получаваш на ръка през 2027 г. в сравнение с 2026 г.",
-    cta: "Към калкулатора",
+    title: "Работя на заплата",
+    text: "Минимална заплата, осигуровки, данък и облекчения за деца — и колко ще получаваш на ръка.",
+    cta: "Какво се променя",
   },
   {
-    href: "/sektori",
-    icon: "pie",
-    title: "Къде отиват парите?",
-    text: "Пенсии, здраве, образование, отбрана: колко отива за всяко и как се променя спрямо тази година.",
-    cta: "Виж разходите",
+    href: "/za-men/pensioner",
+    icon: "users",
+    title: "Пенсионер съм",
+    text: "Колко пари има за пенсии, кога и как се осъвременяват.",
+    cta: "Какво се променя",
   },
   {
-    href: "/obshtini",
+    href: "/za-men/firma",
+    icon: "briefcase",
+    title: "Имам фирма",
+    text: "Данъци, нови такси и акцизи, разход за служител, обществени поръчки.",
+    cta: "Какво се променя",
+  },
+  {
+    href: "/za-men/obshtina",
     icon: "map",
-    title: "А моята община?",
-    text: "Колко получава всяка община от държавата: на карта, в списък и на жител, в сравнение с 2026 г.",
-    cta: "Към картата",
+    title: "Моята община",
+    text: "Колко получава твоята община от държавата през 2027 г.",
+    cta: "Избери община",
   },
 ];
 
@@ -106,7 +113,7 @@ export default async function Home() {
   });
   const balance = data.series["kfp.balance@bill-2026-11-16"]!.points;
   const balMax = balance.reduce((m, p) => Math.max(m, Math.abs(Number(p.value ?? 0))), 0); // pixels only
-  const ENTRY_BG = ["bg-card-coral", "bg-card-mustard", "bg-card-sky"]; // coral = the main action
+  const ENTRY_BG = ["bg-card-coral", "bg-card-mustard", "bg-card-sky", "bg-card-mint"]; // coral = the main action
   const TOPIC_TILE = ["bg-card-sky", "bg-card-mustard", "bg-card-violet", "bg-card-mint", "bg-card-lilac"];
 
   return (
@@ -160,14 +167,15 @@ export default async function Home() {
         {/* ── Entry points ───────────────────────────────────── */}
         <section aria-labelledby="start-title" className="mx-auto max-w-7xl px-4 pt-14 sm:px-6 sm:pt-20">
           <h2 id="start-title" className="font-display text-[2.25rem] leading-[1] font-semibold tracking-tight sm:text-[3rem]">
-            С какво да започнеш?
+            Кой си ти?
           </h2>
-          <ul className="mt-8 grid gap-5 md:grid-cols-3">
+          <p className="mt-3 max-w-2xl text-[17px] text-ink-2">Избери и ще видиш само това, което те засяга.</p>
+          <ul className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             {ENTRIES.map((e, i) => (
               <li key={e.href}>
                 <Link href={e.href} className={`group relative flex h-full flex-col gap-4 rounded-[2rem] p-6 text-on-card shadow-xl shadow-black/10 transition duration-300 hover:-translate-y-1 sm:p-7 ${ENTRY_BG[i]}`}>
                   <span className="flex items-start justify-between gap-4">
-                    <span className="font-display text-[2.1rem] leading-[0.95] font-semibold tracking-tight">{e.title}</span>
+                    <span className="font-display text-[1.9rem] leading-[0.95] font-semibold tracking-tight">{e.title}</span>
                     <span aria-hidden className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white text-[#141414] shadow-md transition group-hover:rotate-45">
                       <Icon name="arrow" className="h-5 w-5 -rotate-45" />
                     </span>
@@ -197,7 +205,7 @@ export default async function Home() {
                 {top[0]!.label.startsWith("Социално") ? "Тук влизат пенсиите и социалните помощи. " : ""}Следват {top[1]!.label.toLowerCase()} ({fmtNum(top[1]!.share, 0)}%),{" "}
                 {top[2]!.label.toLowerCase()} ({fmtNum(top[2]!.share, 0)}%) и {top[3]!.label.toLowerCase()} ({fmtNum(top[3]!.share, 0)}%). Смени годината, за да видиш как се променя.
               </p>
-              <Link href="/sektori" className="inline-flex w-fit items-center gap-2 rounded-full bg-[#f5f2ea] px-5 py-2.5 text-[15px] font-semibold text-[#141414]">
+              <Link href="/razhodi#funktsii" className="inline-flex w-fit items-center gap-2 rounded-full bg-[#f5f2ea] px-5 py-2.5 text-[15px] font-semibold text-[#141414]">
                 Всички сектори и промените спрямо 2026 г.
                 <Icon name="arrow" className="h-4 w-4" />
               </Link>
