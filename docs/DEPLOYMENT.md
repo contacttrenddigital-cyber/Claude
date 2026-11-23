@@ -57,3 +57,8 @@ npm run build && npm start
 Създадена е нова: `budget-2027-db` (Neon, Free, iad1, solitary-meadow-08271798), свързана с проекта „claude“ с префикс `DATABASE`
 (production и preview). Старата е откачена от проекта, но не е изтрита. Първото изграждане с новата база: миграциите (9) минаха,
 снимката е заредена и публикувана, админ панелът е включен.
+
+## Редакторски акаунт
+`scripts/vercel-build.sh` създава/обновява акаунт с роля `publisher` от тайните променливи на проекта във Vercel
+`ADMIN_EMAIL` и `ADMIN_PASSWORD` (тип „sensitive“, само production). Паролата не е в репото. Смяна: обнови `ADMIN_PASSWORD`
+във Vercel → Settings → Environment Variables и публикувай наново.

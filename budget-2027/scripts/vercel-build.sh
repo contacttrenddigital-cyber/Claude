@@ -16,6 +16,10 @@ if [ -n "$DIRECT" ] && DATABASE_URL="$DIRECT" npx prisma migrate deploy; then
   DATABASE_URL="$DIRECT" npm run db:seed
   DATABASE_URL="$DIRECT" npm run db:publish -- "${PUBLISHED_BY:-Claude (автоматична проверка)}"
   DATABASE_URL="$DIRECT" npm run db:seed:claims
+  # editor account from the project's secret environment variables (never from the repository)
+  if [ -n "${ADMIN_EMAIL:-}" ] && [ -n "${ADMIN_PASSWORD:-}" ]; then
+    DATABASE_URL="$DIRECT" npx tsx scripts/create-user.ts --email "$ADMIN_EMAIL" --role "${ADMIN_ROLE:-publisher}"
+  fi
 else
   echo "⚠ Database not reachable: building from the committed snapshot $LATEST (SNAPSHOT_SOURCE=file)."
   export SNAPSHOT_SOURCE=file
